@@ -24,8 +24,8 @@ def make_input_data(init_data: pd.DataFrame) -> pd.DataFrame:
     mid_data['area_volume']            = init_data['area'] * init_data['effective_thickness']
     mid_data['pore_volume']            = mid_data['area_volume'] * init_data['porosity_coef']
     mid_data['temp_correction']        = (zero_c_to_k * 2 + norm_temp_c) / (zero_c_to_k + init_data['reservoir_temp'] )
-    mid_data['fin_reservoir_pressure'] = np.exp(1293 * 1e-9 * 2700 * init_data['relative_density']) 
-    mid_data['critical_pressure']      = (4.892 - 0.4048 * init_data['relative_density']) * 1e6 
+    mid_data['fin_reservoir_pressure'] = np.exp(1293 * 1e-9 * 2700 * init_data['relative_density']) / 1e6
+    mid_data['critical_pressure']      = (4.892 - 0.4048 * init_data['relative_density'])
     mid_data['critical_temp']          = 94.717 + 170.8 * init_data['relative_density'] 
     mid_data['init_overcompress_coef'] = (0.4 * np.log10(init_data['reservoir_temp'] / mid_data['critical_temp']) + 0.73)**(init_data['init_reservoir_pressure'] / mid_data['critical_pressure']) + 0.1 * init_data['init_reservoir_pressure'] / mid_data['critical_pressure'] # Same question
     mid_data['fin_overcompress_coef']  = (0.4 * np.log10(init_data['reservoir_temp'] / mid_data['critical_temp']) + 0.73)**(mid_data['fin_reservoir_pressure'] / mid_data['critical_pressure']) + 0.1 * mid_data['fin_reservoir_pressure'] / mid_data['critical_pressure'] # Same question

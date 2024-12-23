@@ -3,6 +3,8 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 import numpy as np
+import scipy.stats as st
+
 
 def plot_vars_distribution(stat_data: pd.DataFrame) -> go.Figure:
     fig = make_subplots(rows=1, cols=len(stat_data.columns))
@@ -71,8 +73,9 @@ def plot_tornado(df_affection: pd.DataFrame) -> go.Figure:
 
 
 
-def plot_reserves_indicators(reserves: pd.DataFrame, indicators: list) -> go.Figure:
-    fig = px.ecdf(reserves)
+def plot_indicators(vars: pd.DataFrame) -> go.Figure:
+    fig = px.ecdf(vars)
+    indicators = st.scoreatpercentile(vars, [10, 50, 90])
     fig.add_trace(go.Scatter(x=indicators, y=[0.1, 0.5, 0.9], mode='markers', marker_size=20))
     return fig
 

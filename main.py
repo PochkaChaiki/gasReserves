@@ -1,7 +1,9 @@
 from dash import Dash, html, dcc, callback, Input, Output, State
 from layout import *
+from callbacks import *
 
-app = Dash()
+app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP], 
+           suppress_callback_exceptions=True)
 
 app.layout = Layout
 
@@ -19,7 +21,19 @@ def render_content(tab):
 
 
 def render_reserves_calcs():
-    return html.Div(html.H1('Подсчёт запасов здесь<--'))
+    return html.Div([
+        dbc.Row([
+            ReservesInputGroup,
+            ReservesMainOutputs,
+        ]),
+        dbc.Row([
+            ReservesOutputTable,
+            TornadoDiagram,
+            
+        ]),
+        dbc.Row([
+            IndicatorsDiagram
+        ])])
 
 def render_production_indicators():
     return html.Div(html.H1('Определение показателей разработки здесь<--'))

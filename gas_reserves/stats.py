@@ -5,25 +5,27 @@ import pandas as pd
 
 #|-------------------------------------------------------------------------------------------------------------------------|
 #| STAT_PARAM EXAMPLE:
-#|   stat_params={'distribution': 'var', 'params': {'loc': <value>, 'scale': <value>}, 'adds': {'param1': <value>}}
+#|   stat_params={'column: {'distribution': 'var', 'params': {'loc': <value>, 'scale': <value>}, 'adds': {'param1': <value>}}}
 #|-------------------------------------------------------------------------------------------------------------------------|
 
 
 def generate_stats(stat_params:dict) -> pd.DataFrame:
-    stat_data = pd.DataFrame(columns=['area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef', 'permeability'])
+    stat_data = pd.DataFrame(columns=stat_params.keys())
     for var in stat_data.columns:
         generator = distributions[stat_params[var]['distribution']]
         loc, scale = tuple(stat_params[var]['params'].values())
-        stat_data = generator.rvs(*(stat_params[var]['adds'].values()), loc=loc, scale=scale, size=amount_of_vars)
+        stat_data[var] = generator.rvs(*(stat_params[var]['adds'].values()), loc=loc, scale=scale, size=amount_of_vars)
 
-    stat_data['permeability'] = abs(stat_data['permeability'])
     return stat_data
 
 
-def calculate_indicators(var: pd.DataFrame, stat_params:dict) -> list:
-    generator = distributions[stat_params[var.columns[0]]['distribution']]
+# def calculate_indicators(stat_params:dict) -> list[float]:
+#     generator = distributions[stat_params['distribution']]
 
-    var_p10 = generator.ppf(0.9, loc=var.mean(), scale=var.std())
-    var_p50 = generator.ppf(0.5, loc=var.mean(), scale=var.std())
-    var_p90 = generator.ppf(0.1, loc=var.mean(), scale=var.std())
-    return [var_p10, var_p50, var_p90]
+#     var_p10 = generator.ppf(0.9, *(stat_params['adds'].values()) ,loc=stat_params['params']['loc'], scale=stat_params['params']['scale'])
+#     var_p50 = generator.ppf(0.5, *(stat_params['adds'].values()) ,loc=stat_params['params']['loc'], scale=stat_params['params']['scale'])
+#     var_p90 = generator.ppf(0.1, *(stat_params['adds'].values()) ,loc=stat_params['params']['loc'], scale=stat_params['params']['scale'])
+#     return [var_p10, var_p50, var_p90]
+
+def calculate_percentiles(vars: pd.DataFrame) -> list:
+    return st.scoreatpercentile(vars, [90, 50, 10])

@@ -10,7 +10,7 @@ def count_daily_production(x, data):
 
 
 def count_overcomp_coef(x, data, temp):
-    return (0.4 * np.log10(temp / data['critical_temp']) + 0.73)**(x / data['critical_pressure'] * 1e6) + 0.1 * x / data['critical_pressure'] * 1e6
+    return (0.4 * np.log10(temp / data['critical_temp']) + 0.73)**(x / data['critical_pressure']) + 0.1 * x / data['critical_pressure']
 
 def __count_downhole_pressure(x, data):
     if (x - data['max_depression'] > 0):
