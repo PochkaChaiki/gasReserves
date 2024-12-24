@@ -1,8 +1,10 @@
 from dash import html, Input, Output, State, callback, ALL, dcc
 import dash_bootstrap_components as dbc
-
+from dash.exceptions import PreventUpdate
+import json
 
 from gas_reserves.calculations.reserves_calculations import *
+from gas_reserves.calculations.prod_indicators import *
 
 def show_norm(id):
     return html.Div([
@@ -121,6 +123,12 @@ def show_porosity_coef_input(dist):
 def show_gas_saturation_coef_input(dist):
     return show_dist_input(dist, "gas_saturation_coef")
 
+@callback(
+    Output("permeability-input-div", "children"),
+    Input("permeability-select", "value"),
+    prevent_initial_call=True)
+def show_permeability_input(dist):
+    return show_dist_input(dist, "permeability")
 
 def parse_params(dist: str, list: list):
     if dist=="norm":
@@ -149,7 +157,7 @@ def parse_params(dist: str, list: list):
                 "scale":list[1],
             },
             "adds":{
-                "c": list[3]
+                "c": list[2]
             }
         }
     elif dist=="truncnorm":
@@ -181,7 +189,9 @@ def parse_params(dist: str, list: list):
             fin_overcompress_coef=dict(value=Output("fin_overcompress_coef-input", "value")),
             geo_gas_reserves=dict(value=Output("geo_gas_reserves-input", "value")),
             dry_gas_init_reserves=dict(value=Output("dry_gas_init_reserves-input", "value"))
-        )
+        ),
+        Output("session_storage", "data"),
+        Output("indics_storage", "data")
     ],
     
     inputs=[
@@ -229,6 +239,8 @@ def calculate_reserves(n_clicks,
                        relative_density,
                        reservoir_temp,
                        add_params):
+    if area_dist is None:
+        raise PreventUpdate
     area_value, area = *parse_params(area_dist, area_params),
     et_value, effective_thickness = *parse_params(et_dist, et_params),
     pc_value, porosity_coef = *parse_params(pc_dist, pc_params),
@@ -256,8 +268,123 @@ def calculate_reserves(n_clicks,
             init_data[var] = add_params[var]
 
     output_data, table_res, tornado_fig, indicators_fig = calculate_result(init_data, stat_params)
-    
-    return [dbc.Table.from_dataframe(table_res.reset_index(), striped=True, bordered=True, hover=True), dcc.Graph(figure=tornado_fig), dcc.Graph(figure=indicators_fig), output_data[add_params.keys()].to_dict()]
+    table_res_out = table_res
+    return [dbc.Table.from_dataframe(
+                table_res.reset_index(), striped=True, bordered=True, hover=True), 
+            dcc.Graph(figure=tornado_fig), 
+            dcc.Graph(figure=indicators_fig), 
+            output_data[add_params.keys()].to_dict(), 
+            output_data.to_json(), table_res_out.to_json()]
 
+@callback(
+    Output("collapse", "is_open"),
+    [Input("collapse-button", "n_clicks")],
+    [State("collapse", "is_open")],
+)
+def toggle_collapse(n, is_open):
+    if n:
+        return not is_open
+    return is_open
+
+@callback(
+    output=[
+        [
+            Output('pres-p10', 'figure'),
+            Output('pres-p50', 'figure'),
+            Output('pres-p90', 'figure')
+        ],
+        Output('prod-kig', 'figure'),
+        # dict(
+        #     init_pressure=dict(value=Output("init_pressure-indics-input", "value")),
+        #     reservoir_temp=dict(value=Output("reservoir_temp-indics-input", "value")),
+        #     relative_density=dict(value=Output("relative_density-indics-input", "value")),
+        #     init_overcompress_coef=dict(value=Output("init_overcompress_coef-indics-input", "value")),
+        #     porosity_coef=dict(value=Output("porosity_coef-indics-input", "value")),
+        #     critical_temp=dict(value=Output("critical_temp-indics-input", "value")),
+        #     critical_pressure=dict(value=Output("critical_pressure-indics-input", "value")),
+        # ),
+    ],
+    inputs=[
+        Input('prod_calcs', 'n_clicks'),
+        State("permeability-select", "value"),
+
+        State({"type": "permeability", "index": ALL}, "value"),
+        dict(
+            init_reservoir_pressure=State("init_reservoir_pressure-indics-input", "value"), 
+            reservoir_temp=State("reservoir_temp-indics-input", "value"),
+            relative_density=State("relative_density-indics-input", "value"),
+            init_overcompress_coef=State("init_overcompress_coef-indics-input", "value"),
+            max_depression=State("max_depression-indics-input", "value"),
+            required_whole_gas_production=State("required_whole_gas_production-indics-input", "value"),
+            reserve_ratio=State("reserve_ratio-indics-input", "value"),
+            operations_ratio=State("operations_ratio-indics-input", "value"),
+            porosity_coef=State("porosity_coef-indics-input", "value"),
+            gas_saturation_coef=State("gas_saturation_coef-indics-input", "value"),
+            avg_well_temp=State("avg_well_temp-indics-input", "value"),
+            pipe_diameter=State("pipe_diameter-indics-input", "value"),
+            well_height=State("well_height-indics-input", "value"),
+            pipe_roughness=State("pipe_roughness-indics-input", "value"),
+            init_num_wells=State("init_num_wells-indics-input", "value"),
+            trail_length=State("trail_length-indics-input", "value"),
+            trail_diameter=State("trail_diameter-indics-input", "value"),
+            trail_roughness=State("trail_roughness-indics-input", "value"),
+            avg_trail_temp=State("avg_trail_temp-indics-input", "value"),
+            main_gas_pipeline_pressure=State("main_gas_pipeline_pressure-indics-input", "value"),
+            input_cs_temp=State("input_cs_temp-indics-input", "value"),
+            coef_K=State("coef_K-indics-input", "value"),
+            efficiency_cs=State("efficiency_cs-indics-input", "value"),
+            adiabatic_index=State("adiabatic_index-indics-input", "value"),
+            density_athmospheric=State("density_athmospheric-indics-input", "value"),
+            viscosity=State("viscosity-indics-input", "value"),
+            machines_num=State("machines_num-indics-input", "value"),
+            time_to_build=State("time_to_build-indics-input", "value"),
+            annual_production=State("annual_production-indics-input", "value"),
+            lambda_trail=State("lambda_trail-indics-input", "value"),
+            lambda_fontain=State("lambda_fontain-indics-input", "value"),
+            macro_roughness_l=State("macro_roughness_l-indics-input", "value"),
+            filtr_resistance_A=State("filtr_resistance_A-indics-input", "value"),
+            filtr_resistance_B=State("filtr_resistance_B-indics-input", "value"),
+            critical_temp=State("critical_temp-indics-input", "value"),
+            critical_pressure=State("critical_pressure-indics-input", "value"),
+            effective_thickness_p10=State("effective_thickness-indics-input-p10", "value"),
+            effective_thickness_p50=State("effective_thickness-indics-input-p50", "value"),
+            effective_thickness_p90=State("effective_thickness-indics-input-p90", "value"),
+            geo_gas_reserves_p10=State("geo_gas_reserves-indics-input-p10", "value"),
+            geo_gas_reserves_p50=State("geo_gas_reserves-indics-input-p50", "value"),
+            geo_gas_reserves_p90=State("geo_gas_reserves-indics-input-p90", "value"),
+        )
+        
+    ],
+    prevent_initial_call=True
+)
+def calculate_production_indicators(n_clicks, perm_dist, perm_params, data):
+    _, permeability_params = *parse_params(perm_dist, perm_params),
+    stat_params = {"permeability": permeability_params}
+    stat_perm = generate_stats(stat_params)
+    
+    permeability_Pinds = st.scoreatpercentile(stat_perm['permeability'], [10, 50, 90])
+
+    init_data = data
+    effective_thickness_Pinds = [init_data['effective_thickness_p10'], init_data['effective_thickness_p50'], init_data['effective_thickness_p90']]
+    geo_gas_reserves_Pinds = [init_data['geo_gas_reserves_p10'], init_data['geo_gas_reserves_p50'], init_data['geo_gas_reserves_p90']]
+    for key in ['effective_thickness_p10', 'effective_thickness_p50', 'effective_thickness_p90', 'geo_gas_reserves_p10', 'geo_gas_reserves_p50', 'geo_gas_reserves_p90']:
+        del init_data[key]
 
     
+
+    prod_kig_fig = None
+    pressures_graphs = []
+    for eft, ggr, perm, name in zip(effective_thickness_Pinds, geo_gas_reserves_Pinds, permeability_Pinds, ['P10', 'P50', 'P90']):
+        init_data['permeability_k'] = perm
+        init_data['effective_thickness'] = eft
+        init_data['geo_gas_reserves'] = ggr
+
+        input_data = make_init_data_for_prod_indics(pd.DataFrame(init_data, index=["value"]))
+        
+        result = calculate_indicators(input_data.to_dict('records')[0])
+        pressures_df = result[['current_pressure', 'wellhead_pressure', 'ukpg_pressure']]
+        pressures_df['downhole_pressure'] = result['current_pressure'] - input_data['max_depression']
+        pressures_graphs.append(plot_pressure_on_production_stages(pressures_df, name))
+        prod_kig_fig = plot_prod_kig(prod_kig_fig, result[['annual_production', 'kig']], name)
+    
+    return pressures_graphs, prod_kig_fig

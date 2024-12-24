@@ -4,6 +4,10 @@ from gas_reserves.constants import *
 
 Layout = html.Div(
     [
+        dcc.Store(id="session_storage", storage_type="session"),
+        dcc.Store(id="indics_storage", storage_type="local"),
+        dcc.Store(id="indics_result_storage", storage_type="session"),
+        # dcc.Store(id="indics_input_storage", storage_type="session"),
         html.Header(
         dcc.Tabs(id="tabs-calcs", value="tab-reserves-calcs", children=[
             dcc.Tab(label="Подсчёт запасов", value="tab-reserves-calcs"),
@@ -26,8 +30,17 @@ def distribution_input(name, id, placeholder):
         html.Div(id=id+"-input-div")
     ])
 
-ReservesInputGroup = dbc.Col(
-    [
+def make_inputgroup(name, id, value):
+    return html.Div([
+        dbc.Label(name, id=id, html_for=id+"-input"),
+        dbc.Input(type="number", id=id+"-input", value=value)
+    ])
+
+
+def get_reserves_input_group(values):
+    keys = ['init_reservoir_pressure', 'relative_density', 'reservoir_temp']
+
+    return dbc.Col([
         distribution_input("Площадь, м2", "area", "Площадь"),
 
         distribution_input("Эффективная газонасыщенная толщина, м", "effective_thickness", "Толщина"),
@@ -36,59 +49,72 @@ ReservesInputGroup = dbc.Col(
 
         distribution_input("Коэффициент газонасыщенности, д.е.", "gas_saturation_coef", "Газонасыщенность"),
 
-        dbc.Label("Начальное пластовое давление, МПа", id="init_reservoir_pressure", html_for="init_reservoir_pressure-input"),
-        dbc.Input(type="number", id="init_reservoir_pressure-input", placeholder="Начальное пластовое давление"),
-        
-        dbc.Label("Относительная плотность газа", id="relative_density", html_for="relative_density-input"),
-        dbc.Input(type="number", id="relative_density-input", placeholder="Относительная плотность газа"),
-        
-        dbc.Label("Пластовая температура, К", id="reservoir_temp", html_for="reservoir_temp-input"),
-        dbc.Input(type="number", id="reservoir_temp-input", placeholder="Пластовая температура"),
-        
-        # dbc.Label("Проницаемость, мД", id="permeability", html_for="permeability-input"),
-        # dbc.Input(type="number", id="permeability-input", placeholder="Проницаемость"),
-        
+        *tuple([make_inputgroup(varnames[key], key, values.get(key, {'value': 0})['value']) for key in keys]),
+
         dbc.Button("Расчитать", id="calculate_reserves_button", n_clicks=0)
-    ]
-)
+    ])
 
+def get_reserves_main_outputs(values):
+    keys_to_omit = {'area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef', 'init_reservoir_pressure', 'relative_density', 'reservoir_temp', 'reserves'}
 
-ReservesMainOutputs = dbc.Col(
-    [
-        dbc.Label("Объем площади, м3", id="area_volume", html_for="area_volume-input"),
-        dbc.Input(type="number", id="area_volume-input", placeholder='Объём площади', readonly=True),
+    return dbc.Col([
+        *tuple([make_inputgroup(varnames[key], key, values.get(key, {'value': 0})['value']) for key in varnames.keys() if key not in keys_to_omit]),
+    ])
 
-        dbc.Label("Поровый объем, м3", id="pore_volume", html_for="pore_volume-input"),
-        dbc.Input(type="number", id="pore_volume-input", placeholder="Поровый объем", readonly=True),
-        
-        dbc.Label("Поправка на температуру", id="temp_correction", html_for="temp_correction-input"),
-        dbc.Input(type="number", id="temp_correction-input", placeholder="Поправка на температуру"),
-        
-        dbc.Label("Конечное пластовое давление, МПа", id="fin_reservoir_pressure", html_for="fin_reservoir_pressure-input"),
-        dbc.Input(type="number", id="fin_reservoir_pressure-input", placeholder="Конечное пластовое давление", readonly=True),
-        
-        dbc.Label("Критическое давление, МПа.", id="critical_pressure", html_for="critical_pressure-input"),
-        dbc.Input(type="number", id="critical_pressure-input", placeholder="Критическое давление"),
-        
-        dbc.Label("Критическая температура, К", id="critical_temp", html_for="critical_temp-input"),
-        dbc.Input(type="number", id="critical_temp-input", placeholder="Критическая температура"),
-        
-        dbc.Label("Коэффициент сверхсжимаемости начальный", id="init_overcompress_coef", html_for="init_overcompress_coef-input"),
-        dbc.Input(type="number", id="init_overcompress_coef-input", placeholder="Коэффициент сверхсжимаемости начальный"),
-        
-        dbc.Label("Коэффициент сверхсжимаемости конечный", id="fin_overcompress_coef", html_for="fin_overcompress_coef-input"),
-        dbc.Input(type="number", id="fin_overcompress_coef-input", placeholder="Коэффициент сверхсжимаемости конечный", readonly=True),
-        
-        dbc.Label("Геологические запасы газа, млн. м3", id="geo_gas_reserves", html_for="geo_gas_reserves-input"),
-        dbc.Input(type="number", id="geo_gas_reserves-input", placeholder="Геологические запасы газа", readonly=True),
-
-        dbc.Label("Начальные запасы сухого газа, млн. м3", id="dry_gas_init_reserves", html_for="dry_gas_init_reserves-input"),
-        dbc.Input(type="number", id="dry_gas_init_reserves-input", placeholder="Начальные запасы сухого газа", readonly=True),
-    ]
-)
 
 ReservesOutputTable = html.Div(id="output_table")
 
-TornadoDiagram = html.Div(id="tornado-diagram", )
+TornadoDiagram = html.Div(id="tornado-diagram" )
 
 IndicatorsDiagram = html.Div(id="indicators-diagram")
+
+
+
+def get_production_indicators_inputs(values, indics_values):
+    keys_with_indics, keys_to_collapse = ['effective_thickness', 'geo_gas_reserves'], ['lambda_trail', 'lambda_fontain', 'macro_roughness_l', 'filtr_resistance_A', 'filtr_resistance_B', 'critical_temp', 'critical_pressure']
+    keys_to_omit = {'permeability'}
+    print(indics_values)
+    return dbc.Col([
+        distribution_input("Проницаемость, мД", "permeability", "Проницаемость"),
+
+        *tuple([make_inputgroup(varnamesIndicators[key], key+"-indics", values.get(key, {'value': 0})['value']) for key in list(varnamesIndicators.keys()) if key not in set(keys_to_collapse) and key not in set(keys_with_indics) and key not in keys_to_omit]),
+        dbc.Button("Дополнительные параметры", id="collapse-button", className="mb-3", color="primary", n_clicks=0),
+        dbc.Collapse([
+            dbc.Card(dbc.CardBody([
+                
+                dbc.Label(varnamesIndicators['effective_thickness'], id="effective_thickness-indics"),
+                html.Div([
+                    dbc.Label('P10'),   
+                    dbc.Input(type='number', id='effective_thickness-indics-input-p10', value=indics_values.get('P10', None)['effective_thickness']),
+
+                    dbc.Label('P50'),
+                    dbc.Input(type='number', id='effective_thickness-indics-input-p50', value=indics_values.get('P50', None)['effective_thickness']),
+
+                    dbc.Label('P90'),
+                    dbc.Input(type='number', id='effective_thickness-indics-input-p90', value=indics_values.get('P90', None)['effective_thickness']),
+                ]),
+
+                dbc.Label(varnamesIndicators['geo_gas_reserves'], id="geo_gas_reserves-indics"),
+                html.Div([
+                    dbc.Label('P10'),
+                    dbc.Input(type='number', id='geo_gas_reserves-indics-input-p10', value=indics_values.get('P10', None)['reserves']),
+
+                    dbc.Label('P50'),
+                    dbc.Input(type='number', id='geo_gas_reserves-indics-input-p50', value=indics_values.get('P50', None)['reserves']),
+
+                    dbc.Label('P90'),
+                    dbc.Input(type='number', id='geo_gas_reserves-indics-input-p90', value=indics_values.get('P90', None)['reserves']),
+                ]),
+
+                *tuple([make_inputgroup(varnamesIndicators[key], key+"-indics", values.get(key, {'value':0})['value']) for key in keys_to_collapse])
+        ]))
+        ], id='collapse', is_open=False)
+    ])  
+
+
+PressureOnStages = html.Div([
+    dcc.Graph(id='pres-p10'),
+    dcc.Graph(id='pres-p50'),
+    dcc.Graph(id='pres-p90'),
+], id='pressures-graph')
+ProdKig = dcc.Graph(id='prod-kig')

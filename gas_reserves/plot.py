@@ -80,14 +80,18 @@ def plot_indicators(vars: pd.DataFrame) -> go.Figure:
     return fig
 
 
-def plot_pressure_on_production_stages(pressureVals: pd.DataFrame) -> go.Figure:
+def plot_pressure_on_production_stages(pressureVals: pd.DataFrame, name: str) -> go.Figure:
     fig = go.Figure()
     for pressure in pressureVals.columns:
         fig.add_trace(go.Scatter(x=pressureVals.index.values.tolist(), y=pressureVals[pressure], mode="lines+markers", name=pressure))
+    fig.update_layout(
+        title=dict(text=name)
+    )
     return fig
 
-def plot_prod_kig(df_prod_kig: pd.DataFrame) -> go.Figure:
-    fig = make_subplots(specs=[[{"secondary_y": True}]])
-    fig.add_trace(go.Scatter(x=df_prod_kig.index.values.tolist(), y=df_prod_kig["annual_production"], mode="lines+markers", name="Qt"), secondary_y = False)
-    fig.add_trace(go.Scatter(x=df_prod_kig.index.values.tolist(), y=df_prod_kig["kig"], mode="lines+markers", name="kig"), secondary_y = True)
+def plot_prod_kig(fig: go.Figure, df_prod_kig: pd.DataFrame, Pind: str) -> go.Figure:
+    if fig is None:
+        fig = make_subplots(specs=[[{"secondary_y": True}]])
+    fig.add_trace(go.Scatter(x=df_prod_kig.index.values.tolist(), y=df_prod_kig["annual_production"], mode="lines+markers", name="Qt_"+Pind), secondary_y = False)
+    fig.add_trace(go.Scatter(x=df_prod_kig.index.values.tolist(), y=df_prod_kig["kig"], mode="lines+markers", name="КИГ_"+Pind), secondary_y = True)
     return fig
