@@ -73,7 +73,7 @@ IndicatorsDiagram = html.Div(id="indicators-diagram")
 def get_production_indicators_inputs(values, indics_values):
     keys_with_indics, keys_to_collapse = ['effective_thickness', 'geo_gas_reserves'], ['lambda_trail', 'lambda_fontain', 'macro_roughness_l', 'filtr_resistance_A', 'filtr_resistance_B', 'critical_temp', 'critical_pressure']
     keys_to_omit = {'permeability'}
-    print(indics_values)
+    # print(indics_values, indics_values.get('P10', {'effective_thickness': None}))
     return dbc.Col([
         distribution_input("Проницаемость, мД", "permeability", "Проницаемость"),
 
@@ -85,25 +85,25 @@ def get_production_indicators_inputs(values, indics_values):
                 dbc.Label(varnamesIndicators['effective_thickness'], id="effective_thickness-indics"),
                 html.Div([
                     dbc.Label('P10'),   
-                    dbc.Input(type='number', id='effective_thickness-indics-input-p10', value=indics_values.get('P10', None)['effective_thickness']),
+                    dbc.Input(type='number', id='effective_thickness-indics-input-p10', value=indics_values.get('P10', {'effective_thickness': None})['effective_thickness']),
 
                     dbc.Label('P50'),
-                    dbc.Input(type='number', id='effective_thickness-indics-input-p50', value=indics_values.get('P50', None)['effective_thickness']),
+                    dbc.Input(type='number', id='effective_thickness-indics-input-p50', value=indics_values.get('P50', {'effective_thickness': None})['effective_thickness']),
 
                     dbc.Label('P90'),
-                    dbc.Input(type='number', id='effective_thickness-indics-input-p90', value=indics_values.get('P90', None)['effective_thickness']),
+                    dbc.Input(type='number', id='effective_thickness-indics-input-p90', value=indics_values.get('P90', {'effective_thickness': None})['effective_thickness']),
                 ]),
 
                 dbc.Label(varnamesIndicators['geo_gas_reserves'], id="geo_gas_reserves-indics"),
                 html.Div([
                     dbc.Label('P10'),
-                    dbc.Input(type='number', id='geo_gas_reserves-indics-input-p10', value=indics_values.get('P10', None)['reserves']),
+                    dbc.Input(type='number', id='geo_gas_reserves-indics-input-p10', value=indics_values.get('P10', {'reserves': None})['reserves']),
 
                     dbc.Label('P50'),
-                    dbc.Input(type='number', id='geo_gas_reserves-indics-input-p50', value=indics_values.get('P50', None)['reserves']),
+                    dbc.Input(type='number', id='geo_gas_reserves-indics-input-p50', value=indics_values.get('P50', {'reserves': None})['reserves']),
 
                     dbc.Label('P90'),
-                    dbc.Input(type='number', id='geo_gas_reserves-indics-input-p90', value=indics_values.get('P90', None)['reserves']),
+                    dbc.Input(type='number', id='geo_gas_reserves-indics-input-p90', value=indics_values.get('P90', {'reserves': None})['reserves']),
                 ]),
 
                 *tuple([make_inputgroup(varnamesIndicators[key], key+"-indics", values.get(key, {'value':0})['value']) for key in keys_to_collapse])

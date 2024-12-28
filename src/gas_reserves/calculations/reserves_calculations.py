@@ -64,9 +64,9 @@ def calculate_result(init_data: dict, stat_params: dict):
     result_df = pd.DataFrame(columns=['Mean', 'P90', 'P50', 'P10'], index=['reserves', 'area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef'])
     for var in result_df.index:
         result_df['Mean'][var] = stat_data[var].mean()
-        result_df['P90'][var] = st.scoreatpercentile(stat_data[var], 90)
+        result_df['P90'][var] = st.scoreatpercentile(stat_data[var], 10)
         result_df['P50'][var] = st.scoreatpercentile(stat_data[var], 50)
-        result_df['P10'][var] = st.scoreatpercentile(stat_data[var], 10)
+        result_df['P10'][var] = st.scoreatpercentile(stat_data[var], 90)
 
     result_df.rename(columns=varnames, inplace=True)
     return input_data, result_df, tornado_fig, indicators_fig
