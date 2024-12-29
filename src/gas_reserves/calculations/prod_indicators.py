@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import scipy.optimize as so
+from gas_reserves.constants import *
 
 
 def count_daily_production(x, data):
@@ -71,14 +72,14 @@ def calculate_indicators(data):
 
         ukpg_pressure = np.sqrt(wellhead_pressure**2 - data['lambda_trail'] * data['relative_density'] *                                                          \
             count_overcomp_coef(2/3 * (downhole_pressure + wellhead_pressure**2 / (downhole_pressure + wellhead_pressure)), data, data['avg_well_temp'])                \
-            * data['avg_trail_temp'] * data['trail_length'] * (current_daily_production * n_wells)**2 / data['trail_diameter']**5 / data['coef_K']**2 )
+            * data['avg_trail_temp'] * data['trail_length'] * (current_daily_production * n_wells)**2 / data['trail_diameter']**5 / coef_K**2 )
 
         power = 0
         if ukpg_pressure < data['main_gas_pipeline_pressure']:
             power = 0.004 * current_daily_production * n_wells * data['input_cs_temp'] *                    \
                 count_overcomp_coef(ukpg_pressure, data, data['input_cs_temp']) /                            \
-                data['efficiency_cs'] * data['adiabatic_index'] / (data['adiabatic_index'] - 1) * \
-                ((data['main_gas_pipeline_pressure']/ukpg_pressure)**((data['adiabatic_index'] - 1) / data['adiabatic_index']) - 1)
+                data['efficiency_cs'] * adiabatic_index / (adiabatic_index - 1) * \
+                ((data['main_gas_pipeline_pressure']/ukpg_pressure)**((adiabatic_index - 1) / adiabatic_index) - 1)
 
 
         sum_current_annual_production += current_annual_production
@@ -111,16 +112,18 @@ def calculate_indicators(data):
         current_annual_production = 365 * n_wells * data['operations_ratio'] / (2 * 10**6 * data['reserve_ratio']) * (new_current_daily_production + current_daily_production) * 1e3
         current_daily_production = new_current_daily_production
 
-        ukpg_pressure = np.sqrt(wellhead_pressure**2 - data['lambda_trail'] * data['relative_density'] *                                                           \
+        ukpg_pressure = np.sqrt(wellhead_pressure**2 - data['lambda_trail'] * data['relative_density'] *                                                                 \
             count_overcomp_coef(2/3 * (downhole_pressure + wellhead_pressure**2 / (downhole_pressure + wellhead_pressure)), data, data['avg_well_temp'])                 \
-            * data['avg_trail_temp'] * data['trail_length'] * (current_daily_production * n_wells)**2 / data['trail_diameter']**5 / data['coef_K']**2 )
+            * data['avg_trail_temp'] * data['trail_length'] * (current_daily_production * n_wells)**2 / data['trail_diameter']**5 / coef_K**2 )
 
+        if np.isnan(ukpg_pressure):
+            ukpg_pressure = 0
         power = 0
         if ukpg_pressure < data['main_gas_pipeline_pressure']:
             power = 0.004 * current_daily_production * n_wells * data['input_cs_temp'] *                      \
-            count_overcomp_coef(ukpg_pressure, data, data['input_cs_temp']) /                              \
-            data['efficiency_cs'] * data['adiabatic_index'] / (data['adiabatic_index'] - 1) *   \
-            ((data['main_gas_pipeline_pressure']/ukpg_pressure)**((data['adiabatic_index'] - 1) / data['adiabatic_index']) - 1)
+            count_overcomp_coef(ukpg_pressure, data, data['input_cs_temp']) /                                 \
+            data['efficiency_cs'] * adiabatic_index / (adiabatic_index - 1) *                                 \
+            ((data['main_gas_pipeline_pressure']/ukpg_pressure)**((adiabatic_index - 1) / adiabatic_index) - 1)
 
 
         sum_current_annual_production += current_annual_production

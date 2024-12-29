@@ -9,12 +9,12 @@ import pandas as pd
 #|-------------------------------------------------------------------------------------------------------------------------|
 
 
-def generate_stats(stat_params:dict) -> pd.DataFrame:
+def generate_stats(stat_params:dict, num_of_vars: int) -> pd.DataFrame:
     stat_data = pd.DataFrame(columns=stat_params.keys())
     for var in stat_data.columns:
         generator = distributions[stat_params[var]['distribution']]
         loc, scale = tuple(stat_params[var]['params'].values())
-        stat_data[var] = generator.rvs(*(stat_params[var]['adds'].values()), loc=loc, scale=scale, size=amount_of_vars)
+        stat_data[var] = generator.rvs(*(stat_params[var]['adds'].values()), loc=loc, scale=scale, size=num_of_vars)
 
     return stat_data
 
