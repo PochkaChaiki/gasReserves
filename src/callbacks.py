@@ -267,6 +267,27 @@ def calculate_reserves(n_clicks,
         if add_params[var] != None:
             init_data[var] = add_params[var]
 
+    def calculate_result(init_data: dict, stat_params: dict):
+        input_data = make_input_data(pd.DataFrame(init_data, index=["value"]))
+        stat_data = generate_stats(stat_params, 3000)
+        reserves = calculate_reserves(stat_data, input_data)
+
+        df_affection = calculate_sensitivity(stat_data, input_data, reserves)
+        df_affection.rename(index=varnames, inplace=True)
+        tornado_fig = plot_tornado(df_affection)
+
+        indicators_fig = plot_indicators(reserves)
+
+        stat_data['reserves'] = reserves
+        result_df = pd.DataFrame(columns=['P90', 'P50', 'P10'], index=['reserves', 'area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef'])
+        for var in result_df.index:
+            result_df['P90'][var] = st.scoreatpercentile(stat_data[var], 10)
+            result_df['P50'][var] = st.scoreatpercentile(stat_data[var], 50)
+            result_df['P10'][var] = st.scoreatpercentile(stat_data[var], 90)
+
+        result_df.rename(columns=varnames, inplace=True)
+        return input_data, result_df, tornado_fig, indicators_fig
+
     output_data, table_res, tornado_fig, indicators_fig = calculate_result(init_data, stat_params)
     table_res_out = table_res
     return [dbc.Table.from_dataframe(
@@ -315,7 +336,7 @@ def toggle_collapse(n, is_open):
             relative_density=State("relative_density-indics-input", "value"),
             init_overcompress_coef=State("init_overcompress_coef-indics-input", "value"),
             max_depression=State("max_depression-indics-input", "value"),
-            required_whole_gas_production=State("required_whole_gas_production-indics-input", "value"),
+            # required_whole_gas_production=State("required_whole_gas_production-indics-input", "value"),
             reserve_ratio=State("reserve_ratio-indics-input", "value"),
             operations_ratio=State("operations_ratio-indics-input", "value"),
             porosity_coef=State("porosity_coef-indics-input", "value"),
@@ -323,15 +344,15 @@ def toggle_collapse(n, is_open):
             avg_well_temp=State("avg_well_temp-indics-input", "value"),
             pipe_diameter=State("pipe_diameter-indics-input", "value"),
             well_height=State("well_height-indics-input", "value"),
-            pipe_roughness=State("pipe_roughness-indics-input", "value"),
-            init_num_wells=State("init_num_wells-indics-input", "value"),
+            # pipe_roughness=State("pipe_roughness-indics-input", "value"),
+            # init_num_wells=State("init_num_wells-indics-input", "value"),
             trail_length=State("trail_length-indics-input", "value"),
             trail_diameter=State("trail_diameter-indics-input", "value"),
             trail_roughness=State("trail_roughness-indics-input", "value"),
             avg_trail_temp=State("avg_trail_temp-indics-input", "value"),
             main_gas_pipeline_pressure=State("main_gas_pipeline_pressure-indics-input", "value"),
             input_cs_temp=State("input_cs_temp-indics-input", "value"),
-            coef_K=State("coef_K-indics-input", "value"),
+            # coef_K=State("coef_K-indics-input", "value"),
             efficiency_cs=State("efficiency_cs-indics-input", "value"),
             adiabatic_index=State("adiabatic_index-indics-input", "value"),
             density_athmospheric=State("density_athmospheric-indics-input", "value"),
@@ -339,9 +360,9 @@ def toggle_collapse(n, is_open):
             machines_num=State("machines_num-indics-input", "value"),
             time_to_build=State("time_to_build-indics-input", "value"),
             annual_production=State("annual_production-indics-input", "value"),
-            lambda_trail=State("lambda_trail-indics-input", "value"),
-            lambda_fontain=State("lambda_fontain-indics-input", "value"),
-            macro_roughness_l=State("macro_roughness_l-indics-input", "value"),
+            # lambda_trail=State("lambda_trail-indics-input", "value"),
+            # lambda_fontain=State("lambda_fontain-indics-input", "value"),
+            # macro_roughness_l=State("macro_roughness_l-indics-input", "value"),
             filtr_resistance_A=State("filtr_resistance_A-indics-input", "value"),
             filtr_resistance_B=State("filtr_resistance_B-indics-input", "value"),
             critical_temp=State("critical_temp-indics-input", "value"),

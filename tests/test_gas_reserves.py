@@ -126,14 +126,45 @@ class TestProcessInput:
     def test_make_init_data_for_prod_indics(self, init_data):
         df_init_data = pd.DataFrame(init_data, index=['value'])
         pr_df = gr.process_input.make_init_data_for_prod_indics(df_init_data) 
-        res_cols = ['init_reservoir_pressure', 'reservoir_temp', 'relative_density', 'init_overcompress_coef', 'max_depression', 'reserve_ratio', 'operations_ratio',
-                    'porosity_coef', 'gas_saturation_coef', 'avg_well_temp', 'pipe_diameter', 'well_height', 'trail_length', 'trail_diameter', 'avg_trail_temp',
-                    'main_gas_pipeline_pressure', 'input_cs_temp', 'efficiency_cs', 'viscosity', 'machines_num', 'time_to_build', 'annual_production', 'effective_thickness', 
-                    'geo_gas_reserves', 'permeability', 'trail_roughness',
-                    'density_athmospheric', 'lambda_trail', 'lambda_fontain', 'macro_roughness_l', 'filtr_resistance_A',
-                    'filtr_resistance_B', 'critical_pressure', 'critical_temp']
+        res_cols = ['init_reservoir_pressure', 'reservoir_temp', 'relative_density', 'init_overcompress_coef',
+                    'max_depression', 'reserve_ratio', 'operations_ratio', 'porosity_coef', 'gas_saturation_coef', 
+                    'avg_well_temp', 'pipe_diameter', 'well_height', 'trail_length', 'trail_diameter', 'avg_trail_temp',
+                    'main_gas_pipeline_pressure', 'input_cs_temp', 'efficiency_cs', 'viscosity', 'machines_num', 
+                    'time_to_build', 'annual_production', 'effective_thickness', 'geo_gas_reserves', 'permeability', 
+                    'trail_roughness', 'density_athmospheric', 'lambda_trail', 'lambda_fontain', 'macro_roughness_l', 
+                    'filtr_resistance_A', 'filtr_resistance_B', 'critical_pressure', 'critical_temp']
         assert len(pr_df.columns) == len(res_cols) and set(pr_df.columns) == set(res_cols) and len(df_init_data) == len(pr_df)
 
 
-def test_calculate_reserves():
-    pass
+class TestReservesCalculations:
+
+    def test_calculate_sensitivity(self):
+        stat_params = {
+            'area': {
+                'distribution': 'norm', 'params': { 'loc': 38_556 * 1e3, 'scale': 3600 * 1e3}, 'adds': {}
+            },
+            'effective_thickness': {
+                'distribution': 'uniform', 'params': { 'loc': 11.1, 'scale': 0.67 }, 'adds': {}
+            },
+            'porosity_coef': {
+                'distribution': 'triang', 'params': { 'loc': 0.06, 'scale': 0.06 }, 'adds': { 'c': 0.8 }
+            },
+            'gas_saturation_coef': {
+                'distribution': 'truncnorm', 'params': { 'loc': 0.7, 'scale': 0.01 }, 'adds': { 'a': -1, 'b': 2 }
+            }
+        }
+        stat_data = gr.stats.generate_stats(stat_params, 200)
+        init_data = {
+            'area': 38_556 * 1e3,
+            'effective_thickness': 11.10,
+            'porosity_coef': 0.091,
+            'gas_saturation_coef': 0.7,
+            'init_reservoir_pressure': 32.30 * 1e6,
+            'relative_density': 0.6348,
+            'reservoir_temp': 320.49,
+        }
+        input_data = gr.process_input.make_input_data(pd.DataFrame(init_data, index=['value']))
+        reserves = gr.calculations.reserves_calculations.calculate_reserves(stat_data, input_data)
+        sensitivity = gr.calculations.reserves_calculations.calculate_sensitivity(stat_data, input_data, reserves)
+        assert (set(sensitivity.columns) == set(['kmin', 'kmax']) and 
+                set(sensitivity.index) == set(['area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef']))

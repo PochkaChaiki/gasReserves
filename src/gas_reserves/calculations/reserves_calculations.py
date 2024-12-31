@@ -47,26 +47,3 @@ def calculate_sensitivity(stat_data: pd.DataFrame, input_data: pd.DataFrame, res
 #| }
 #|------------------------------------------------
 
-def calculate_result(init_data: dict, stat_params: dict):
-    print(init_data)
-    input_data = make_input_data(pd.DataFrame(init_data, index=["value"]))
-    print(input_data)
-    stat_data = generate_stats(stat_params)
-    reserves = calculate_reserves(stat_data, input_data)
-
-    df_affection = calculate_sensitivity(stat_data, input_data, reserves)
-    df_affection.rename(index=varnames, inplace=True)
-    tornado_fig = plot_tornado(df_affection)
-
-    indicators_fig = plot_indicators(reserves)
-    
-    stat_data['reserves'] = reserves
-    result_df = pd.DataFrame(columns=['Mean', 'P90', 'P50', 'P10'], index=['reserves', 'area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef'])
-    for var in result_df.index:
-        result_df['Mean'][var] = stat_data[var].mean()
-        result_df['P90'][var] = st.scoreatpercentile(stat_data[var], 10)
-        result_df['P50'][var] = st.scoreatpercentile(stat_data[var], 50)
-        result_df['P10'][var] = st.scoreatpercentile(stat_data[var], 90)
-
-    result_df.rename(columns=varnames, inplace=True)
-    return input_data, result_df, tornado_fig, indicators_fig
