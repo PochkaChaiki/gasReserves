@@ -71,9 +71,10 @@ IndicatorsDiagram = html.Div(id="indicators-diagram")
 
 
 def get_production_indicators_inputs(values, indics_values):
-    keys_with_indics, keys_to_collapse = ['effective_thickness', 'geo_gas_reserves'], ['lambda_trail', 'lambda_fontain', 'macro_roughness_l', 'filtr_resistance_A', 'filtr_resistance_B', 'critical_temp', 'critical_pressure']
-    keys_to_omit = {'permeability'}
-    # print(indics_values, indics_values.get('P10', {'effective_thickness': None}))
+    keys_with_indics, keys_to_collapse = ['effective_thickness', 'geo_gas_reserves'], ['filtr_resistance_A', 'filtr_resistance_B', 'critical_temp', 'critical_pressure']
+    keys_to_omit = {'permeability', 'pipe_roughness', 'init_num_wells', 'coef_K', 'adiabatic_index', 'lambda_trail', 'lambda_fontain', 'macro_roughness_l'}
+
+    
     return dbc.Col([
         distribution_input("Проницаемость, мД", "permeability", "Проницаемость"),
 
@@ -81,7 +82,6 @@ def get_production_indicators_inputs(values, indics_values):
         dbc.Button("Дополнительные параметры", id="collapse-button", className="mb-3", color="primary", n_clicks=0),
         dbc.Collapse([
             dbc.Card(dbc.CardBody([
-                
                 dbc.Label(varnamesIndicators['effective_thickness'], id="effective_thickness-indics"),
                 html.Div([
                     dbc.Label('P10'),   
