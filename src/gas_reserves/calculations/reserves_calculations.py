@@ -18,8 +18,8 @@ def calculate_sensitivity(stat_data: pd.DataFrame, input_data: pd.DataFrame, res
     df_reserves_affection = pd.DataFrame(columns=['min', 'max'], index=df_sens.index)
     
     for var in df_sens.index:
-        df_reserves_affection['min'][var] = reserves.mean() - df_sens['min'][var] * df_sens.loc[df_sens.index != var]['mean'].prod() * const_multiplier
-        df_reserves_affection['max'][var] = df_sens['max'][var] * df_sens.loc[df_sens.index != var]['mean'].prod() * const_multiplier - reserves.mean()
+        df_reserves_affection.loc[var, 'min'] = reserves.mean() - df_sens['min'][var] * df_sens.loc[df_sens.index != var]['mean'].prod() * const_multiplier
+        df_reserves_affection.loc[var, 'max'] = df_sens['max'][var] * df_sens.loc[df_sens.index != var]['mean'].prod() * const_multiplier - reserves.mean()
     
     df_affection = pd.DataFrame(dict(
         kmin=df_reserves_affection['min']/df_reserves_affection['min'].sum(),

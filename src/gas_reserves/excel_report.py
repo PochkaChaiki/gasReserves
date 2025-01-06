@@ -124,7 +124,7 @@ def insert_to_sheet(data: dict, sheet: wsxl.Worksheet):
             sheet.add_image(img_excel, 'B74')
         elif img_name == "profile":
             sheet.add_image(img_excel, 'B124')
-        os.remove(temp_img_path)
+        # os.remove(temp_img_path)
 
 
 def create_report(data: dict, template_path: str, output_path: str):

@@ -1,6 +1,8 @@
 from dash import html, dcc
 import dash_bootstrap_components as dbc
+from dash import dash_table
 from gas_reserves.constants import *
+import dash_ag_grid as dag
 
 Layout = html.Div(
     [
@@ -16,49 +18,88 @@ Layout = html.Div(
         html.Div(id="tabs-content")
     ])
 
-distribution_options=[
-    {"label": "Нормальное", "value": "norm"}, 
-    {"label": "Равномерное", "value": "uniform"},
-    {"label": "Треугольное", "value": "triang"},
-    {"label": "Усечённое нормальное", "value": "truncnorm"},
-]
 
 def distribution_input(name, id, placeholder):
-    return html.Div([
-        dbc.Label(name, id=id, html_for=id+"-select"),
-        dbc.Select(distribution_options, id=id+"-select", placeholder=placeholder),
-        html.Div(id=id+"-input-div")
-    ])
+    initial_data = [
+        {'parameter': name, 'distribution': placeholder}
+    ]
 
-def make_inputgroup(name, id, value):
-    return html.Div([
-        dbc.Label(name, id=id, html_for=id+"-input"),
-        dbc.Input(type="number", id=id+"-input", value=value)
-    ])
+    # Определяем начальные колонки
+    initial_columns = [
+        {'headerName': 'Параметр', 'field': 'parameter'},
+        {'headerName': 'Распределение', 'field': 'distribution', 'editable': True, 'cellEditor': 'agSelectCellEditor',
+         'cellEditorParams': {
+             'values': ['Нормальное', 'Равномерное', 'Треугольное', 'Усечённое нормальное']
+         },
+        },
+        {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+        {'headerName': 'Ст. отклонение', 'field': 'std_dev', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+        {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+        {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+        {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+    ]
+    return dag.AgGrid(
+        id='parameter-table-'+id,
+        columnDefs=initial_columns,
+        rowData=initial_data,
+        defaultColDef={"editable": False, "sortable": False, "filter": False},
+        dashGridOptions={
+            "rowSelection": "single",
+            "stopEditingWhenCellsLoseFocus": True,
+            # "domLayout": "autoHeight"
+        },
+        columnSize='responsiveSizeToFit',
+        style={'height': '108px'}
+    )
+    
+
+def make_input_group(initial_data, id, value=None):
+    
+    initial_columns = [
+        {'headerName': 'Параметр', 'field': 'parameter'},
+        {'headerName': 'Значение', 'field': 'value', 'editable': True, 'cellDataType': 'number'},
+    ]
+    return dag.AgGrid(
+        id='parameter-table-'+id,
+        columnDefs=initial_columns,
+        rowData=initial_data,
+        defaultColDef={"editable": False, "sortable": False, "filter": False},
+        dashGridOptions={
+            "rowSelection": "single",
+            "stopEditingWhenCellsLoseFocus": True,
+            "domLayout": "autoHeight"
+        },
+        columnSize='responsiveSizeToFit'
+        # style={'height': '100px'}
+    )
 
 
 def get_reserves_input_group(values):
-    keys = ['init_reservoir_pressure', 'relative_density', 'reservoir_temp']
-
+    keys = ['init_reservoir_pressure', 'relative_density', 'reservoir_temp', 'num_of_vars']
+    
+    data = [{'parameter': varnames[key], 'value': None} for key in keys]
+    
     return dbc.Col([
-        distribution_input("Площадь, м2", "area", "Площадь"),
+        distribution_input(varnames['area'], "area", "Площадь"),
 
-        distribution_input("Эффективная газонасыщенная толщина, м", "effective_thickness", "Толщина"),
+        distribution_input(varnames['effective_thickness'], "effective_thickness", "Толщина"),
 
-        distribution_input("Коэффициент пористости, д.е", "porosity_coef", "Пористость"),
+        distribution_input(varnames['porosity_coef'], "porosity_coef", "Пористость"),
 
-        distribution_input("Коэффициент газонасыщенности, д.е.", "gas_saturation_coef", "Газонасыщенность"),
+        distribution_input(varnames['gas_saturation_coef'], "gas_saturation_coef", "Газонасыщенность"),
 
-        *tuple([make_inputgroup(varnames[key], key, values.get(key, {'value': 0})['value']) for key in keys]),
+        make_input_group(data, 'calcs'),
 
         dbc.Button("Расчитать", id="calculate_reserves_button", n_clicks=0)
     ])
 
 def get_reserves_main_outputs(values):
-    keys_to_omit = {'area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef', 'init_reservoir_pressure', 'relative_density', 'reservoir_temp', 'reserves'}
+    keys_to_omit = {'area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef', 'init_reservoir_pressure', 'relative_density', 'reservoir_temp', 'reserves', 'fin_reservoir_pressure'}
+
+    data = [{'parameter': varnames[key], 'value': None} for key in varnames.keys() if key not in keys_to_omit]
 
     return dbc.Col([
-        *tuple([make_inputgroup(varnames[key], key, values.get(key, {'value': 0})['value']) for key in varnames.keys() if key not in keys_to_omit]),
+        make_input_group(data, 'output-calcs')
     ])
 
 
@@ -74,11 +115,12 @@ def get_production_indicators_inputs(values, indics_values):
     keys_with_indics, keys_to_collapse = ['effective_thickness', 'geo_gas_reserves'], ['filtr_resistance_A', 'filtr_resistance_B', 'critical_temp', 'critical_pressure']
     keys_to_omit = {'permeability', 'pipe_roughness', 'init_num_wells', 'coef_K', 'adiabatic_index', 'lambda_trail', 'lambda_fontain', 'macro_roughness_l'}
 
-    
+    data = [{'parameter': varnamesIndicators[key], 'value': None} for key in list(varnamesIndicators.keys()) if key not in set(keys_to_collapse) and key not in set(keys_with_indics) and key not in keys_to_omit]
+    data_keys_to_collapse = [{'parameter': varnamesIndicators[key], 'value': None} for key in keys_to_collapse]
     return dbc.Col([
         distribution_input("Проницаемость, мД", "permeability", "Проницаемость"),
 
-        *tuple([make_inputgroup(varnamesIndicators[key], key+"-indics", values.get(key, {'value': 0})['value']) for key in list(varnamesIndicators.keys()) if key not in set(keys_to_collapse) and key not in set(keys_with_indics) and key not in keys_to_omit]),
+        make_input_group(data, 'indics'),
         dbc.Button("Дополнительные параметры", id="collapse-button", className="mb-3", color="primary", n_clicks=0),
         dbc.Collapse([
             dbc.Card(dbc.CardBody([
@@ -105,8 +147,7 @@ def get_production_indicators_inputs(values, indics_values):
                     dbc.Label('P90'),
                     dbc.Input(type='number', id='geo_gas_reserves-indics-input-p90', value=indics_values.get('P90', {'reserves': None})['reserves']),
                 ]),
-
-                *tuple([make_inputgroup(varnamesIndicators[key], key+"-indics", values.get(key, {'value':0})['value']) for key in keys_to_collapse])
+                make_input_group(data_keys_to_collapse, 'indics')
         ]))
         ], id='collapse', is_open=False)
     ])  

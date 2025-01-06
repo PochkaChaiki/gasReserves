@@ -18,6 +18,20 @@ distributions = {
     "truncnorm": st.truncnorm,
 }
 
+dist_dict={
+    "Нормальное": "norm", 
+    "Равномерное": "uniform",
+    "Треугольное": "triang",
+    "Усечённое нормальное": "truncnorm",
+}
+
+back_dist_dict = {
+    "norm": "Нормальное", 
+    "uniform": "Равномерное",
+    "triang": "Треугольное",
+    "truncnorm": "Усечённое нормальное",
+}
+
 varnames = {
     'area': 'Площадь, тыс. м2',
     'effective_thickness': 'Эффективная газонасыщенная толщина, м',
@@ -37,7 +51,30 @@ varnames = {
     'geo_gas_reserves': 'Геологические запасы газа, млн. м3',
     'reserves': 'Геологические запасы газа, млн. м3',
     'dry_gas_init_reserves': 'Начальные запасы "сухого" газа, млн м3',
+    'num_of_vars': 'Количество реализаций, шт.',
 }
+
+reversed_varnames = {
+    'Площадь, тыс. м2': 'area',
+    'Эффективная газонасыщенная толщина, м': 'effective_thickness',
+    'Коэффициент пористости, д.е': 'porosity_coef',
+    'Коэффициент газонасыщенности, д.е.': 'gas_saturation_coef',
+    'Начальное пластовое давление, МПа': 'init_reservoir_pressure',
+    'Относительная плотность газа, д.е.': 'relative_density',
+    'Пластовая температура, К': 'reservoir_temp',
+    'Объем площади, тыс. м3': 'area_volume',
+    'Поровый объем, тыс. м3': 'pore_volume',
+    'Поправка на температуру, К': 'temp_correction',
+    'Конечное пластовое давление, МПа': 'fin_reservoir_pressure',
+    'Критическое давление, МПа': 'critical_pressure',
+    'Критическая температура, К': 'critical_temp',
+    'Коэффициент сверхсжимаемости начальный, д.е.': 'init_overcompress_coef',
+    'Коэффициент сверхсжимаемости конечный, д.е.': 'fin_overcompress_coef',
+    'Геологические запасы газа, млн. м3': 'geo_gas_reserves',  #[ 'reserves'],
+    'Начальные запасы "сухого" газа, млн м3': 'dry_gas_init_reserves',
+    'Количество реализаций, шт.': 'num_of_vars'
+}
+
 
 varnamesIndicators = {
     'permeability':'Проницаемость, мД',

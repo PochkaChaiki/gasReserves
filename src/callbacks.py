@@ -6,245 +6,192 @@ import json
 from gas_reserves.calculations.reserves_calculations import *
 from gas_reserves.calculations.prod_indicators import *
 
-def show_norm(id):
-    return html.Div([
-        dbc.Label("Мат. ожидание: ", id=id+"-m", html_for=id+"-m-input"),
-        dbc.Input(type="number", id={
-            "type": id,
-            "index": id+"-m-input"
-        }),
 
-        dbc.Label("Ст. откл: ", id=id+"-s", html_for=id+"-s-input"),
-        dbc.Input(type="number", id={
-            "type": id,
-            "index": id+"-s-input"
-        })
-    ], style={"display":"flex", "flexDirection": "row"})
+def update_table_columns(cell, rowData):
+    # print(cell)
+    if cell and cell[0]['colId'] == 'distribution':
+        base_columns = [
+            {'headerName': 'Параметр', 'field': 'parameter', 'editable': True},
+            {'headerName': 'Распределение', 'field': 'distribution', 'editable': True, 'cellEditor': 'agSelectCellEditor',
+             'cellEditorParams': {
+                 'values': ['Нормальное', 'Равномерное', 'Треугольное', 'Усечённое нормальное']
+             },
+            #  'cellEditorPopup': True,
+            }
+        ]
 
-def show_uniform(id):
-    return html.Div([
-        dbc.Label("Мин. значение: ", id=id+"-a", html_for=id+"-a-input"),
-        dbc.Input(type="number", id={
-            "type": id,
-            "index": id+"-a-input"
-        }),
-        
-        dbc.Label("Макс. значение: ", id=id+"-b", html_for=id+"-b-input"),
-        dbc.Input(type="number", id={
-            "type": id,
-            "index": id+"-b-input"
-        })
-    ], style={"display":"flex", "flexDirection": "row"})
+        additional_columns = []
+        for row in rowData:
+            distribution = row.get('distribution', 'Нормальное')
+            if distribution == 'Нормальное':
+                additional_columns = [
+                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True, 'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+                    
+                ]
+            elif distribution == 'Треугольное':
+                additional_columns = [
+                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': False, 'cellDataType': 'number'},
+                ]
+            elif distribution == 'Равномерное':
+                additional_columns = [
+                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+                ]
+            elif distribution == 'Усечённое нормальное':
+                additional_columns = [
+                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True, 'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+                ]
 
-def show_triang(id):
-    return html.Div([
-        dbc.Label("Мин. значение: ", id=id+"-a", html_for=id+"-a-input"),
-        dbc.Input(type="number", id={
-            "type": id,
-            "index": id+"-a-input"
-        }),
-        
-        dbc.Label("Макс. значение: ", id=id+"-b", html_for=id+"-b-input"),
-        dbc.Input(type="number", id={
-            "type": id,
-            "index": id+"-b-input"
-        }),
-        
-        dbc.Label("Мода: ", id=id+"-m", html_for=id+"-m-input"),
-        dbc.Input(type="number", id={
-            "type": id,
-            "index": id+"-m-input"
-        })
-    ], style={"display":"flex", "flexDirection": "row"})
+        return base_columns + additional_columns
 
-def show_truncnorm(id):
-    return html.Div([
-        dbc.Label("Мат. ожидание: ", id=id+"-m", html_for=id+"-m-input"),
-        dbc.Input(type="number", id={
-            "type": id,
-            "index": id+"-m-input"
-        }),
-        
-        dbc.Label("Ст. откл: ", id=id+"-s", html_for=id+"-s-input"),
-        dbc.Input(type="number", id={
-            "type": id,
-            "index": id+"-s-input"
-        }),
+@callback(
+    Output('parameter-table-area', 'columnDefs'),
+    Input('parameter-table-area', 'cellValueChanged'),
+    State('parameter-table-area', 'rowData')
+)
+def update_table_area(cell, rowData):
+    return update_table_columns(cell, rowData)
 
-        dbc.Label("Мин. значение: ", id=id+"-a", html_for=id+"-a-input"),
-        dbc.Input(type="number", id={
-            "type": id,
-            "index": id+"-a-input"
-        }),
-        
-        dbc.Label("Макс. значение: ", id=id+"-b", html_for=id+"-b-input"),
-        dbc.Input(type="number", id={
-            "type": id,
-            "index": id+"-b-input"
-        }),
 
-    ], style={"display":"flex", "flexDirection": "row"})
+@callback(
+    Output('parameter-table-effective_thickness', 'columnDefs'),
+    Input('parameter-table-effective_thickness', 'cellValueChanged'),
+    State('parameter-table-effective_thickness', 'rowData')
+)
+def update_table_effective_thickness(cell, rowData):
+    return update_table_columns(cell, rowData)
 
-def show_dist_input(dist, id):
+@callback(
+    Output('parameter-table-porosity_coef', 'columnDefs'),
+    Input('parameter-table-porosity_coef', 'cellValueChanged'),
+    State('parameter-table-porosity_coef', 'rowData')
+)
+def update_table_porosity_coef(cell, rowData):
+    return update_table_columns(cell, rowData)
+
+@callback(
+    Output('parameter-table-gas_saturation_coef', 'columnDefs'),
+    Input('parameter-table-gas_saturation_coef', 'cellValueChanged'),
+    State('parameter-table-gas_saturation_coef', 'rowData')
+)
+def update_table_gas_saturation_coef(cell, rowData):
+    return update_table_columns(cell, rowData)
+
+@callback(
+    Output('parameter-table-permeability', 'columnDefs'),
+    Input('parameter-table-permeability', 'cellValueChanged'),
+    State('parameter-table-permeability', 'rowData')
+)
+def update_table_permeability(cell, rowData):
+    return update_table_columns(cell, rowData)
+
+
+def parse_params(dist: str, params: dict):
     if dist=="norm":
-        return show_norm(id)
-    elif dist=="uniform":
-        return show_uniform(id)
-    elif dist=="triang":
-        return show_triang(id)
-    elif dist=="truncnorm":
-        return show_truncnorm(id)
-
-@callback(
-    Output("area-input-div", "children"),
-    Input("area-select", "value"),
-    prevent_initial_call=True)
-def show_area_input(dist):
-    return show_dist_input(dist, "area")
-
-@callback(
-    Output("effective_thickness-input-div", "children"),
-    Input("effective_thickness-select", "value"),
-    prevent_initial_call=True)
-def show_effective_thickness_input(dist):
-    return show_dist_input(dist, "effective_thickness")
-
-@callback(
-    Output("porosity_coef-input-div", "children"),
-    Input("porosity_coef-select", "value"),
-    prevent_initial_call=True)
-def show_porosity_coef_input(dist):
-    return show_dist_input(dist, "porosity_coef")
-
-@callback(
-    Output("gas_saturation_coef-input-div", "children"),
-    Input("gas_saturation_coef-select", "value"),
-    prevent_initial_call=True)
-def show_gas_saturation_coef_input(dist):
-    return show_dist_input(dist, "gas_saturation_coef")
-
-@callback(
-    Output("permeability-input-div", "children"),
-    Input("permeability-select", "value"),
-    prevent_initial_call=True)
-def show_permeability_input(dist):
-    return show_dist_input(dist, "permeability")
-
-def parse_params(dist: str, list: list):
-    if dist=="norm":
-        return list[0], { 
+        return params.get('mean', 0), { 
             "distribution": dist,
             "params":{
-                "loc":list[0],
-                "scale":list[1]
+                "loc": params.get('mean', 0),
+                "scale": params.get('std_dev', 1),
             },
             "adds": {}
         }
     elif dist=="uniform":
-        return (list[0]+list[1])/2, { 
+        min_value = params.get('min_value', 0)
+        max_value = params.get('max_value', 1)
+        loc = min_value
+        scale = max_value - min_value
+        return (min_value + max_value)/2, { 
             "distribution": dist,
             "params":{
-                "loc":list[0],
-                "scale":list[1]
+                "loc": loc,
+                "scale": scale,
             },
             "adds": {}
         }
     elif dist=="triang":
-        return sum(list)/3, {
+        min_value = params.get('min_value', 0)
+        max_value = params.get('max_value', 1)
+        mode = params.get('mode', 0.5)
+        loc = min_value
+        scale = max_value - min_value
+        c = (mode - loc) / scale
+        return (min_value+max_value+mode)/3, {
             "distribution": dist,
             "params":{
-                "loc":list[0],
-                "scale":list[1],
+                "loc": loc,
+                "scale": scale,
             },
             "adds":{
-                "c": list[2]
+                "c": c,
             }
         }
     elif dist=="truncnorm":
-        return list[0], {
+        min_value = params.get('min_value', 0)
+        max_value = params.get('max_value', 1)
+        a = min_value
+        b = max_value - min_value
+        return params.get('mean', 0), {
             "distribution": dist,
             "params":{
-                "loc":list[0],
-                "scale":list[1],
+                "loc": params.get('mean', 0),
+                "scale": params.get('std_dev', 1),
             },
             "adds":{
-                "a":list[2],
-                "b":list[3]
+                "a": a,
+                "b": b,
             }
         }
+
 
 @callback(
     output=[
         Output("output_table", "children"),
         Output("tornado-diagram", "children"),
         Output("indicators-diagram", "children"),
-        dict(
-            area_volume=dict(value=Output("area_volume-input", "value")),
-            pore_volume=dict(value=Output("pore_volume-input", "value")),
-            temp_correction=dict(value=Output("temp_correction-input", "value")),
-            fin_reservoir_pressure=dict(value=Output("fin_reservoir_pressure-input", "value")),
-            critical_pressure=dict(value=Output("critical_pressure-input", "value")),
-            critical_temp=dict(value=Output("critical_temp-input", "value")),
-            init_overcompress_coef=dict(value=Output("init_overcompress_coef-input", "value")),
-            fin_overcompress_coef=dict(value=Output("fin_overcompress_coef-input", "value")),
-            geo_gas_reserves=dict(value=Output("geo_gas_reserves-input", "value")),
-            dry_gas_init_reserves=dict(value=Output("dry_gas_init_reserves-input", "value"))
-        ),
-        Output("session_storage", "data"),
+        Output('parameter-table-output-calcs', 'rowData'),
+        # Output("session_storage", "data"),
         Output("indics_storage", "data")
     ],
     
     inputs=[
         Input("calculate_reserves_button", "n_clicks"),
-
-        State("area-select", "value"),
-        State("effective_thickness-select", "value"),
-        State("porosity_coef-select", "value"),
-        State("gas_saturation_coef-select", "value"),
-
-        State({"type": "area", "index": ALL}, "value"),
-        State({"type": "effective_thickness", "index": ALL}, "value"),
-        State({"type": "porosity_coef", "index": ALL}, "value"),
-        State({"type": "gas_saturation_coef", "index": ALL}, "value"),
-
-        State("init_reservoir_pressure-input", "value"),
-        State("relative_density-input", "value"),
-        State("reservoir_temp-input", "value"),
-        
-        dict(
-            area_volume=State("area_volume-input", "value"), 
-            pore_volume=State("pore_volume-input", "value"),
-            temp_correction=State("temp_correction-input", "value"),
-            fin_reservoir_pressure=State("fin_reservoir_pressure-input", "value"),
-            critical_pressure=State("critical_pressure-input", "value"),
-            critical_temp=State("critical_temp-input", "value"),
-            init_overcompress_coef=State("init_overcompress_coef-input", "value"),
-            fin_overcompress_coef=State("fin_overcompress_coef-input", "value"),
-            geo_gas_reserves=State("geo_gas_reserves-input", "value"),
-            dry_gas_init_reserves=State("dry_gas_init_reserves-input", "value")
-        )
+        State('parameter-table-area', 'rowData'),
+        State('parameter-table-effective_thickness', 'rowData'),
+        State('parameter-table-porosity_coef', 'rowData'),
+        State('parameter-table-gas_saturation_coef', 'rowData'),
+        State('parameter-table-calcs', 'rowData'),
+        State('parameter-table-output-calcs', 'rowData')
     ],
-
     prevent_initial_call=True)
-def calculate_reserves(n_clicks,
-                       area_dist,
-                       et_dist,
-                       pc_dist,
-                       gsc_dist,
-                       area_params,
-                       et_params,
-                       pc_params,
-                       gsc_params,
-                       init_reservoir_pressure,
-                       relative_density,
-                       reservoir_temp,
-                       add_params):
-    if area_dist is None:
+def calculate_gas_reserves(n_clicks,
+                       p_area: list[dict],
+                       p_effective_thickness: list[dict],
+                       p_porosity_coef: list[dict],
+                       p_gas_saturation_coef: list[dict],
+                       params: list[dict],
+                       add_params: list[dict]):
+    if p_area is None or p_area[0]['distribution'] == 'Площадь':
         raise PreventUpdate
-    area_value, area = *parse_params(area_dist, area_params),
-    et_value, effective_thickness = *parse_params(et_dist, et_params),
-    pc_value, porosity_coef = *parse_params(pc_dist, pc_params),
-    gsc_value, gas_saturation_coef = *parse_params(gsc_dist, gsc_params),
+    area_value, area = *parse_params(dist_dict[p_area[0]['distribution']], p_area[0]),
+    et_value, effective_thickness = *parse_params(dist_dict[p_effective_thickness[0]['distribution']], p_effective_thickness[0]),
+    pc_value, porosity_coef = *parse_params(dist_dict[p_porosity_coef[0]['distribution']], p_porosity_coef[0]),
+    gsc_value, gas_saturation_coef = *parse_params(dist_dict[p_gas_saturation_coef[0]['distribution']], p_gas_saturation_coef[0]),
     
     stat_params={
         "area": area,
@@ -252,50 +199,71 @@ def calculate_reserves(n_clicks,
         "porosity_coef": porosity_coef,
         "gas_saturation_coef": gas_saturation_coef
     }
+    params_df = pd.DataFrame(params)
+    params_df = params_df.set_index(['parameter'])
 
     init_data={
         "area": area_value,
         "effective_thickness": et_value,
         "porosity_coef": pc_value,
         "gas_saturation_coef": gsc_value,
-        "init_reservoir_pressure": init_reservoir_pressure,
-        "relative_density": relative_density,
-        "reservoir_temp": reservoir_temp
+        "init_reservoir_pressure": params_df.loc[varnames['init_reservoir_pressure'], 'value'],
+        "relative_density": params_df.loc[varnames['relative_density'], 'value'],
+        "reservoir_temp": params_df.loc[varnames['reservoir_temp'], 'value'],
+        "num_of_vars": params_df.loc[varnames['num_of_vars'], 'value']
     }
 
-    for var in add_params.keys():
-        if add_params[var] != None:
-            init_data[var] = add_params[var]
+    for el in add_params:
+        var = el.get('parameter', None)
+        val = el.get('value', None)
+        if var is not None and val is not None:
+            init_data[reversed_varnames[var]] = val
 
-    def calculate_result(init_data: dict, stat_params: dict):
-        input_data = make_input_data(pd.DataFrame(init_data, index=["value"]))
-        stat_data = generate_stats(stat_params, 3000)
-        reserves = calculate_reserves(stat_data, input_data)
+    
+    input_data = make_input_data(pd.DataFrame(init_data, index=["value"], dtype=np.float64))
+    stat_data = generate_stats(stat_params, np.int64(init_data['num_of_vars']))
+    reserves = calculate_reserves(stat_data, input_data)
+    df_affection = calculate_sensitivity(stat_data, input_data, reserves)
+    df_affection.rename(index=varnames, inplace=True)
+    tornado_fig = plot_tornado(df_affection)
+    indicators_fig = plot_indicators(reserves)
+    stat_data['geo_gas_reserves'] = reserves
+    result_df = pd.DataFrame(
+        columns=['P90', 'P50', 'P10'], 
+        index=[
+            varnames['geo_gas_reserves'], 
+            varnames['area'], 
+            varnames['effective_thickness'], 
+            varnames['porosity_coef'], 
+            varnames['gas_saturation_coef']
+        ]
+    )
+    for var in result_df.index:
+        result_df.loc[var, 'P90'] = st.scoreatpercentile(stat_data[reversed_varnames[var]], 10)
+        result_df.loc[var, 'P50'] = st.scoreatpercentile(stat_data[reversed_varnames[var]], 50)
+        result_df.loc[var, 'P10'] = st.scoreatpercentile(stat_data[reversed_varnames[var]], 90)
 
-        df_affection = calculate_sensitivity(stat_data, input_data, reserves)
-        df_affection.rename(index=varnames, inplace=True)
-        tornado_fig = plot_tornado(df_affection)
+    result_df.rename(columns=varnames, inplace=True)
 
-        indicators_fig = plot_indicators(reserves)
+    output_data_columns = ['area_volume', 'pore_volume', 'temp_correction', 'critical_pressure',
+                           'critical_temp', 'init_overcompress_coef', 'fin_overcompress_coef',
+                           'geo_gas_reserves', 'dry_gas_init_reserves']
 
-        stat_data['reserves'] = reserves
-        result_df = pd.DataFrame(columns=['P90', 'P50', 'P10'], index=['reserves', 'area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef'])
-        for var in result_df.index:
-            result_df['P90'][var] = st.scoreatpercentile(stat_data[var], 10)
-            result_df['P50'][var] = st.scoreatpercentile(stat_data[var], 50)
-            result_df['P10'][var] = st.scoreatpercentile(stat_data[var], 90)
-
-        result_df.rename(columns=varnames, inplace=True)
-        return input_data, result_df, tornado_fig, indicators_fig
-
-    output_data, table_res, tornado_fig, indicators_fig = calculate_result(init_data, stat_params)
-    table_res_out = table_res
+    output_data_calcs = [{'parameter': varnames[var], 'value': input_data.loc['value', var]} for var in output_data_columns]
     return [dbc.Table.from_dataframe(
-                table_res.reset_index(), striped=True, bordered=True, hover=True), 
+                result_df.reset_index(), 
+                striped=True, 
+                bordered=True, 
+                hover=True), 
             dcc.Graph(figure=tornado_fig), 
             dcc.Graph(figure=indicators_fig), 
-            output_data[add_params.keys()].to_dict(), 
-            output_data.to_json(), table_res_out.to_json()]
+            output_data_calcs,
+    #         output_data[add_params.keys()].to_dict(), 
+    #         output_data.to_json(), 
+            result_df.to_json(),
+    ]
+
+
 
 @callback(
     Output("collapse", "is_open"),
