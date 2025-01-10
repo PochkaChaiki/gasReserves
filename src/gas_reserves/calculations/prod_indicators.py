@@ -95,7 +95,7 @@ def calculate_indicators(data):
 
 
 
-    while current_pressure > 0.05 * data['init_reservoir_pressure'] and wellhead_pressure > 0.1:
+    while current_pressure > data['abandon_pressure_rate'] * data['init_reservoir_pressure'] and wellhead_pressure > 0.1:
         def func(x):
             return [data['init_reservoir_pressure'] / data['init_overcompress_coef'] * (1 - x[2] / data['geo_gas_reserves']) * x[1] - x[0],
                     count_overcomp_coef(x[0], data, data['reservoir_temp']) - x[1],
@@ -119,7 +119,7 @@ def calculate_indicators(data):
         if np.isnan(ukpg_pressure):
             ukpg_pressure = 0
         power = 0
-        if ukpg_pressure < data['main_gas_pipeline_pressure']:
+        if ukpg_pressure < data['main_gas_pipeline_pressure'] and ukpg_pressure > 0:
             power = 0.004 * current_daily_production * n_wells * data['input_cs_temp'] *                      \
             count_overcomp_coef(ukpg_pressure, data, data['input_cs_temp']) /                                 \
             data['efficiency_cs'] * adiabatic_index / (adiabatic_index - 1) *                                 \

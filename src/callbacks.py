@@ -2,62 +2,13 @@ from dash import html, Input, Output, State, callback, ALL, dcc
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
 import json
+import dash_ag_grid as dag
+from layout import *
 
 from gas_reserves.calculations.reserves_calculations import *
 from gas_reserves.calculations.prod_indicators import *
 
 
-def update_table_columns(cell, rowData):
-    # print(cell)
-    if cell and cell[0]['colId'] == 'distribution':
-        base_columns = [
-            {'headerName': 'Параметр', 'field': 'parameter', 'editable': True},
-            {'headerName': 'Распределение', 'field': 'distribution', 'editable': True, 'cellEditor': 'agSelectCellEditor',
-             'cellEditorParams': {
-                 'values': ['Нормальное', 'Равномерное', 'Треугольное', 'Усечённое нормальное']
-             },
-            #  'cellEditorPopup': True,
-            }
-        ]
-
-        additional_columns = []
-        for row in rowData:
-            distribution = row.get('distribution', 'Нормальное')
-            if distribution == 'Нормальное':
-                additional_columns = [
-                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                    {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                    
-                ]
-            elif distribution == 'Треугольное':
-                additional_columns = [
-                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                ]
-            elif distribution == 'Равномерное':
-                additional_columns = [
-                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                ]
-            elif distribution == 'Усечённое нормальное':
-                additional_columns = [
-                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                ]
-
-        return base_columns + additional_columns
 
 @callback(
     Output('parameter-table-area', 'columnDefs'),
@@ -66,7 +17,6 @@ def update_table_columns(cell, rowData):
 )
 def update_table_area(cell, rowData):
     return update_table_columns(cell, rowData)
-
 
 @callback(
     Output('parameter-table-effective_thickness', 'columnDefs'),
@@ -165,7 +115,7 @@ def parse_params(dist: str, params: dict):
         Output("tornado-diagram", "children"),
         Output("indicators-diagram", "children"),
         Output('parameter-table-output-calcs', 'rowData'),
-        # Output("session_storage", "data"),
+        Output("calcs_storage", "data"),
         Output("indics_storage", "data")
     ],
     
@@ -193,6 +143,8 @@ def calculate_gas_reserves(n_clicks,
     pc_value, porosity_coef = *parse_params(dist_dict[p_porosity_coef[0]['distribution']], p_porosity_coef[0]),
     gsc_value, gas_saturation_coef = *parse_params(dist_dict[p_gas_saturation_coef[0]['distribution']], p_gas_saturation_coef[0]),
     
+
+
     stat_params={
         "area": area,
         "effective_thickness": effective_thickness,
@@ -243,24 +195,29 @@ def calculate_gas_reserves(n_clicks,
         result_df.loc[var, 'P50'] = st.scoreatpercentile(stat_data[reversed_varnames[var]], 50)
         result_df.loc[var, 'P10'] = st.scoreatpercentile(stat_data[reversed_varnames[var]], 90)
 
-    result_df.rename(columns=varnames, inplace=True)
+
+    res_table = [{'parameter': var, 'P90': result_df.loc[var, 'P90'], 'P50': result_df.loc[var, 'P50'], 'P10': result_df.loc[var, 'P10']} for var in result_df.index]
 
     output_data_columns = ['area_volume', 'pore_volume', 'temp_correction', 'critical_pressure',
                            'critical_temp', 'init_overcompress_coef', 'fin_overcompress_coef',
                            'geo_gas_reserves', 'dry_gas_init_reserves']
 
     output_data_calcs = [{'parameter': varnames[var], 'value': input_data.loc['value', var]} for var in output_data_columns]
-    return [dbc.Table.from_dataframe(
-                result_df.reset_index(), 
-                striped=True, 
-                bordered=True, 
-                hover=True), 
+
+    save_data = {
+        'p_area':p_area,
+        'p_effective_thickness':p_effective_thickness,
+        'p_porosity_coef':p_porosity_coef,
+        'p_gas_saturation_coef':p_gas_saturation_coef,
+        'params':params,
+        'add_params':output_data_calcs,
+    }
+    return [make_indics_table('Параметры', res_table, 'indics'), 
             dcc.Graph(figure=tornado_fig), 
             dcc.Graph(figure=indicators_fig), 
             output_data_calcs,
-    #         output_data[add_params.keys()].to_dict(), 
-    #         output_data.to_json(), 
-            result_df.to_json(),
+            json.dumps(save_data),
+            json.dumps(res_table),
     ]
 
 
@@ -283,96 +240,52 @@ def toggle_collapse(n, is_open):
             Output('pres-p90', 'figure')
         ],
         Output('prod-kig', 'figure'),
-        # dict(
-        #     init_pressure=dict(value=Output("init_pressure-indics-input", "value")),
-        #     reservoir_temp=dict(value=Output("reservoir_temp-indics-input", "value")),
-        #     relative_density=dict(value=Output("relative_density-indics-input", "value")),
-        #     init_overcompress_coef=dict(value=Output("init_overcompress_coef-indics-input", "value")),
-        #     porosity_coef=dict(value=Output("porosity_coef-indics-input", "value")),
-        #     critical_temp=dict(value=Output("critical_temp-indics-input", "value")),
-        #     critical_pressure=dict(value=Output("critical_pressure-indics-input", "value")),
-        # ),
+
     ],
     inputs=[
         Input('prod_calcs', 'n_clicks'),
-        State("permeability-select", "value"),
-
-        State({"type": "permeability", "index": ALL}, "value"),
-        dict(
-            init_reservoir_pressure=State("init_reservoir_pressure-indics-input", "value"), 
-            reservoir_temp=State("reservoir_temp-indics-input", "value"),
-            relative_density=State("relative_density-indics-input", "value"),
-            init_overcompress_coef=State("init_overcompress_coef-indics-input", "value"),
-            max_depression=State("max_depression-indics-input", "value"),
-            # required_whole_gas_production=State("required_whole_gas_production-indics-input", "value"),
-            reserve_ratio=State("reserve_ratio-indics-input", "value"),
-            operations_ratio=State("operations_ratio-indics-input", "value"),
-            porosity_coef=State("porosity_coef-indics-input", "value"),
-            gas_saturation_coef=State("gas_saturation_coef-indics-input", "value"),
-            avg_well_temp=State("avg_well_temp-indics-input", "value"),
-            pipe_diameter=State("pipe_diameter-indics-input", "value"),
-            well_height=State("well_height-indics-input", "value"),
-            # pipe_roughness=State("pipe_roughness-indics-input", "value"),
-            # init_num_wells=State("init_num_wells-indics-input", "value"),
-            trail_length=State("trail_length-indics-input", "value"),
-            trail_diameter=State("trail_diameter-indics-input", "value"),
-            trail_roughness=State("trail_roughness-indics-input", "value"),
-            avg_trail_temp=State("avg_trail_temp-indics-input", "value"),
-            main_gas_pipeline_pressure=State("main_gas_pipeline_pressure-indics-input", "value"),
-            input_cs_temp=State("input_cs_temp-indics-input", "value"),
-            # coef_K=State("coef_K-indics-input", "value"),
-            efficiency_cs=State("efficiency_cs-indics-input", "value"),
-            adiabatic_index=State("adiabatic_index-indics-input", "value"),
-            density_athmospheric=State("density_athmospheric-indics-input", "value"),
-            viscosity=State("viscosity-indics-input", "value"),
-            machines_num=State("machines_num-indics-input", "value"),
-            time_to_build=State("time_to_build-indics-input", "value"),
-            annual_production=State("annual_production-indics-input", "value"),
-            # lambda_trail=State("lambda_trail-indics-input", "value"),
-            # lambda_fontain=State("lambda_fontain-indics-input", "value"),
-            # macro_roughness_l=State("macro_roughness_l-indics-input", "value"),
-            filtr_resistance_A=State("filtr_resistance_A-indics-input", "value"),
-            filtr_resistance_B=State("filtr_resistance_B-indics-input", "value"),
-            critical_temp=State("critical_temp-indics-input", "value"),
-            critical_pressure=State("critical_pressure-indics-input", "value"),
-            effective_thickness_p10=State("effective_thickness-indics-input-p10", "value"),
-            effective_thickness_p50=State("effective_thickness-indics-input-p50", "value"),
-            effective_thickness_p90=State("effective_thickness-indics-input-p90", "value"),
-            geo_gas_reserves_p10=State("geo_gas_reserves-indics-input-p10", "value"),
-            geo_gas_reserves_p50=State("geo_gas_reserves-indics-input-p50", "value"),
-            geo_gas_reserves_p90=State("geo_gas_reserves-indics-input-p90", "value"),
-        )
-        
+        State('parameter-table-permeability', 'rowData'),
+        State('parameter-table-indics', 'rowData'),
+        State('parameter-table-indics-collapse', 'rowData'),
+        State('parameter-table-effective_thickness-indics', 'rowData'),
+        State('parameter-table-geo_gas_reserves-indics', 'rowData'),        
     ],
     prevent_initial_call=True
 )
-def calculate_production_indicators(n_clicks, perm_dist, perm_params, data):
-    _, permeability_params = *parse_params(perm_dist, perm_params),
+def calculate_production_indicators(n_clicks, p_permeability, p_indics, p_indics_collapse, p_et, p_ggr):
+    _, permeability_params = *parse_params(dist_dict[p_permeability[0]['distribution']], p_permeability[0]),
     stat_params = {"permeability": permeability_params}
-    stat_perm = generate_stats(stat_params)
+    stat_perm = generate_stats(stat_params, 3000)
     
     permeability_Pinds = st.scoreatpercentile(stat_perm['permeability'], [10, 50, 90])
 
-    init_data = data
-    effective_thickness_Pinds = [init_data['effective_thickness_p10'], init_data['effective_thickness_p50'], init_data['effective_thickness_p90']]
-    geo_gas_reserves_Pinds = [init_data['geo_gas_reserves_p10'], init_data['geo_gas_reserves_p50'], init_data['geo_gas_reserves_p90']]
-    for key in ['effective_thickness_p10', 'effective_thickness_p50', 'effective_thickness_p90', 'geo_gas_reserves_p10', 'geo_gas_reserves_p50', 'geo_gas_reserves_p90']:
-        del init_data[key]
+    init_data = {}
+    for el in p_indics:
+        if el['value'] is not None:
+            init_data[reversed_varnamesIndicators[el['parameter']]] = el['value']
 
+    for el in p_indics_collapse:
+        if el['value'] is not None:
+            init_data[reversed_varnamesIndicators[el['parameter']]] = el['value']
+
+
+    effective_thickness_Pinds = [p_et[0]['P90'], p_et[0]['P50'], p_et[0]['P10']]
+    geo_gas_reserves_Pinds = [p_ggr[0]['P90'], p_ggr[0]['P50'], p_ggr[0]['P10']]
     
 
     prod_kig_fig = None
     pressures_graphs = []
     for eft, ggr, perm, name in zip(effective_thickness_Pinds, geo_gas_reserves_Pinds, permeability_Pinds, ['P10', 'P50', 'P90']):
-        init_data['permeability_k'] = perm
+        init_data['permeability'] = perm
         init_data['effective_thickness'] = eft
         init_data['geo_gas_reserves'] = ggr
 
         input_data = make_init_data_for_prod_indics(pd.DataFrame(init_data, index=["value"]))
-        
+        print(input_data)
         result = calculate_indicators(input_data.to_dict('records')[0])
         pressures_df = result[['current_pressure', 'wellhead_pressure', 'ukpg_pressure']]
-        pressures_df['downhole_pressure'] = result['current_pressure'] - input_data['max_depression']
+        pressures_df['downhole_pressure'] = result['current_pressure'] - input_data.loc['value', 'max_depression']
+        print(pressures_df)
         pressures_graphs.append(plot_pressure_on_production_stages(pressures_df, name))
         prod_kig_fig = plot_prod_kig(prod_kig_fig, result[['annual_production', 'kig']], name)
     

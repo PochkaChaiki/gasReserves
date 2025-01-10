@@ -5,6 +5,9 @@ import pandas as pd
 import numpy as np
 import scipy.stats as st
 
+import plotly.figure_factory as ff
+
+
 
 def plot_vars_distribution(stat_data: pd.DataFrame) -> go.Figure:
     fig = make_subplots(rows=1, cols=len(stat_data.columns))
@@ -74,9 +77,12 @@ def plot_tornado(df_affection: pd.DataFrame) -> go.Figure:
 
 
 def plot_indicators(vars: pd.DataFrame) -> go.Figure:
-    fig = px.ecdf(vars)
-    indicators = st.scoreatpercentile(vars, [10, 50, 90])
-    fig.add_trace(go.Scatter(x=indicators, y=[0.1, 0.5, 0.9], mode='markers', marker_size=20))
+
+    fig = ff.create_distplot([vars], ['Геологические запасы газа, млн. м3'], show_hist=False, show_rug=False)
+
+    # fig = px.ecdf(vars)
+    # indicators = st.scoreatpercentile(vars, [10, 50, 90])
+    # fig.add_trace(go.Scatter(x=indicators, y=[0.1, 0.5, 0.9], mode='markers', marker_size=20))
     return fig
 
 

@@ -11,7 +11,7 @@ app.layout = Layout
 
 @callback(Output('tabs-content', 'children'),
           Input('tabs-calcs', 'value'),
-          State('session_storage', 'data'),
+          State('calcs_storage', 'data'),
           State('indics_storage', 'data'))
 def render_content(tab, data, indics_data):
     if tab == 'tab-reserves-calcs':

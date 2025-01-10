@@ -33,15 +33,15 @@ back_dist_dict = {
 }
 
 varnames = {
-    'area': 'Площадь, тыс. м2',
+    'area': 'Площадь, млн. м2',
     'effective_thickness': 'Эффективная газонасыщенная толщина, м',
     'porosity_coef': 'Коэффициент пористости, д.е',
     'gas_saturation_coef': 'Коэффициент газонасыщенности, д.е.',
     'init_reservoir_pressure': 'Начальное пластовое давление, МПа',
     'relative_density': 'Относительная плотность газа, д.е.',
     'reservoir_temp': 'Пластовая температура, К',
-    'area_volume': 'Объем площади, тыс. м3',
-    'pore_volume': 'Поровый объем, тыс. м3',
+    'area_volume': 'Объем площади, млн. м3',
+    'pore_volume': 'Поровый объем, млн. м3',
     'temp_correction': 'Поправка на температуру, К',
     'fin_reservoir_pressure': 'Конечное пластовое давление, МПа',
     'critical_pressure': 'Критическое давление, МПа',
@@ -55,15 +55,15 @@ varnames = {
 }
 
 reversed_varnames = {
-    'Площадь, тыс. м2': 'area',
+    'Площадь, млн. м2': 'area',
     'Эффективная газонасыщенная толщина, м': 'effective_thickness',
     'Коэффициент пористости, д.е': 'porosity_coef',
     'Коэффициент газонасыщенности, д.е.': 'gas_saturation_coef',
     'Начальное пластовое давление, МПа': 'init_reservoir_pressure',
     'Относительная плотность газа, д.е.': 'relative_density',
     'Пластовая температура, К': 'reservoir_temp',
-    'Объем площади, тыс. м3': 'area_volume',
-    'Поровый объем, тыс. м3': 'pore_volume',
+    'Объем площади, млн. м3': 'area_volume',
+    'Поровый объем, млн. м3': 'pore_volume',
     'Поправка на температуру, К': 'temp_correction',
     'Конечное пластовое давление, МПа': 'fin_reservoir_pressure',
     'Критическое давление, МПа': 'critical_pressure',
@@ -121,3 +121,55 @@ varnamesIndicators = {
     'critical_temp': 'Критическая температура, К',
     'critical_pressure': 'Критическое давление, МПа',
 }
+
+reversed_varnamesIndicators = {
+    'Проницаемость, мД': 'permeability',
+    'Начальное пластовое давление, МПа': 'init_reservoir_pressure',
+    'Пластовая температура, К': 'reservoir_temp',
+    'Относительная плотность газа, д.е.': 'relative_density',
+    'Коэффициент сверхсжимаемости начальный, д.е.': 'init_overcompress_coef',
+    'Максимальная депрессия, МПа': 'max_depression',
+    'Коэффициент резерва, д.е.': 'reserve_ratio',
+    'Коэффициент эксплуатации, д.е.': 'operations_ratio',
+    'Коэффициент пористости, д.е.': 'porosity_coef',
+    'Коэффициент газонасыщенности, д.е.': 'gas_saturation_coef',
+    'Средняя температура скважины, К': 'avg_well_temp',
+    'Диаметр трубы, м': 'pipe_diameter',
+    'Высота скважины, м': 'well_height',
+    'Шероховатость': 'pipe_roughness',
+    'Начальное количество скважин, шт.': 'init_num_wells',
+    'Длина шлейфа, м': 'trail_length',
+    'Диаметр трубы шлейфа, м': 'trail_diameter',
+    'Шероховатость трубы шлейфа': 'trail_roughness',
+    'Средняя температура шлейфа, К': 'avg_trail_temp',
+    'Давление в магистральной трубе, МПа': 'main_gas_pipeline_pressure',
+    'Входная температура на компрессорную станцию, К': 'input_cs_temp',
+    'Коэффициент К': 'coef_K',
+    'КПД, д.е.': 'efficiency_cs',
+    'Показатель адиабаты': 'adiabatic_index',
+    'Плотность атмосферного воздуха, д.е.': 'density_athmospheric',
+    'Вязкость': 'viscosity',
+    'Количество буровых установок, шт.': 'machines_num',
+    'Время на разработку одной скважины, мес': 'time_to_build',
+    'Годовые отборы, млн. м3': 'annual_production',
+    'Эффективная газонасыщенная толщина, м': 'effective_thickness',
+    'Геологические запасы газа, млн. м3': 'geo_gas_reserves',
+    'Лямбда шлейфа': 'lambda_trail',
+    'Лямбда скважины': 'lambda_fontain',
+    'Темп годовых отбор на период постоянной добычи, %': 'prod_rate',
+    'Давление забрасывания, %': 'abandon_pressure_rate',
+    'Коэффициент макрошероховатости, д.е.': 'macro_roughness_l',
+    'Коэффициент фильтрационного сопротивления A, МПа2/(тыс.м3/сут)': 'filtr_resistance_A',
+    'Коэффициент фильтрационного сопротивления B, МПа2/(тыс.м3/сут)2': 'filtr_resistance_B',
+    'Критическая температура, К': 'critical_temp',
+    'Критическое давление, МПа': 'critical_pressure'
+}
+
+
+locale = """d3.formatLocale({
+  "decimal": ".",
+  "thousands": "\u00a0",
+  "grouping": [3],
+  "percent": "\u202f%",
+  "nan": ""
+})"""

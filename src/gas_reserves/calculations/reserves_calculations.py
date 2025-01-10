@@ -9,7 +9,7 @@ from gas_reserves.plot import *
 #| ---------------------------------------------------
 
 def calculate_reserves(stat_data: pd.DataFrame, input_data: pd.DataFrame) -> pd.DataFrame:
-    return stat_data[['area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef']].prod(axis=1) * input_data['init_reservoir_pressure']['value'] * input_data['temp_correction']['value'] / input_data['init_overcompress_coef']['value'] / pres_std_cond
+    return stat_data[['area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef']].prod(axis=1) * 1e3 * input_data['init_reservoir_pressure']['value'] * input_data['temp_correction']['value'] / input_data['init_overcompress_coef']['value'] / pres_std_cond
     
 
 def calculate_sensitivity(stat_data: pd.DataFrame, input_data: pd.DataFrame, reserves: pd.DataFrame) -> pd.DataFrame:
@@ -18,8 +18,8 @@ def calculate_sensitivity(stat_data: pd.DataFrame, input_data: pd.DataFrame, res
     df_reserves_affection = pd.DataFrame(columns=['min', 'max'], index=df_sens.index)
     
     for var in df_sens.index:
-        df_reserves_affection.loc[var, 'min'] = reserves.mean() - df_sens['min'][var] * df_sens.loc[df_sens.index != var]['mean'].prod() * const_multiplier
-        df_reserves_affection.loc[var, 'max'] = df_sens['max'][var] * df_sens.loc[df_sens.index != var]['mean'].prod() * const_multiplier - reserves.mean()
+        df_reserves_affection.loc[var, 'min'] = reserves.mean() - df_sens['min'][var] * df_sens.loc[df_sens.index != var]['mean'].prod() * const_multiplier * 1e3
+        df_reserves_affection.loc[var, 'max'] = df_sens['max'][var] * df_sens.loc[df_sens.index != var]['mean'].prod() * const_multiplier * 1e3 - reserves.mean()
     
     df_affection = pd.DataFrame(dict(
         kmin=df_reserves_affection['min']/df_reserves_affection['min'].sum(),
