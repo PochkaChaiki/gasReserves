@@ -238,11 +238,11 @@ def toggle_collapse(n, is_open):
 
 @callback(
     output=[
-        # [
-        #     Output('pres-p10', 'figure'),
-        #     Output('pres-p50', 'figure'),
-        #     Output('pres-p90', 'figure')
-        # ],
+        [
+            Output('prod_calcs_table_P10', 'rowData'),
+            Output('prod_calcs_table_P50', 'rowData'),
+            Output('prod_calcs_table_P90', 'rowData'),
+        ],
         Output('pressures-graph', 'figure'),
         Output('prod-kig', 'figure'),
 
@@ -280,19 +280,18 @@ def calculate_production_indicators(n_clicks, p_permeability, p_indics, p_indics
 
     prod_kig_fig = None
     pressures_graphs = []
+    results_list = []
     for eft, ggr, perm, name in zip(effective_thickness_Pinds, geo_gas_reserves_Pinds, permeability_Pinds, ['P10', 'P50', 'P90']):
         init_data['permeability'] = perm
         init_data['effective_thickness'] = eft
         init_data['geo_gas_reserves'] = ggr
 
         input_data = make_init_data_for_prod_indics(pd.DataFrame(init_data, index=["value"]))
-        # print(input_data)
         result = calculate_indicators(input_data.to_dict('records')[0])
+        results_list.append(result.to_dict('records'))
         pressures_df = result[['current_pressure', 'wellhead_pressure', 'ukpg_pressure']]
         pressures_df['downhole_pressure'] = result['current_pressure'] - input_data.loc['value', 'max_depression']
-        # print(pressures_df)
         pressures_graphs.append(plot_pressure_on_production_stages(pressures_df, name))
         prod_kig_fig = plot_summary_chart(prod_kig_fig, result[['annual_production', 'kig', 'n_wells']], name)
     
-    # plot_united_pressures(pressures_graphs)
-    return plot_united_pressures(pressures_graphs), prod_kig_fig
+    return results_list, plot_united_pressures(pressures_graphs), prod_kig_fig

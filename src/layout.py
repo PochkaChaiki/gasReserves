@@ -264,7 +264,59 @@ def get_production_indicators_inputs(values, indics_values):
                 make_indics_table('geo', geo_gas_reserves_data, 'geo_gas_reserves-indics'),
                 make_input_group(data_keys_to_collapse, 'indics-collapse')
             ]))
-        ], id='collapse', is_open=False)
+        ], id='collapse', is_open=False),
+        dbc.Button('Произвести расчёт', id='prod_calcs', n_clicks=0)
     ])  
+
+def make_prod_calcs_table(data=None):
+    if data is None:
+        data = [{
+            'kig': '',
+            'annual_production': '',
+            'current_pressure': '',
+            'wellhead_pressure': '',
+            'n_wells': '',
+            'ukpg_pressure': '',
+            'cs_power': '',
+        }]
+    columns = [
+        {'headerName': displayVarnamesIndicators['kig'], 'field': 'kig', 'cellDataType': 'number', 
+                       'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+        {'headerName': displayVarnamesIndicators['annual_production'], 'field': 'annual_production', 'cellDataType': 'number', 
+                       'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+        {'headerName': displayVarnamesIndicators['current_pressure'], 'field': 'current_pressure', 'cellDataType': 'number', 
+                       'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+        {'headerName': displayVarnamesIndicators['wellhead_pressure'], 'field': 'wellhead_pressure', 'cellDataType': 'number', 
+                       'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+        {'headerName': displayVarnamesIndicators['n_wells'], 'field': 'n_wells', 'cellDataType': 'number', 
+                       'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+        {'headerName': displayVarnamesIndicators['ukpg_pressure'], 'field': 'ukpg_pressure', 'cellDataType': 'number', 
+                       'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+        {'headerName': displayVarnamesIndicators['cs_power'], 'field': 'cs_power', 'cellDataType': 'number', 
+                       'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+    ]
+    return dbc.Accordion(
+        [
+            dbc.AccordionItem(
+                dag.AgGrid(
+                    id=f'prod_calcs_table_{id}',
+                    columnDefs=columns,
+                    rowData=data,
+                    defaultColDef={"editable": False, "sortable": False, "filter": False},
+                    dashGridOptions={
+                        "rowSelection": "single",
+                        "stopEditingWhenCellsLoseFocus": True,
+                        "domLayout": "autoHeight"
+                    },
+                    columnSize='responsiveSizeToFit'
+                ), 
+                title=f'{id} таблица'
+            ) for id in ('P10', 'P50', 'P90')
+        ],
+        start_collapsed=True,
+        always_open=True
+    )
+
+        
 
 

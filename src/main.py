@@ -50,11 +50,8 @@ def render_production_indicators(data, indics_data):
         indics_values = json.loads(indics_data)
     return html.Div([
         dbc.Row([
-            get_production_indicators_inputs(values, indics_values),
-            dbc.Col([
-                
-                dbc.Button(id='prod_calcs', n_clicks=0)
-            ])
+            dbc.Col(get_production_indicators_inputs(values, indics_values)),
+            dbc.Col(make_prod_calcs_table())
         ]),
         dbc.Row([
             PressureOnStages,
