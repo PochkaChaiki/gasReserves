@@ -37,7 +37,8 @@ def render_reserves_calcs(data):
             
         ]),
         dbc.Row([
-            IndicatorsDiagram
+            ECDFDiagram,
+            PDFDiagram
         ])])
 
 def render_production_indicators(data, indics_data):
@@ -47,16 +48,19 @@ def render_production_indicators(data, indics_data):
         values = json.loads(data)
     if indics_data is not None:
         indics_values = json.loads(indics_data)
-    return html.Div(
+    return html.Div([
         dbc.Row([
             get_production_indicators_inputs(values, indics_values),
             dbc.Col([
-                PressureOnStages,
-                ProdKig,
+                
                 dbc.Button(id='prod_calcs', n_clicks=0)
             ])
+        ]),
+        dbc.Row([
+            PressureOnStages,
+            ProdKig,
         ])
-    )
+    ])
 
 
 

@@ -6,6 +6,7 @@ import pandas as pd
 
 Layout = html.Div(
     [
+        # dcc.Store(id='main_storage', storage_type='session'),
         dcc.Store(id="calcs_storage", storage_type="session"),
         dcc.Store(id="indics_storage", storage_type="local"),
         dcc.Store(id="indics_result_storage", storage_type="session"),
@@ -22,13 +23,10 @@ ReservesOutputTable = html.Div(id="output_table")
 
 TornadoDiagram = html.Div(id="tornado-diagram" )
 
-IndicatorsDiagram = html.Div(id="indicators-diagram")
+ECDFDiagram = html.Div(id="ecdf-diagram")
+PDFDiagram = html.Div(id="pdf-diagram")
 
-PressureOnStages = html.Div([
-    dcc.Graph(id='pres-p10'),
-    dcc.Graph(id='pres-p50'),
-    dcc.Graph(id='pres-p90'),
-], id='pressures-graph')
+PressureOnStages = html.Div(dcc.Graph(id='pressures-graph'))
 
 ProdKig = dcc.Graph(id='prod-kig')
 

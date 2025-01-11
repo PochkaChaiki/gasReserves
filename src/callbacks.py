@@ -2,9 +2,9 @@ from dash import html, Input, Output, State, callback, ALL, dcc
 import dash_bootstrap_components as dbc
 from dash.exceptions import PreventUpdate
 import json
-import dash_ag_grid as dag
-from layout import *
 
+from layout import *
+from gas_reserves.plot import *
 from gas_reserves.calculations.reserves_calculations import *
 from gas_reserves.calculations.prod_indicators import *
 
@@ -113,7 +113,8 @@ def parse_params(dist: str, params: dict):
     output=[
         Output("output_table", "children"),
         Output("tornado-diagram", "children"),
-        Output("indicators-diagram", "children"),
+        Output("ecdf-diagram", "children"),
+        Output('pdf-diagram', 'children'),
         Output('parameter-table-output-calcs', 'rowData'),
         Output("calcs_storage", "data"),
         Output("indics_storage", "data")
@@ -178,7 +179,9 @@ def calculate_gas_reserves(n_clicks,
     df_affection = calculate_sensitivity(stat_data, input_data, reserves)
     df_affection.rename(index=varnames, inplace=True)
     tornado_fig = plot_tornado(df_affection)
-    indicators_fig = plot_indicators(reserves)
+    ecdf_fig = plot_ecdf_indicators(reserves, varnames['reserves'])
+    pdf_fig = plot_pdf_indicators(reserves, varnames['reserves'])
+
     stat_data['geo_gas_reserves'] = reserves
     result_df = pd.DataFrame(
         columns=['P90', 'P50', 'P10'], 
@@ -214,7 +217,8 @@ def calculate_gas_reserves(n_clicks,
     }
     return [make_indics_table('Параметры', res_table, 'indics'), 
             dcc.Graph(figure=tornado_fig), 
-            dcc.Graph(figure=indicators_fig), 
+            dcc.Graph(figure=ecdf_fig), 
+            dcc.Graph(figure=pdf_fig), 
             output_data_calcs,
             json.dumps(save_data),
             json.dumps(res_table),
@@ -234,11 +238,12 @@ def toggle_collapse(n, is_open):
 
 @callback(
     output=[
-        [
-            Output('pres-p10', 'figure'),
-            Output('pres-p50', 'figure'),
-            Output('pres-p90', 'figure')
-        ],
+        # [
+        #     Output('pres-p10', 'figure'),
+        #     Output('pres-p50', 'figure'),
+        #     Output('pres-p90', 'figure')
+        # ],
+        Output('pressures-graph', 'figure'),
         Output('prod-kig', 'figure'),
 
     ],
@@ -281,12 +286,13 @@ def calculate_production_indicators(n_clicks, p_permeability, p_indics, p_indics
         init_data['geo_gas_reserves'] = ggr
 
         input_data = make_init_data_for_prod_indics(pd.DataFrame(init_data, index=["value"]))
-        print(input_data)
+        # print(input_data)
         result = calculate_indicators(input_data.to_dict('records')[0])
         pressures_df = result[['current_pressure', 'wellhead_pressure', 'ukpg_pressure']]
         pressures_df['downhole_pressure'] = result['current_pressure'] - input_data.loc['value', 'max_depression']
-        print(pressures_df)
+        # print(pressures_df)
         pressures_graphs.append(plot_pressure_on_production_stages(pressures_df, name))
-        prod_kig_fig = plot_prod_kig(prod_kig_fig, result[['annual_production', 'kig']], name)
+        prod_kig_fig = plot_summary_chart(prod_kig_fig, result[['annual_production', 'kig', 'n_wells']], name)
     
-    return pressures_graphs, prod_kig_fig
+    # plot_united_pressures(pressures_graphs)
+    return plot_united_pressures(pressures_graphs), prod_kig_fig

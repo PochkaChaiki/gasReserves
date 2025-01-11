@@ -75,6 +75,16 @@ reversed_varnames = {
     'Количество реализаций, шт.': 'num_of_vars'
 }
 
+displayVarnamesIndicators = {
+    'annual_production': 'Годовые отборы, млн. м3',
+    'kig': 'Коэффициент извлечения газа, д.е.',
+    'current_pressure': 'Пластовое давление, МПа',
+    'wellhead_pressure': 'Устьевое давление, МПа',
+    'downhole_pressure': 'Забойное давление, МПа',
+    'ukpg_pressure': 'Давление на УКПГ, МПа',
+    'cs_power': 'Мощность насосов, КВт',
+    'n_wells': 'Количество скважин, шт.',
+}
 
 varnamesIndicators = {
     'permeability':'Проницаемость, мД',
@@ -110,8 +120,8 @@ varnamesIndicators = {
     "geo_gas_reserves":'Геологические запасы газа, млн. м3',
     'lambda_trail': 'Лямбда шлейфа',
     'lambda_fontain': 'Лямбда скважины',
-    'prod_rate': 'Темп годовых отбор на период постоянной добычи, %',
-    'abandon_pressure_rate': 'Давление забрасывания, %',
+    'prod_rate': 'Темп годовых отбор на период постоянной добычи, д.е.',
+    'abandon_pressure_rate': 'Давление забрасывания, д.е.',
 
     'macro_roughness_l':'Коэффициент макрошероховатости, д.е.',
     'filtr_resistance_A': 'Коэффициент фильтрационного сопротивления A, МПа2/(тыс.м3/сут)',
