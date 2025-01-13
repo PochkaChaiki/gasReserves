@@ -1,14 +1,12 @@
-from dash import html, Input, Output, State, callback, ALL, dcc
-import dash_bootstrap_components as dbc
+from dash import Input, Output, State, callback, ALL, dcc
 from dash.exceptions import PreventUpdate
-import json
 
 from layout import *
 from gas_reserves.plot import *
 from gas_reserves.calculations.reserves_calculations import *
 from gas_reserves.calculations.prod_indicators import *
 
-
+from utils import *
 
 @callback(
     Output('parameter-table-area', 'columnDefs'),
@@ -51,73 +49,15 @@ def update_table_permeability(cell, rowData):
     return update_table_columns(cell, rowData)
 
 
-def parse_params(dist: str, params: dict):
-    if dist=="norm":
-        return params.get('mean', 0), { 
-            "distribution": dist,
-            "params":{
-                "loc": params.get('mean', 0),
-                "scale": params.get('std_dev', 1),
-            },
-            "adds": {}
-        }
-    elif dist=="uniform":
-        min_value = params.get('min_value', 0)
-        max_value = params.get('max_value', 1)
-        loc = min_value
-        scale = max_value - min_value
-        return (min_value + max_value)/2, { 
-            "distribution": dist,
-            "params":{
-                "loc": loc,
-                "scale": scale,
-            },
-            "adds": {}
-        }
-    elif dist=="triang":
-        min_value = params.get('min_value', 0)
-        max_value = params.get('max_value', 1)
-        mode = params.get('mode', 0.5)
-        loc = min_value
-        scale = max_value - min_value
-        c = (mode - loc) / scale
-        return (min_value+max_value+mode)/3, {
-            "distribution": dist,
-            "params":{
-                "loc": loc,
-                "scale": scale,
-            },
-            "adds":{
-                "c": c,
-            }
-        }
-    elif dist=="truncnorm":
-        min_value = params.get('min_value', 0)
-        max_value = params.get('max_value', 1)
-        a = min_value
-        b = max_value - min_value
-        return params.get('mean', 0), {
-            "distribution": dist,
-            "params":{
-                "loc": params.get('mean', 0),
-                "scale": params.get('std_dev', 1),
-            },
-            "adds":{
-                "a": a,
-                "b": b,
-            }
-        }
-
 
 @callback(
     output=[
-        Output("output_table", "children"),
-        Output("tornado-diagram", "children"),
-        Output("ecdf-diagram", "children"),
+        Output('output-table', "children"),
+        Output('tornado-diagram', "children"),
+        Output('ecdf-diagram', "children"),
         Output('pdf-diagram', 'children'),
-        Output('parameter-table-output-calcs', 'rowData'),
-        Output("calcs_storage", "data"),
-        Output("indics_storage", "data")
+        Output('parameter-table-output_calcs', 'rowData'),
+        Output('persistence_storage', 'data', allow_duplicate=True),
     ],
     
     inputs=[
@@ -127,16 +67,19 @@ def parse_params(dist: str, params: dict):
         State('parameter-table-porosity_coef', 'rowData'),
         State('parameter-table-gas_saturation_coef', 'rowData'),
         State('parameter-table-calcs', 'rowData'),
-        State('parameter-table-output-calcs', 'rowData')
+        State('parameter-table-output_calcs', 'rowData'),
+        State('persistence_storage', 'data'),
     ],
-    prevent_initial_call=True)
-def calculate_gas_reserves(n_clicks,
-                       p_area: list[dict],
-                       p_effective_thickness: list[dict],
-                       p_porosity_coef: list[dict],
-                       p_gas_saturation_coef: list[dict],
-                       params: list[dict],
-                       add_params: list[dict]):
+    prevent_initial_call=True,
+    )
+def calculate_gas_reserves(n_clicks: int,
+                           p_area: list[dict],
+                           p_effective_thickness: list[dict],
+                           p_porosity_coef: list[dict],
+                           p_gas_saturation_coef: list[dict],
+                           params: list[dict],
+                           add_params: list[dict],
+                           storage_data: dict):
     if p_area is None or p_area[0]['distribution'] == 'Площадь':
         raise PreventUpdate
     area_value, area = *parse_params(dist_dict[p_area[0]['distribution']], p_area[0]),
@@ -207,34 +150,97 @@ def calculate_gas_reserves(n_clicks,
 
     output_data_calcs = [{'parameter': varnames[var], 'value': input_data.loc['value', var]} for var in output_data_columns]
 
-    save_data = {
-        'p_area':p_area,
-        'p_effective_thickness':p_effective_thickness,
-        'p_porosity_coef':p_porosity_coef,
-        'p_gas_saturation_coef':p_gas_saturation_coef,
-        'params':params,
-        'add_params':output_data_calcs,
-    }
+
+
+    save_data = save_tab_reserves_calcs(storage_data=storage_data,
+                                        field_name='Месторождение1',
+                                        p_area=p_area,
+                                        p_effective_thickness=p_effective_thickness,
+                                        p_porosity_coef=p_porosity_coef,
+                                        p_gas_saturation_coef=p_gas_saturation_coef,
+                                        parameter_table_calcs=params,
+                                        parameter_table_output_calcs=output_data_calcs,
+                                        indics_calcs=res_table,
+                                        tornado_diagram=tornado_fig,
+                                        ecdf_plot=ecdf_fig,
+                                        pdf_plot=pdf_fig)
+    
+    save_data = save_to_storage(storage_data=save_data, 
+                                field_name='Месторождение1', 
+                                tab='tab-production-indicators', 
+                                prop='parameter_table_effective_thickness_indics',
+                                data=[{
+                                    'parameter': varnames['effective_thickness'],
+                                    'P90': result_df.loc[varnames['effective_thickness'], 'P90'],
+                                    'P50': result_df.loc[varnames['effective_thickness'], 'P50'],
+                                    'P10': result_df.loc[varnames['effective_thickness'], 'P10'],
+                                }])
+
+    save_data = save_to_storage(storage_data=save_data, 
+                                field_name='Месторождение1', 
+                                tab='tab-production-indicators', 
+                                prop='parameter_table_geo_gas_reserves_indics',
+                                data=[{
+                                    'parameter': varnames['geo_gas_reserves'],
+                                    'P90': result_df.loc[varnames['geo_gas_reserves'], 'P90'],
+                                    'P50': result_df.loc[varnames['geo_gas_reserves'], 'P50'],
+                                    'P10': result_df.loc[varnames['geo_gas_reserves'], 'P10'],
+                                }])
+    
+
+    prod_indics_data = get_value(storage_data=save_data,
+                                 field_name='Месторождение1',
+                                 tab='tab-production-indicators',
+                                 prop='parameter_table_indics',
+                                 default=None)
+    
+    keys = set(varnamesIndicators.keys()).intersection(varnames.keys())
+    keys_input = ['init_reservoir_pressure', 'reservoir_temp', 'relative_density', 'init_overcompress_coef']
+    keys_input_hide = ['critical_temp', 'critical_pressure']
+    if prod_indics_data is None:
+        prod_indics_data = []
+        for var in keys_input:
+            prod_indics_data.append({'parameter': varnamesIndicators[var], 'value': input_data.loc['value', var]})
+    else:
+        for row in prod_indics_data:
+            if reversed_varnamesIndicators[row['parameter']] in set(keys_input):
+                row['value'] = input_data.loc['value', reversed_varnamesIndicators[row['parameter']]]
+            
+    save_data = save_to_storage(storage_data=save_data, 
+                                field_name='Месторождение1', 
+                                tab='tab-production-indicators',
+                                prop='parameter_table_indics',
+                                data=prod_indics_data)
+    
+    prod_collapse_indics_data = get_value(storage_data=save_data,
+                                 field_name='Месторождение1',
+                                 tab='tab-production-indicators',
+                                 prop='parameter_table_indics_collapse',
+                                 default=None)
+    
+    if prod_collapse_indics_data is None:
+        prod_collapse_indics_data = []
+        for var in keys_input_hide:
+            prod_collapse_indics_data.append({'parameter': varnamesIndicators[var], 'value': input_data.loc['value', var]})
+    else:
+        for row in prod_collapse_indics_data:
+            if reversed_varnamesIndicators[row['parameter']] in set(keys_input_hide):
+                row['value'] = input_data.loc['value', reversed_varnamesIndicators[row['parameter']]]
+    
+    save_data = save_to_storage(storage_data=save_data, 
+                                field_name='Месторождение1', 
+                                tab='tab-production-indicators',
+                                prop='parameter_table_indics_collapse',
+                                data=prod_collapse_indics_data)
+        
     return [make_indics_table('Параметры', res_table, 'indics'), 
             dcc.Graph(figure=tornado_fig), 
             dcc.Graph(figure=ecdf_fig), 
             dcc.Graph(figure=pdf_fig), 
             output_data_calcs,
-            json.dumps(save_data),
-            json.dumps(res_table),
-    ]
+            save_data,
+        ]
 
-
-
-@callback(
-    Output("collapse", "is_open"),
-    [Input("collapse-button", "n_clicks")],
-    [State("collapse", "is_open")],
-)
-def toggle_collapse(n, is_open):
-    if n:
-        return not is_open
-    return is_open
 
 @callback(
     output=[
@@ -243,21 +249,33 @@ def toggle_collapse(n, is_open):
             Output('prod_calcs_table_P50', 'rowData'),
             Output('prod_calcs_table_P90', 'rowData'),
         ],
-        Output('pressures-graph', 'figure'),
-        Output('prod-kig', 'figure'),
-
+        Output('pressures-graph', 'children'),
+        Output('prod-kig', 'children'),
+        Output('persistence_storage', 'data', allow_duplicate=True),
     ],
+    
     inputs=[
         Input('prod_calcs', 'n_clicks'),
         State('parameter-table-permeability', 'rowData'),
         State('parameter-table-indics', 'rowData'),
-        State('parameter-table-indics-collapse', 'rowData'),
-        State('parameter-table-effective_thickness-indics', 'rowData'),
-        State('parameter-table-geo_gas_reserves-indics', 'rowData'),        
+        State('parameter-table-indics_collapse', 'rowData'),
+        State('parameter-table-effective_thickness_indics', 'rowData'),
+        State('parameter-table-geo_gas_reserves_indics', 'rowData'),     
+        State('persistence_storage', 'data'),
     ],
-    prevent_initial_call=True
+    prevent_initial_call=True,
 )
-def calculate_production_indicators(n_clicks, p_permeability, p_indics, p_indics_collapse, p_et, p_ggr):
+def calculate_production_indicators(n_clicks: int, 
+                                    p_permeability: list[dict], 
+                                    p_indics: list[dict], 
+                                    p_indics_collapse: list[dict], 
+                                    p_et: list[dict], 
+                                    p_ggr: list[dict],
+                                    storage_data: dict):
+    
+    if p_permeability is None or p_permeability[0]['distribution'] == 'Проницаемость':
+        raise PreventUpdate
+
     _, permeability_params = *parse_params(dist_dict[p_permeability[0]['distribution']], p_permeability[0]),
     stat_params = {"permeability": permeability_params}
     stat_perm = generate_stats(stat_params, 3000)
@@ -294,4 +312,20 @@ def calculate_production_indicators(n_clicks, p_permeability, p_indics, p_indics
         pressures_graphs.append(plot_pressure_on_production_stages(pressures_df, name))
         prod_kig_fig = plot_summary_chart(prod_kig_fig, result[['annual_production', 'kig', 'n_wells']], name)
     
-    return results_list, plot_united_pressures(pressures_graphs), prod_kig_fig
+
+    pressures_fig = plot_united_pressures(pressures_graphs)
+
+    save_data = save_tab_production_indicators(storage_data=storage_data,
+                                               field_name='Месторождение1',
+                                               p_permeability=p_permeability,
+                                               parameter_table_indics=p_indics,
+                                               parameter_table_effective_thickness_indics=p_et,
+                                               parameter_table_geo_gas_reserves_indics=p_ggr,
+                                               parameter_table_indics_collapse=p_indics_collapse,
+                                               prod_calcs_table=results_list,
+                                               pressures_on_stages_plot=pressures_fig,
+                                               prod_kig_plot=prod_kig_fig)
+    return [results_list, 
+            dcc.Graph(figure=pressures_fig), 
+            dcc.Graph(figure=prod_kig_fig), 
+            save_data]
