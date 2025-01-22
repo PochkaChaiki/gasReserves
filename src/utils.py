@@ -134,7 +134,17 @@ def save_to_storage(storage_data: dict | None,
     storage_data[field_name][tab][prop] = data
     return storage_data
 
-
+def params_to_string(parsed_params: dict) -> str:
+    if parsed_params['distribution']=='norm':
+        return f'M = {parsed_params['params']['loc']}, std = {parsed_params['params']['scale']}'
+    if parsed_params['distribution']=='uniform':
+        return f'a = {parsed_params['params']['loc']}, b = {parsed_params['params']['loc'] + parsed_params['params']['scale']}'
+    if parsed_params['distribution']=='triang':
+        return f'a = {parsed_params['params']['loc']}, b = {parsed_params['params']['loc'] + parsed_params['params']['scale']}, c = {parsed_params['adds']['c']}'
+    if parsed_params['distribution']=='truncnorm':
+        return f'M = {parsed_params['params']['loc']}, std = {parsed_params['params']['scale']}, ' + \
+               f'a = {parsed_params['adds']['a']}, b = {parsed_params['adds']['a'] + parsed_params['adds']['b']}'
+    return ''
 
 def parse_params(dist: str, params: dict):
     if dist=="norm":

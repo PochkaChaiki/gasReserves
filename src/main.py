@@ -30,7 +30,8 @@ def render_reserves_calcs(data):
             make_reserves_input_group(data),
             make_reserves_main_outputs(data),
         ]),
-        *make_output(data)
+        dbc.Row([make_output(data)])
+        
     ])
 
 def render_production_indicators(data):

@@ -1,4 +1,4 @@
-from dash import Input, Output, State, callback, ALL, dcc
+from dash import Input, Output, State, callback, ALL, dcc, ctx, no_update
 from dash.exceptions import PreventUpdate
 
 from layout import *
@@ -48,7 +48,19 @@ def update_table_gas_saturation_coef(cell, rowData):
 def update_table_permeability(cell, rowData):
     return update_table_columns(cell, rowData)
 
-
+@callback(
+    Output('parameter-table-output_calcs', 'rowData', allow_duplicate=True),
+    Input('clear_main_output', 'n_clicks'),
+    State('parameter-table-output_calcs', 'rowData'),
+    prevent_initial_call=True
+)
+def clear_main_output(n_clicks, rowData):
+    if rowData is None or rowData == []:
+        return rowData
+    
+    for row in rowData:
+        row['value'] = None
+    return rowData
 
 @callback(
     output=[
@@ -56,7 +68,7 @@ def update_table_permeability(cell, rowData):
         Output('tornado-diagram', "children"),
         Output('ecdf-diagram', "children"),
         Output('pdf-diagram', 'children'),
-        Output('parameter-table-output_calcs', 'rowData'),
+        Output('parameter-table-output_calcs', 'rowData', allow_duplicate=True),
         Output('persistence_storage', 'data', allow_duplicate=True),
     ],
     
@@ -80,14 +92,15 @@ def calculate_gas_reserves(n_clicks: int,
                            params: list[dict],
                            add_params: list[dict],
                            storage_data: dict):
-    if p_area is None or p_area[0]['distribution'] == 'Площадь':
-        raise PreventUpdate
+    
+    if n_clicks is None or n_clicks == 0 or ctx.triggered_id != 'calculate_reserves_button':
+        return [no_update for _ in range(6)]
+
+# Processing input values to pass them to gas_reserves lib later ------------------------------------------------------------------------------------
     area_value, area = *parse_params(dist_dict[p_area[0]['distribution']], p_area[0]),
     et_value, effective_thickness = *parse_params(dist_dict[p_effective_thickness[0]['distribution']], p_effective_thickness[0]),
     pc_value, porosity_coef = *parse_params(dist_dict[p_porosity_coef[0]['distribution']], p_porosity_coef[0]),
     gsc_value, gas_saturation_coef = *parse_params(dist_dict[p_gas_saturation_coef[0]['distribution']], p_gas_saturation_coef[0]),
-    
-
 
     stat_params={
         "area": area,
@@ -95,8 +108,7 @@ def calculate_gas_reserves(n_clicks: int,
         "porosity_coef": porosity_coef,
         "gas_saturation_coef": gas_saturation_coef
     }
-    params_df = pd.DataFrame(params)
-    params_df = params_df.set_index(['parameter'])
+    params_df = pd.DataFrame(params).set_index(['parameter'])
 
     init_data={
         "area": area_value,
@@ -115,7 +127,8 @@ def calculate_gas_reserves(n_clicks: int,
         if var is not None and val is not None:
             init_data[reversed_varnames[var]] = val
 
-    
+# Making calculations -------------------------------------------------------------------------------------------------------------------------------
+
     input_data = make_input_data(pd.DataFrame(init_data, index=["value"], dtype=np.float64))
     stat_data = generate_stats(stat_params, np.int64(init_data['num_of_vars']))
     reserves = calculate_reserves(stat_data, input_data)
@@ -150,7 +163,7 @@ def calculate_gas_reserves(n_clicks: int,
 
     output_data_calcs = [{'parameter': varnames[var], 'value': input_data.loc['value', var]} for var in output_data_columns]
 
-
+# Save data for tab persistence ---------------------------------------------------------------------------------------------------------------------
 
     save_data = save_tab_reserves_calcs(storage_data=storage_data,
                                         field_name='Месторождение1',
@@ -165,74 +178,46 @@ def calculate_gas_reserves(n_clicks: int,
                                         ecdf_plot=ecdf_fig,
                                         pdf_plot=pdf_fig)
     
-    save_data = save_to_storage(storage_data=save_data, 
-                                field_name='Месторождение1', 
-                                tab='tab-production-indicators', 
-                                prop='parameter_table_effective_thickness_indics',
-                                data=[{
-                                    'parameter': varnames['effective_thickness'],
-                                    'P90': result_df.loc[varnames['effective_thickness'], 'P90'],
-                                    'P50': result_df.loc[varnames['effective_thickness'], 'P50'],
-                                    'P10': result_df.loc[varnames['effective_thickness'], 'P10'],
-                                }])
+# Adding calculated earlier in reserves' calculation tab values to inputs of production indicators tab ----------------------------------------------
 
-    save_data = save_to_storage(storage_data=save_data, 
-                                field_name='Месторождение1', 
-                                tab='tab-production-indicators', 
-                                prop='parameter_table_geo_gas_reserves_indics',
-                                data=[{
-                                    'parameter': varnames['geo_gas_reserves'],
-                                    'P90': result_df.loc[varnames['geo_gas_reserves'], 'P90'],
-                                    'P50': result_df.loc[varnames['geo_gas_reserves'], 'P50'],
-                                    'P10': result_df.loc[varnames['geo_gas_reserves'], 'P10'],
-                                }])
-    
+    for var in ('effective_thickness', 'geo_gas_reserves'):
+        save_data = save_to_storage(storage_data=save_data, 
+                                    field_name='Месторождение1', 
+                                    tab='tab-production-indicators', 
+                                    prop=f'parameter_table_{var}_indics',
+                                    data=[{
+                                        'parameter': varnames[var],
+                                        'P90': result_df.loc[varnames[var], 'P90'],
+                                        'P50': result_df.loc[varnames[var], 'P50'],
+                                        'P10': result_df.loc[varnames[var], 'P10'],
+                                    }])
 
-    prod_indics_data = get_value(storage_data=save_data,
-                                 field_name='Месторождение1',
-                                 tab='tab-production-indicators',
-                                 prop='parameter_table_indics',
-                                 default=None)
-    
-    keys = set(varnamesIndicators.keys()).intersection(varnames.keys())
-    keys_input = ['init_reservoir_pressure', 'reservoir_temp', 'relative_density', 'init_overcompress_coef']
-    keys_input_hide = ['critical_temp', 'critical_pressure']
-    if prod_indics_data is None:
-        prod_indics_data = []
-        for var in keys_input:
-            prod_indics_data.append({'parameter': varnamesIndicators[var], 'value': input_data.loc['value', var]})
-    else:
-        for row in prod_indics_data:
-            if reversed_varnamesIndicators[row['parameter']] in set(keys_input):
-                row['value'] = input_data.loc['value', reversed_varnamesIndicators[row['parameter']]]
-            
-    save_data = save_to_storage(storage_data=save_data, 
-                                field_name='Месторождение1', 
-                                tab='tab-production-indicators',
-                                prop='parameter_table_indics',
-                                data=prod_indics_data)
-    
-    prod_collapse_indics_data = get_value(storage_data=save_data,
-                                 field_name='Месторождение1',
-                                 tab='tab-production-indicators',
-                                 prop='parameter_table_indics_collapse',
-                                 default=None)
-    
-    if prod_collapse_indics_data is None:
-        prod_collapse_indics_data = []
-        for var in keys_input_hide:
-            prod_collapse_indics_data.append({'parameter': varnamesIndicators[var], 'value': input_data.loc['value', var]})
-    else:
-        for row in prod_collapse_indics_data:
-            if reversed_varnamesIndicators[row['parameter']] in set(keys_input_hide):
-                row['value'] = input_data.loc['value', reversed_varnamesIndicators[row['parameter']]]
-    
-    save_data = save_to_storage(storage_data=save_data, 
-                                field_name='Месторождение1', 
-                                tab='tab-production-indicators',
-                                prop='parameter_table_indics_collapse',
-                                data=prod_collapse_indics_data)
+    keys = dict(
+        keys_input = ['init_reservoir_pressure', 'reservoir_temp', 'relative_density', 'init_overcompress_coef', 'porosity_coef', 'gas_saturation_coef'],
+        keys_input_hide = ['critical_temp', 'critical_pressure']
+    )
+    for prop, keys_to_add in zip(['parameter_table_indics', 'parameter_table_indics_collapse'], ['keys_input', 'keys_input_hide']):
+        data = get_value(storage_data=save_data,
+                         field_name='Месторождение1',
+                         tab='tab-production-indicators',
+                         prop=prop,
+                         default=None)
         
+        if data is None:
+            data = []
+            for var in keys[keys_to_add]:
+                data.append({'parameter': varnamesIndicators[var], 'value': input_data.loc['value', var]})
+        else:
+            for row in data:
+                if reversed_varnamesIndicators[row['parameter']] in set(keys[keys_to_add]):
+                    row['value'] = input_data.loc['value', reversed_varnamesIndicators[row['parameter']]]
+        
+        save_data = save_to_storage(storage_data=save_data, 
+                                    field_name='Месторождение1', 
+                                    tab='tab-production-indicators',
+                                    prop=prop,
+                                    data=data)
+
     return [make_indics_table('Параметры', res_table, 'indics'), 
             dcc.Graph(figure=tornado_fig), 
             dcc.Graph(figure=ecdf_fig), 
@@ -272,9 +257,8 @@ def calculate_production_indicators(n_clicks: int,
                                     p_et: list[dict], 
                                     p_ggr: list[dict],
                                     storage_data: dict):
-    
-    if p_permeability is None or p_permeability[0]['distribution'] == 'Проницаемость':
-        raise PreventUpdate
+    if n_clicks is None or n_clicks == 0 or ctx.triggered_id != 'prod_calcs':
+        return [[no_update for _ in range(3)], no_update, no_update, no_update]
 
     _, permeability_params = *parse_params(dist_dict[p_permeability[0]['distribution']], p_permeability[0]),
     stat_params = {"permeability": permeability_params}
@@ -305,7 +289,11 @@ def calculate_production_indicators(n_clicks: int,
         init_data['geo_gas_reserves'] = ggr
 
         input_data = make_init_data_for_prod_indics(pd.DataFrame(init_data, index=["value"]))
+        
         result = calculate_indicators(input_data.to_dict('records')[0])
+        result['year'] = [i for i in range(1, len(result.index)+1)]
+        result['avg_production'] = result['annual_production'] / result['n_wells']
+        
         results_list.append(result.to_dict('records'))
         pressures_df = result[['current_pressure', 'wellhead_pressure', 'ukpg_pressure']]
         pressures_df['downhole_pressure'] = result['current_pressure'] - input_data.loc['value', 'max_depression']
@@ -325,7 +313,80 @@ def calculate_production_indicators(n_clicks: int,
                                                prod_calcs_table=results_list,
                                                pressures_on_stages_plot=pressures_fig,
                                                prod_kig_plot=prod_kig_fig)
+    
     return [results_list, 
             dcc.Graph(figure=pressures_fig), 
             dcc.Graph(figure=prod_kig_fig), 
             save_data]
+
+
+
+
+
+# def make_data_to_excel(storage_data: dict) -> dict:
+#     data = {}
+    
+#     for field_name in list(storage_data.keys()):
+#         field = {}
+#         stat_params = {}
+#         dist_params = ['area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef', 'permeability']
+#         tabs_list = ['tab-reserves-calcs' for _ in range(4)].append('tab-production-indicators')
+#         for tab, param_name in zip(tabs_list, dist_params):
+#             param = get_value(storage_data=storage_data,
+#                               field_name=field_name,
+#                               tab=tab,
+#                               prop=f'p_{param_name}', default = [])
+#             if len(param) != 1:
+#                 stat_params[param_name] = {'distribution': '', 'params': ''}
+#                 continue
+#             row = param[0]
+#             parsed = parse_params(row['distribution'], row)
+#             var = {
+#                 'distribution': row['distribution'],
+#                 'params': params_to_string(parsed)
+#             }
+#             stat_params[reversed_varnames[row['parameter']]] = var
+
+#         init_data = {}
+#         parameter_table_calcs = get_value(storage_data=storage_data,
+#                                           field_name=field_name,
+#                                           tab='tab-reserves-calcs',
+#                                           prop='parameter_table_calcs', default=[])
+#         parameter_table_output_calcs = get_value(storage_data=storage_data,
+#                                           field_name=field_name,
+#                                           tab='tab-reserves-calcs',
+#                                           prop='parameter_table_output_calcs', default=[])
+#         init_data_params = {'relative_density', 'reservoir_temp', 'init_reservoir_pressure', 
+#                             'temp_correction', 'init_overcompress_coef', 'num_of_vars'}
+#         for row in parameter_table_calcs:
+#             if reversed_varnames[row['parameter']] in init_data_params:
+#                 init_data[reversed_varnames[row['parameter']]] = row['value']
+        
+#         for row in parameter_table_output_calcs:
+#             if reversed_varnames[row['parameter']] in init_data_params:
+#                 init_data[reversed_varnames[row['parameter']]] = row['value']
+
+#         prod_profile_init_data = {}
+#         parameter_table_indics = get_value(storage_data=storage_data,
+#                                           field_name=field_name,
+#                                           tab='tab-production-indicators',
+#                                           prop='parameter_table_indics', default=[])
+#         parameter_table_indics_collapse = get_value(storage_data=storage_data,
+#                                           field_name=field_name,
+#                                           tab='tab-production-indicators',
+#                                           prop='parameter_table_indics_collapse', default=[])
+#         prod_init_data_params = {'prod_rate', 'operations_ratio', 'reserve_ratio', 'machines_num',
+#                                  'time_to_build', 'well_height', 'pipe_diameter', 'main_gas_pipeline_pressure',
+#                                  'abandon_pressure_rate', 'filtr_resistance_A', 'filtr_resistance_B',
+#                                   'macro_roughness_l', 'trail_length', 'input_cs_temp' }
+        
+#         for row in parameter_table_indics:
+#             if reversed_varnamesIndicators[row['parameter']] in prod_init_data_params:
+#                 prod_profile_init_data[reversed_varnamesIndicators[row['parameter']]] = row['value']
+        
+#         for row in parameter_table_indics_collapse:
+#             if reversed_varnamesIndicators[row['parameter']] in prod_init_data_params:
+#                 prod_profile_init_data[reversed_varnamesIndicators[row['parameter']]] = row['value']
+        
+#         profiles_report = {}
+#         images = {}

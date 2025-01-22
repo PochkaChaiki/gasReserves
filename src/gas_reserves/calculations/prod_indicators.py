@@ -57,7 +57,14 @@ def calculate_indicators(data):
                     count_overcomp_coef(x[0], data, data['reservoir_temp']) - x[1],
                     sum_current_annual_production + 365 * n_wells * data['operations_ratio'] * count_daily_production(x[0], data) / 1000 - x[2]]
 
-        current_pressure, overcompress_coef, _ = so.fsolve(func, [current_pressure, overcompress_coef, sum_current_annual_production], xtol=1e-3)
+        res = so.fsolve(func, [current_pressure, overcompress_coef, sum_current_annual_production], xtol=1e-3, full_output=True)
+        
+        root = res[0]
+        current_pressure, overcompress_coef, _ = root[0], root[1], root[2]
+
+        if res[2] != 1:
+            return pd.DataFrame(dict(kig = __list_kig, annual_production = __list_annual_production, current_pressure = __list_current_pressure, wellhead_pressure = __list_wellhead_pressure, n_wells = __list_n_wells, ukpg_pressure = __list_ukpg_pressure, cs_power = __list_cs_power))
+        
         current_daily_production = count_daily_production(current_pressure, data)
 
         downhole_pressure = __count_downhole_pressure(current_pressure, data)
@@ -74,8 +81,8 @@ def calculate_indicators(data):
             count_overcomp_coef(2/3 * (downhole_pressure + wellhead_pressure**2 / (downhole_pressure + wellhead_pressure)), data, data['avg_well_temp'])                    \
             * data['avg_trail_temp'] * data['trail_length'] * (current_daily_production * n_wells)**2 / data['trail_diameter']**5 / coef_K**2 )
 
-        if np.isnan(ukpg_pressure):
-            ukpg_pressure = 0
+        if np.isnan(ukpg_pressure) or ukpg_pressure <= 0.1:
+            ukpg_pressure = 0.1
         power = 0
         if ukpg_pressure < data['main_gas_pipeline_pressure'] and ukpg_pressure>0:
             power = 0.004 * current_daily_production * n_wells * data['input_cs_temp'] *                                                                                    \
@@ -104,7 +111,14 @@ def calculate_indicators(data):
                     sum_current_annual_production + 365 * n_wells * data['operations_ratio'] * (current_daily_production + count_daily_production(x[0], data)) \
                     / (2 * 10**6 * data['reserve_ratio']) *1e3 - x[2]] #*1e3
 
-        current_pressure, overcompress_coef, _ = so.fsolve(func, [current_pressure, overcompress_coef, sum_current_annual_production], xtol=1e-3)
+        res = so.fsolve(func, [current_pressure, overcompress_coef, sum_current_annual_production], xtol=1e-3, full_output=True)
+        
+        root = res[0]
+        current_pressure, overcompress_coef, _ = root[0], root[1], root[2]
+        
+        if res[2] != 1:
+            return pd.DataFrame(dict(kig = __list_kig, annual_production = __list_annual_production, current_pressure = __list_current_pressure, wellhead_pressure = __list_wellhead_pressure, n_wells = __list_n_wells, ukpg_pressure = __list_ukpg_pressure, cs_power = __list_cs_power))
+        
         new_current_daily_production = count_daily_production(current_pressure, data)
 
         downhole_pressure = __count_downhole_pressure(current_pressure, data)
@@ -118,8 +132,8 @@ def calculate_indicators(data):
             count_overcomp_coef(2/3 * (downhole_pressure + wellhead_pressure**2 / (downhole_pressure + wellhead_pressure)), data, data['avg_well_temp'])                 \
             * data['avg_trail_temp'] * data['trail_length'] * (current_daily_production * n_wells)**2 / data['trail_diameter']**5 / coef_K**2 )
 
-        if np.isnan(ukpg_pressure):
-            ukpg_pressure = 0
+        if np.isnan(ukpg_pressure) or ukpg_pressure <= 0.1:
+            ukpg_pressure = 0.1
         power = 0
         if ukpg_pressure < data['main_gas_pipeline_pressure'] and ukpg_pressure > 0:
             power = 0.004 * current_daily_production * n_wells * data['input_cs_temp'] *                      \

@@ -16,6 +16,7 @@ def plot_vars_distribution(stat_data: pd.DataFrame) -> go.Figure:
     for var, i in zip(stat_data.columns, range(1,len(stat_data.columns))):
         fig.add_trace(
             go.Histogram(x=stat_data[var], nbinsx=14), row=1, col=i)
+    fig.update_xaxes(rangemode='tozero')
 
     return fig
 
@@ -178,15 +179,20 @@ def plot_pressure_on_production_stages(pressureVals: pd.DataFrame, name: str) ->
     fig.update_layout(
         title=dict(text=name)
     )
+    fig.update_xaxes(rangemode='tozero')
     return fig
 
 
 def plot_united_pressures(charts: list[go.Figure]) -> go.Figure:
-    fig = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.1)
+    fig = make_subplots(rows=3, cols=1, shared_xaxes=True, vertical_spacing=0.1, subplot_titles=('Вариант P10', 'Вариант P50', 'Вариант P90' ))
     for chart, i in zip(charts, range(3)):
         for trace in chart.data:
             trace.legendgroup = f"group{i+1}"
             fig.add_trace(trace, row=i+1, col=1)
+
+    for i in range(1, 4):
+        fig.update_xaxes(title_text='Годы', col=1, row=i, rangemode='tozero')
+        fig.update_yaxes(title_text='Давление, МПа', col=1, row=i)
 
     fig.update_layout(
         height=1000,
@@ -231,7 +237,8 @@ def plot_summary_chart(fig: go.Figure, df_prod_kig: pd.DataFrame, Pind: str) -> 
         xaxis=dict(
             title=dict(
                 text='Год'
-            )
+            ),
+            rangemode='tozero'
         ),
     )
     fig.update_yaxes(title_text=displayVarnamesIndicators['annual_production'], secondary_y=False)

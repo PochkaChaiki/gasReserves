@@ -33,15 +33,15 @@ back_dist_dict = {
 }
 
 varnames = {
-    'area': 'Площадь, млн. м2',
+    'area': 'Площадь, тыс. м2',
     'effective_thickness': 'Эффективная газонасыщенная толщина, м',
     'porosity_coef': 'Коэффициент пористости, д.е',
     'gas_saturation_coef': 'Коэффициент газонасыщенности, д.е.',
     'init_reservoir_pressure': 'Начальное пластовое давление, МПа',
     'relative_density': 'Относительная плотность газа, д.е.',
     'reservoir_temp': 'Пластовая температура, К',
-    'area_volume': 'Объем площади, млн. м3',
-    'pore_volume': 'Поровый объем, млн. м3',
+    'area_volume': 'Объем площади, тыс. м3',
+    'pore_volume': 'Поровый объем, тыс. м3',
     'temp_correction': 'Поправка на температуру, К',
     'fin_reservoir_pressure': 'Конечное пластовое давление, МПа',
     'critical_pressure': 'Критическое давление, МПа',
@@ -55,15 +55,15 @@ varnames = {
 }
 
 reversed_varnames = {
-    'Площадь, млн. м2': 'area',
+    'Площадь, тыс. м2': 'area',
     'Эффективная газонасыщенная толщина, м': 'effective_thickness',
     'Коэффициент пористости, д.е': 'porosity_coef',
     'Коэффициент газонасыщенности, д.е.': 'gas_saturation_coef',
     'Начальное пластовое давление, МПа': 'init_reservoir_pressure',
     'Относительная плотность газа, д.е.': 'relative_density',
     'Пластовая температура, К': 'reservoir_temp',
-    'Объем площади, млн. м3': 'area_volume',
-    'Поровый объем, млн. м3': 'pore_volume',
+    'Объем площади, тыс. м3': 'area_volume',
+    'Поровый объем, тыс. м3': 'pore_volume',
     'Поправка на температуру, К': 'temp_correction',
     'Конечное пластовое давление, МПа': 'fin_reservoir_pressure',
     'Критическое давление, МПа': 'critical_pressure',
@@ -76,14 +76,29 @@ reversed_varnames = {
 }
 
 displayVarnamesIndicators = {
+    'year': 'Год',
+    'avg_production': 'Средний дебит скважины, млн. м3',
     'annual_production': 'Годовые отборы, млн. м3',
     'kig': 'Коэффициент извлечения газа, д.е.',
     'current_pressure': 'Пластовое давление, МПа',
     'wellhead_pressure': 'Устьевое давление, МПа',
     'downhole_pressure': 'Забойное давление, МПа',
     'ukpg_pressure': 'Давление на УКПГ, МПа',
-    'cs_power': 'Мощность насосов, КВт',
+    'cs_power': 'Мощность ДКС, КВт',
     'n_wells': 'Количество скважин, шт.',
+}
+
+shortnamesVarnamesIndicators = {
+    'year': 'Год',
+    'avg_production': 'Qavg, млн. м3',
+    'annual_production': 'Qct, млн. м3',
+    'kig': 'КИГ, д.е.',
+    'current_pressure': 'Pct, МПа',
+    'wellhead_pressure': 'Pуст, МПа',
+    'downhole_pressure': 'Pзаб, МПа',
+    'ukpg_pressure': 'Pукпг, МПа',
+    'cs_power': 'N, КВт',
+    'n_wells': 'n, шт.',
 }
 
 varnamesIndicators = {
@@ -92,11 +107,11 @@ varnamesIndicators = {
     'reservoir_temp': 'Пластовая температура, К',
     'relative_density': 'Относительная плотность газа, д.е.',
     'init_overcompress_coef': 'Коэффициент сверхсжимаемости начальный, д.е.',
+    'porosity_coef': 'Коэффициент пористости, д.е.',
+    'gas_saturation_coef': 'Коэффициент газонасыщенности, д.е.',
     'max_depression': 'Максимальная депрессия, МПа',
     'reserve_ratio': 'Коэффициент резерва, д.е.',
     'operations_ratio': 'Коэффициент эксплуатации, д.е.',
-    'porosity_coef': 'Коэффициент пористости, д.е.',
-    'gas_saturation_coef': 'Коэффициент газонасыщенности, д.е.',
     'avg_well_temp': 'Средняя температура скважины, К',
     'pipe_diameter': 'Диаметр трубы, м',
     'well_height': 'Высота скважины, м',
@@ -106,7 +121,7 @@ varnamesIndicators = {
     'trail_diameter': 'Диаметр трубы шлейфа, м',
     'trail_roughness': 'Шероховатость трубы шлейфа',
     'avg_trail_temp': 'Средняя температура шлейфа, К',
-    'main_gas_pipeline_pressure': 'Давление в магистральной трубе, МПа',
+    'main_gas_pipeline_pressure': 'Давление на УКПГ, МПа',
     'input_cs_temp': 'Входная температура на компрессорную станцию, К',
     'coef_K': 'Коэффициент К',
     'efficiency_cs': 'КПД, д.е.',
@@ -152,7 +167,7 @@ reversed_varnamesIndicators = {
     'Диаметр трубы шлейфа, м': 'trail_diameter',
     'Шероховатость трубы шлейфа': 'trail_roughness',
     'Средняя температура шлейфа, К': 'avg_trail_temp',
-    'Давление в магистральной трубе, МПа': 'main_gas_pipeline_pressure',
+    'Давление на УКПГ, МПа': 'main_gas_pipeline_pressure',
     'Входная температура на компрессорную станцию, К': 'input_cs_temp',
     'Коэффициент К': 'coef_K',
     'КПД, д.е.': 'efficiency_cs',

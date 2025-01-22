@@ -14,18 +14,6 @@ Layout = html.Div(
         html.Div(id="tabs-content")
     ])
 
-ReservesOutputTable = html.Div(id="output_table")
-
-TornadoDiagram = html.Div(id="tornado-diagram" )
-
-ECDFDiagram = html.Div(id="ecdf-diagram")
-PDFDiagram = html.Div(id="pdf-diagram")
-
-PressureOnStages = html.Div(dcc.Graph(id='pressures-graph'))
-
-ProdKig = dcc.Graph(id='prod-kig')
-
-
 def update_table_columns(cell, rowData):
     if cell and cell[0]['colId'] == 'distribution':
         base_columns = [
@@ -79,7 +67,7 @@ def update_table_columns(cell, rowData):
 
 def distribution_input(name, id, placeholder, initial_data=None):
     initial_columns = []
-    if initial_data is None or initial_data == {}:
+    if initial_data is None or initial_data == []:
         initial_data = [
             {'parameter': name, 'distribution': placeholder}
         ]
@@ -202,7 +190,9 @@ def make_reserves_main_outputs(values: dict):
     if data is None:
         data = [{'parameter': varnames[key], 'value': None} for key in varnames.keys() if key not in keys_to_omit]
     return dbc.Col([
-        make_input_group(data, 'output_calcs')
+        make_input_group(data, 'output_calcs'),
+
+        dbc.Button("Очистить", id="clear_main_output", n_clicks=0)
     ])
 
 def make_output(values: dict):
@@ -219,28 +209,35 @@ def make_output(values: dict):
             dcc.Graph(figure=tornado_fig),
         ]
 
-    ecdf_fig = values.get('ecdf_diagram', None)
+    ecdf_fig = values.get('ecdf_plot', None)
     ecdf_diagram = html.Div(id="ecdf-diagram")
     if ecdf_fig is not None:
         ecdf_diagram.children = [
             dcc.Graph(figure=ecdf_fig),
         ]
 
-    pdf_fig = values.get('pdf_diagram', None)
+    pdf_fig = values.get('pdf_plot', None)
     pdf_diagram = html.Div(id="pdf-diagram")
     if pdf_fig is not None:
         pdf_diagram.children = [
             dcc.Graph(figure=pdf_fig),
         ]
 
-    return (dbc.Row([
-        output_table,
-        tornado_diagram
-    ]),
-    dbc.Row([
-        ecdf_diagram,
-        pdf_diagram
-    ]))
+    return dbc.Col([
+        dbc.Row(output_table),
+        dbc.Row(tornado_diagram),
+        dbc.Row([dbc.Col(ecdf_diagram), dbc.Col(pdf_diagram)]),
+        # dbc.Row(pdf_diagram)
+    ])
+
+# dbc.Col([
+#         output_table,
+#         tornado_diagram
+#     ]),
+#     dbc.Row([
+#         ecdf_diagram,
+#         pdf_diagram
+#     ])])
 
 
 def get_production_indicators_inputs(values: dict):
@@ -288,7 +285,9 @@ def get_production_indicators_inputs(values: dict):
                 make_indics_table('geo', geo_gas_reserves_data, 'geo_gas_reserves_indics', True),
                 make_input_group(data_to_collapse, 'indics_collapse')
             ], title='Дополнительные параметры')
-        ]),
+        ],         
+        start_collapsed=True,
+        always_open=True),
         dbc.Button('Произвести расчёт', id='prod_calcs', n_clicks=0)
     ])  
 
@@ -308,19 +307,23 @@ def make_prod_calcs_table(values: dict = None):
             }] for i in range(3)
         ]
     columns = [
-        {'headerName': displayVarnamesIndicators['kig'], 'field': 'kig', 'cellDataType': 'number', 
+        {'headerName': shortnamesVarnamesIndicators['year'], 'headerTooltip': displayVarnamesIndicators['year'], 'field': 'year', 'cellDataType': 'number', 
                        'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
-        {'headerName': displayVarnamesIndicators['annual_production'], 'field': 'annual_production', 'cellDataType': 'number', 
+        {'headerName': shortnamesVarnamesIndicators['avg_production'], 'headerTooltip':displayVarnamesIndicators['avg_production'], 'field': 'avg_production', 'cellDataType': 'number', 
                        'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
-        {'headerName': displayVarnamesIndicators['current_pressure'], 'field': 'current_pressure', 'cellDataType': 'number', 
+        {'headerName': shortnamesVarnamesIndicators['kig'], 'headerTooltip':displayVarnamesIndicators['kig'], 'field': 'kig', 'cellDataType': 'number', 
                        'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
-        {'headerName': displayVarnamesIndicators['wellhead_pressure'], 'field': 'wellhead_pressure', 'cellDataType': 'number', 
+        {'headerName': shortnamesVarnamesIndicators['annual_production'], 'headerTooltip':displayVarnamesIndicators['annual_production'], 'field': 'annual_production', 'cellDataType': 'number', 
                        'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
-        {'headerName': displayVarnamesIndicators['n_wells'], 'field': 'n_wells', 'cellDataType': 'number', 
+        {'headerName': shortnamesVarnamesIndicators['current_pressure'], 'headerTooltip':displayVarnamesIndicators['current_pressure'], 'field': 'current_pressure', 'cellDataType': 'number', 
                        'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
-        {'headerName': displayVarnamesIndicators['ukpg_pressure'], 'field': 'ukpg_pressure', 'cellDataType': 'number', 
+        {'headerName': shortnamesVarnamesIndicators['wellhead_pressure'], 'headerTooltip':displayVarnamesIndicators['wellhead_pressure'], 'field': 'wellhead_pressure', 'cellDataType': 'number', 
                        'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
-        {'headerName': displayVarnamesIndicators['cs_power'], 'field': 'cs_power', 'cellDataType': 'number', 
+        {'headerName': shortnamesVarnamesIndicators['n_wells'], 'headerTooltip':displayVarnamesIndicators['n_wells'], 'field': 'n_wells', 'cellDataType': 'number', 
+                       'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+        {'headerName': shortnamesVarnamesIndicators['ukpg_pressure'], 'headerTooltip':displayVarnamesIndicators['ukpg_pressure'], 'field': 'ukpg_pressure', 'cellDataType': 'number', 
+                       'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+        {'headerName': shortnamesVarnamesIndicators['cs_power'], 'headerTooltip':displayVarnamesIndicators['cs_power'], 'field': 'cs_power', 'cellDataType': 'number', 
                        'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
     ]
     return dbc.Accordion(

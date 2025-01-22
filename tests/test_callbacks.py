@@ -2,7 +2,7 @@ from src import callbacks as c
 
 
 def test_calculate_reserves_callback():
-    p_a = [{'parameter': 'Площадь, тыс. м2', 'distribution': "Нормальное", 'mean': 38860000, 'std_dev': 3650000}]
+    p_a = [{'parameter': 'Площадь, тыс. м2', 'distribution': "Нормальное", 'mean': 38860, 'std_dev': 3650}]
     p_et = [{'parameter': 'Эффективная газонасыщенная толщина, м', 'distribution': "Нормальное", 'mean': 11.1, 'std_dev': 0.87}]
     p_pc = [{'parameter': 'Коэффициент пористости, д.е', 'distribution': "Нормальное", 'mean': 0.09, 'std_dev': 0.01}]
     p_gsc = [{'parameter': 'Коэффициент газонасыщенности, д.е.', 'distribution': "Нормальное", 'mean': 0.7, 'std_dev': 0.01}]
