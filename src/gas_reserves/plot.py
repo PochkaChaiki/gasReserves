@@ -28,7 +28,8 @@ def plot_tornado(df_affection: pd.DataFrame) -> go.Figure:
             x=df_affection['kmin'],
             y=df_affection.index,
             orientation='h',
-            name='Влияние в меньшую сторону',
+            # name='Влияние в меньшую сторону',
+            name='',
             ),
         row=1,
         col=1
@@ -38,7 +39,8 @@ def plot_tornado(df_affection: pd.DataFrame) -> go.Figure:
             x=df_affection['kmax'],
             y=df_affection.index,
             orientation='h',
-            name='Влияние в большую сторону',
+            # name='Влияние в большую сторону',
+            name='',
             ),
         row=1,
         col=2
@@ -218,7 +220,8 @@ def plot_summary_chart(fig: go.Figure, df_prod_kig: pd.DataFrame, Pind: str) -> 
             customdata=df_prod_kig,
             hovertemplate=
                 '<br>Годовой отбор: %{y}<br>'+
-                'Количество скважин: %{customdata[2]}'
+                'Количество скважин: %{customdata[2]}',
+            line=dict(color=Pind_color[Pind])
         ), secondary_y = False)
     
     fig.add_trace(
@@ -229,7 +232,8 @@ def plot_summary_chart(fig: go.Figure, df_prod_kig: pd.DataFrame, Pind: str) -> 
             name="КИГ_"+Pind,
             customdata=df_prod_kig,
             hovertemplate=
-                '<br>КИГ: %{y:.2f}<br>'
+                '<br>КИГ: %{y:.2f}<br>',
+            line=dict(color=Pind_color[Pind])
         ), secondary_y = True)
 
     fig.update_layout(

@@ -79,15 +79,15 @@ def distribution_input(name, id, placeholder, initial_data=None):
              },
             },
             {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': True, 'cellDataType': 'number', 
-            'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+            'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
             {'headerName': 'Ст. отклонение', 'field': 'std_dev', 'editable': True, 'hide': True, 'cellDataType': 'number', 
-            'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+            'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
             {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': True, 'cellDataType': 'number', 
-            'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+            'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
             {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': True, 'cellDataType': 'number', 
-            'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+            'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
             {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True, 'cellDataType': 'number', 
-            'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+            'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
         ]
     else:
         initial_columns = update_table_columns([{'colId': 'distribution'}], initial_data)
@@ -144,7 +144,7 @@ def make_input_group(initial_data, id):
     initial_columns = [
         {'headerName': 'Параметр', 'field': 'parameter'},
         {'headerName': 'Значение', 'field': 'value', 'editable': True, 'cellDataType': 'number', 
-            'valueFormatter': {"function": "d3.format('.2f')(params.value)"}},
+            'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
     ]
     return dag.AgGrid(
         id='parameter-table-'+id,
@@ -161,8 +161,6 @@ def make_input_group(initial_data, id):
 
 
 def make_reserves_input_group(values: dict):
-
-
     keys = ['init_reservoir_pressure', 'relative_density', 'reservoir_temp', 'num_of_vars']
 
     data = values.get('parameter_table_calcs', None)
@@ -225,25 +223,16 @@ def make_output(values: dict):
 
     return dbc.Col([
         dbc.Row(output_table),
-        dbc.Row(tornado_diagram),
         dbc.Row([dbc.Col(ecdf_diagram), dbc.Col(pdf_diagram)]),
-        # dbc.Row(pdf_diagram)
+        dbc.Row(tornado_diagram),
     ])
 
-# dbc.Col([
-#         output_table,
-#         tornado_diagram
-#     ]),
-#     dbc.Row([
-#         ecdf_diagram,
-#         pdf_diagram
-#     ])])
 
 
 def get_production_indicators_inputs(values: dict):
     keys_with_indics, keys_to_collapse = ['effective_thickness', 'geo_gas_reserves'], ['filtr_resistance_A', 'filtr_resistance_B', 'critical_temp', 'critical_pressure']
     keys_to_omit = {'permeability', 'annual_production', 'pipe_roughness', 'init_num_wells', 'coef_K', 'adiabatic_index', 'lambda_trail', 'lambda_fontain', 'macro_roughness_l', 
-                    'density_athmospheric'}
+                    'density_athmospheric', 'porosity_coef', 'gas_saturation_coef'}
 
     data: list[dict] = values.get('parameter_table_indics', None)
     keys_not_to_include = set(keys_to_collapse) | set(keys_with_indics) | keys_to_omit
@@ -259,8 +248,9 @@ def get_production_indicators_inputs(values: dict):
             if reversed_varnamesIndicators[key] not in keys_not_to_include and key in keys_to_add:
                 data.append({'parameter': key, 'value': None})
 
-    effective_thickness_data = values.get('parameter_table_effective_thickness_indics', None)
-    geo_gas_reserves_data = values.get('parameter_table_geo_gas_reserves_indics', None)
+    stat_indics_data = values.get('parameter_table_stat_indics', None)
+    if stat_indics_data is None:
+        stat_indics_data = [{'parameter': varnamesIndicators[key], 'value': None} for key in ('effective_thickness', 'geo_gas_reserves', 'porosity_coef', 'gas_saturation_coef')]
     
     data_to_collapse: list[dict] = values.get('parameter_table_indics_collapse', None)
     if data_to_collapse is None:
@@ -272,17 +262,14 @@ def get_production_indicators_inputs(values: dict):
         for key in keys_to_collapse:
             if key in keys_to_add:
                 data_to_collapse.append({'parameter': varnamesIndicators[key], 'value': None})
-    
-
 
     return dbc.Col([
-        distribution_input("Проницаемость, мД", "permeability", "Проницаемость", values.get('p_permeability', None)),
+        distribution_input(varnamesIndicators['permeability'], "permeability", "Проницаемость", values.get('p_permeability', None)),
 
         make_input_group(data, 'indics'),
         dbc.Accordion([
             dbc.AccordionItem([
-                make_indics_table('eff', effective_thickness_data, 'effective_thickness_indics', True),
-                make_indics_table('geo', geo_gas_reserves_data, 'geo_gas_reserves_indics', True),
+                make_indics_table(None, stat_indics_data, 'stat_indics', True),
                 make_input_group(data_to_collapse, 'indics_collapse')
             ], title='Дополнительные параметры')
         ],         

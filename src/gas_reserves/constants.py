@@ -33,14 +33,14 @@ back_dist_dict = {
 }
 
 varnames = {
-    'area': 'Площадь, тыс. м2',
+    'area': 'Площадь залежи, тыс. м2',
     'effective_thickness': 'Эффективная газонасыщенная толщина, м',
-    'porosity_coef': 'Коэффициент пористости, д.е',
+    'porosity_coef': 'Коэффициент пористости, д.е.',
     'gas_saturation_coef': 'Коэффициент газонасыщенности, д.е.',
     'init_reservoir_pressure': 'Начальное пластовое давление, МПа',
     'relative_density': 'Относительная плотность газа, д.е.',
     'reservoir_temp': 'Пластовая температура, К',
-    'area_volume': 'Объем площади, тыс. м3',
+    'area_volume': 'Объем газонасыщенной породы, тыс. м3',
     'pore_volume': 'Поровый объем, тыс. м3',
     'temp_correction': 'Поправка на температуру, К',
     'fin_reservoir_pressure': 'Конечное пластовое давление, МПа',
@@ -49,31 +49,11 @@ varnames = {
     'init_overcompress_coef': 'Коэффициент сверхсжимаемости начальный, д.е.',
     'fin_overcompress_coef': 'Коэффициент сверхсжимаемости конечный, д.е.',
     'geo_gas_reserves': 'Геологические запасы газа, млн. м3',
-    'reserves': 'Геологические запасы газа, млн. м3',
     'dry_gas_init_reserves': 'Начальные запасы "сухого" газа, млн м3',
     'num_of_vars': 'Количество реализаций, шт.',
 }
 
-reversed_varnames = {
-    'Площадь, тыс. м2': 'area',
-    'Эффективная газонасыщенная толщина, м': 'effective_thickness',
-    'Коэффициент пористости, д.е': 'porosity_coef',
-    'Коэффициент газонасыщенности, д.е.': 'gas_saturation_coef',
-    'Начальное пластовое давление, МПа': 'init_reservoir_pressure',
-    'Относительная плотность газа, д.е.': 'relative_density',
-    'Пластовая температура, К': 'reservoir_temp',
-    'Объем площади, тыс. м3': 'area_volume',
-    'Поровый объем, тыс. м3': 'pore_volume',
-    'Поправка на температуру, К': 'temp_correction',
-    'Конечное пластовое давление, МПа': 'fin_reservoir_pressure',
-    'Критическое давление, МПа': 'critical_pressure',
-    'Критическая температура, К': 'critical_temp',
-    'Коэффициент сверхсжимаемости начальный, д.е.': 'init_overcompress_coef',
-    'Коэффициент сверхсжимаемости конечный, д.е.': 'fin_overcompress_coef',
-    'Геологические запасы газа, млн. м3': 'geo_gas_reserves',  #[ 'reserves'],
-    'Начальные запасы "сухого" газа, млн м3': 'dry_gas_init_reserves',
-    'Количество реализаций, шт.': 'num_of_vars'
-}
+reversed_varnames = { varnames[key]: key for key in varnames}
 
 displayVarnamesIndicators = {
     'year': 'Год',
@@ -90,19 +70,19 @@ displayVarnamesIndicators = {
 
 shortnamesVarnamesIndicators = {
     'year': 'Год',
-    'avg_production': 'Qavg, млн. м3',
-    'annual_production': 'Qct, млн. м3',
+    'avg_production': 'Qскв, млн. м3',
+    'annual_production': 'Qгод, млн. м3',
     'kig': 'КИГ, д.е.',
-    'current_pressure': 'Pct, МПа',
+    'current_pressure': 'Pпл, МПа',
     'wellhead_pressure': 'Pуст, МПа',
     'downhole_pressure': 'Pзаб, МПа',
     'ukpg_pressure': 'Pукпг, МПа',
     'cs_power': 'N, КВт',
-    'n_wells': 'n, шт.',
+    'n_wells': 'Nскв, шт.',
 }
 
 varnamesIndicators = {
-    'permeability':'Проницаемость, мД',
+    'permeability':'Проницаемость, 1e(-3) мкм^2',
     'init_reservoir_pressure': 'Начальное пластовое давление, МПа',
     'reservoir_temp': 'Пластовая температура, К',
     'relative_density': 'Относительная плотность газа, д.е.',
@@ -112,9 +92,9 @@ varnamesIndicators = {
     'max_depression': 'Максимальная депрессия, МПа',
     'reserve_ratio': 'Коэффициент резерва, д.е.',
     'operations_ratio': 'Коэффициент эксплуатации, д.е.',
-    'avg_well_temp': 'Средняя температура скважины, К',
+    'avg_well_temp': 'Средняя температура по стволу скважины, К',
     'pipe_diameter': 'Диаметр трубы, м',
-    'well_height': 'Высота скважины, м',
+    'well_height': 'Глубина скважины, м',
     'pipe_roughness': 'Шероховатость',
     'init_num_wells': 'Начальное количество скважин, шт.',
     'trail_length': 'Длина шлейфа, м',
@@ -127,16 +107,16 @@ varnamesIndicators = {
     'efficiency_cs': 'КПД, д.е.',
     'adiabatic_index': 'Показатель адиабаты',
     'density_athmospheric': 'Плотность атмосферного воздуха, д.е.',
-    'viscosity': 'Вязкость',
+    'viscosity': 'Вязкость, мПа*с',
     'machines_num': 'Количество буровых установок, шт.',
-    'time_to_build': 'Время на разработку одной скважины, мес',
+    'time_to_build': 'Время строительства одной скважины, мес',
     'annual_production': 'Годовые отборы, млн. м3',
     'effective_thickness':'Эффективная газонасыщенная толщина, м',
     "geo_gas_reserves":'Геологические запасы газа, млн. м3',
     'lambda_trail': 'Лямбда шлейфа',
     'lambda_fontain': 'Лямбда скважины',
-    'prod_rate': 'Темп годовых отбор на период постоянной добычи, д.е.',
-    'abandon_pressure_rate': 'Давление забрасывания, д.е.',
+    'prod_rate': 'Темп годовых отборов на период постоянной добычи, д.е.',
+    'abandon_pressure': 'Давление забрасывания, МПа',
 
     'macro_roughness_l':'Коэффициент макрошероховатости, д.е.',
     'filtr_resistance_A': 'Коэффициент фильтрационного сопротивления A, МПа2/(тыс.м3/сут)',
@@ -147,48 +127,7 @@ varnamesIndicators = {
     'critical_pressure': 'Критическое давление, МПа',
 }
 
-reversed_varnamesIndicators = {
-    'Проницаемость, мД': 'permeability',
-    'Начальное пластовое давление, МПа': 'init_reservoir_pressure',
-    'Пластовая температура, К': 'reservoir_temp',
-    'Относительная плотность газа, д.е.': 'relative_density',
-    'Коэффициент сверхсжимаемости начальный, д.е.': 'init_overcompress_coef',
-    'Максимальная депрессия, МПа': 'max_depression',
-    'Коэффициент резерва, д.е.': 'reserve_ratio',
-    'Коэффициент эксплуатации, д.е.': 'operations_ratio',
-    'Коэффициент пористости, д.е.': 'porosity_coef',
-    'Коэффициент газонасыщенности, д.е.': 'gas_saturation_coef',
-    'Средняя температура скважины, К': 'avg_well_temp',
-    'Диаметр трубы, м': 'pipe_diameter',
-    'Высота скважины, м': 'well_height',
-    'Шероховатость': 'pipe_roughness',
-    'Начальное количество скважин, шт.': 'init_num_wells',
-    'Длина шлейфа, м': 'trail_length',
-    'Диаметр трубы шлейфа, м': 'trail_diameter',
-    'Шероховатость трубы шлейфа': 'trail_roughness',
-    'Средняя температура шлейфа, К': 'avg_trail_temp',
-    'Давление на УКПГ, МПа': 'main_gas_pipeline_pressure',
-    'Входная температура на компрессорную станцию, К': 'input_cs_temp',
-    'Коэффициент К': 'coef_K',
-    'КПД, д.е.': 'efficiency_cs',
-    'Показатель адиабаты': 'adiabatic_index',
-    'Плотность атмосферного воздуха, д.е.': 'density_athmospheric',
-    'Вязкость': 'viscosity',
-    'Количество буровых установок, шт.': 'machines_num',
-    'Время на разработку одной скважины, мес': 'time_to_build',
-    'Годовые отборы, млн. м3': 'annual_production',
-    'Эффективная газонасыщенная толщина, м': 'effective_thickness',
-    'Геологические запасы газа, млн. м3': 'geo_gas_reserves',
-    'Лямбда шлейфа': 'lambda_trail',
-    'Лямбда скважины': 'lambda_fontain',
-    'Темп годовых отбор на период постоянной добычи, д.е.': 'prod_rate',
-    'Давление забрасывания, д.е.': 'abandon_pressure_rate',
-    'Коэффициент макрошероховатости, д.е.': 'macro_roughness_l',
-    'Коэффициент фильтрационного сопротивления A, МПа2/(тыс.м3/сут)': 'filtr_resistance_A',
-    'Коэффициент фильтрационного сопротивления B, МПа2/(тыс.м3/сут)2': 'filtr_resistance_B',
-    'Критическая температура, К': 'critical_temp',
-    'Критическое давление, МПа': 'critical_pressure'
-}
+reversed_varnamesIndicators = { varnamesIndicators[key]: key for key in varnamesIndicators }
 
 
 locale = """d3.formatLocale({
@@ -198,3 +137,10 @@ locale = """d3.formatLocale({
   "percent": "\u202f%",
   "nan": ""
 })"""
+
+
+Pind_color = {
+    'P10': '#FFB700',
+    'P50': '#8C04A8',
+    'P90': '#00B74A'
+}

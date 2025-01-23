@@ -104,7 +104,7 @@ def calculate_indicators(data):
 
 
 
-    while current_pressure > data['abandon_pressure_rate'] * data['init_reservoir_pressure'] and wellhead_pressure > 0.1:
+    while current_pressure > data['abandon_pressure'] and wellhead_pressure > 0.1:
         def func(x):
             return [data['init_reservoir_pressure'] / data['init_overcompress_coef'] * (1 - x[2] / data['geo_gas_reserves']) * x[1] - x[0],
                     count_overcomp_coef(x[0], data, data['reservoir_temp']) - x[1],

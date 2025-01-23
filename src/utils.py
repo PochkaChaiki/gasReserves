@@ -21,12 +21,13 @@ import plotly.graph_objects as go
 #         'tab-production-indicators': {
 #             'p_permeability': dict(),
 #             'parameter_table_indics': dict(),
-#             'parameter_table_effective_thickness_indics': dict(),
-#             'parameter_table_geo_gas_reserves_indics': dict(),
+#             'parameter_table_stat_indics': dict(),
 #             'parameter_table_indics_collapse': dict(),
 #             'prod_calcs_table': list[dict] ,
 #             'pressures_on_stages_plot': go.Figure,
 #             'prod_kig_plot': go.Figure,
+#             'filtr_resistance_A': float,
+#             'filtr_resistance_B': float,
 #         }
 #     }
 # }
@@ -84,21 +85,23 @@ def save_tab_production_indicators(storage_data: dict | None,
                                    field_name: str,
                                    p_permeability: dict | None = None,
                                    parameter_table_indics: dict | None = None,
-                                   parameter_table_effective_thickness_indics: dict | None = None,
-                                   parameter_table_geo_gas_reserves_indics: dict | None = None,
+                                   parameter_table_stat_indics: dict | None = None,
                                    parameter_table_indics_collapse: dict | None = None,
                                    prod_calcs_table: list[dict] | None = None,
                                    pressures_on_stages_plot: go.Figure | None = None,
-                                   prod_kig_plot: go.Figure | None = None) -> dict:
+                                   prod_kig_plot: go.Figure | None = None,
+                                   filtr_resistance_A: float | None = None,
+                                   filtr_resistance_B: float | None = None) -> dict:
     
     storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'p_permeability', p_permeability)
     storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'parameter_table_indics', parameter_table_indics)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'parameter_table_effective_thickness_indics', parameter_table_effective_thickness_indics)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'parameter_table_geo_gas_reserves_indics', parameter_table_geo_gas_reserves_indics)
+    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'parameter_table_stat_indics', parameter_table_stat_indics)
     storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'parameter_table_indics_collapse', parameter_table_indics_collapse)
     storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'prod_calcs_table', prod_calcs_table)
     storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'pressures_on_stages_plot', pressures_on_stages_plot)
     storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'prod_kig_plot', prod_kig_plot)
+    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'filtr_resistance_A', filtr_resistance_A)
+    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'filtr_resistance_B', filtr_resistance_B)
     
     return storage_data
 

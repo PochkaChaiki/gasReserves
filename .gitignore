@@ -5,7 +5,7 @@ __pycache__
 *Отчёт.xlsx
 *.png
 tpest.py
-*.spec
+# *.spec
 /build
 /dist
 *.md

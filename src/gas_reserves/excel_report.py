@@ -79,7 +79,7 @@ def insert_to_sheet(data: dict, sheet: wsxl.Worksheet):
     sheet['J111'].value = prod_profile_init_data['well_height']
     sheet['J112'].value = prod_profile_init_data['pipe_diameter']
     sheet['J113'].value = prod_profile_init_data['main_gas_pipeline_pressure']
-    sheet['J115'].value = prod_profile_init_data['abandon_pressure_rate']
+    sheet['J115'].value = prod_profile_init_data['abandon_pressure']
     sheet['J118'].value = prod_profile_init_data['filtr_resistance_A']
     sheet['J119'].value = prod_profile_init_data['filtr_resistance_B']
     sheet['J120'].value = prod_profile_init_data['macro_roughness_l']
