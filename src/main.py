@@ -1,6 +1,7 @@
 from dash import Dash, html, dcc, callback, Input, Output, State
 from layout import *
 from callbacks import *
+from callback import *
 import json
 
 app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP], 
