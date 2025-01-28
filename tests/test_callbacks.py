@@ -1,33 +1,9 @@
-from src import callback as c
 from src import callbacks as cs
-import pytest
 from src.gas_reserves.constants import *
 
-
+import pytest
 import pandas as pd
 import plotly.graph_objects as go
-
-# def test_calculate_reserves_callback():
-#     p_a = [{'parameter': 'Площадь, тыс. м2', 'distribution': "Нормальное", 'mean': 38860, 'std_dev': 3650}]
-#     p_et = [{'parameter': 'Эффективная газонасыщенная толщина, м', 'distribution': "Нормальное", 'mean': 11.1, 'std_dev': 0.87}]
-#     p_pc = [{'parameter': 'Коэффициент пористости, д.е', 'distribution': "Нормальное", 'mean': 0.09, 'std_dev': 0.01}]
-#     p_gsc = [{'parameter': 'Коэффициент газонасыщенности, д.е.', 'distribution': "Нормальное", 'mean': 0.7, 'std_dev': 0.01}]
-#     params = [
-#         {'parameter': 'Начальное пластовое давление, МПа', 'value': 32.3},
-#         {'parameter': 'Относительная плотность газа, д.е.', 'value': 0.63},
-#         {'parameter': 'Пластовая температура, К', 'value': 320.49},
-#         {'parameter': 'Количество реализаций, шт.', 'value': 3000},
-#     ]
-
-#     # add_params = [
-#     #     {'parameter': 'Объем площади, тыс. м3', 'value': 32.3},
-#     #     {'parameter': 'Поровый объем, тыс. м3', 'value': 0.63},
-#     #     {'parameter': 'Поправка на температуру, К', 'value': 0.93},
-#     # ]
-#     add_params = []
-
-#     output = c.calculate_gas_reserves(1, p_a, p_et, p_pc, p_gsc, params, add_params)
-#     assert output
 
 
 class TestCallbackReservesCalcs:
@@ -82,23 +58,23 @@ class TestCallbackReservesCalcs:
         ({
             'field_name': {
                 'tab-reserves-calcs': {
-                    'p_area': dict(),
-                    'p_effective_thickness': dict(),
-                    'p_porosity_coef': dict(),
-                    'p_gas_saturation_coef': dict(),
-                    'parameter_table_calcs': dict(),
-                    'parameter_table_output_calcs': dict(),
+                    'p_area': [],
+                    'p_effective_thickness': [],
+                    'p_porosity_coef': [],
+                    'p_gas_saturation_coef': [],
+                    'parameter_table_calcs': [],
+                    'parameter_table_output_calcs': [],
                     'tornado_diagram': go.Figure,
                     'indics_calcs': dict(),
                     'ecdf_plot': go.Figure,
                     'pdf_plot': go.Figure,
                 },
                 'tab-production-indicators': {
-                    'p_permeability': dict(),
-                    'parameter_table_indics': dict(),
-                    'parameter_table_stat_indics': dict(),
-                    'parameter_table_indics_collapse': dict(),
-                    'prod_calcs_table': list[dict] ,
+                    'p_permeability': [],
+                    'parameter_table_indics': [],
+                    'parameter_table_stat_indics': [],
+                    'parameter_table_indics_collapse': [],
+                    'prod_calcs_table': [],
                     'pressures_on_stages_plot': go.Figure,
                     'prod_kig_plot': go.Figure,
                     'filtr_resistance_A': float,
@@ -195,18 +171,25 @@ class TestCallbackReservesCalcs:
     def fixt_prepare_inputs_and_calculate(self, fixt_prepare_inputs):
         
         input_data, stat_data = fixt_prepare_inputs
-        result_df, _, _, _ = cs.callback_reserves_calcs.calculate(input_data, stat_data)
+        result_df, _, _, _ = cs.callback_reserves_calcs.calculate(
+            input_data, stat_data
+        )
 
         return result_df, input_data
 
     @pytest.mark.parametrize('storage_data', storage_data)
-    def test_save_data_to_profiles_tab(self, storage_data, fixt_prepare_inputs_and_calculate):
+    def test_save_data_to_profiles_tab(self, 
+                                       storage_data, 
+                                       fixt_prepare_inputs_and_calculate):
         result_df, input_data = fixt_prepare_inputs_and_calculate
-        save_data = cs.callback_reserves_calcs.save_data_to_profiles_tab(storage_data, 'field_name', result_df, input_data)
-        print(save_data)
+        save_data = cs.callback_reserves_calcs.save_data_to_profiles_tab(
+            storage_data, 'field_name', result_df, input_data
+        )
+
         for prop in ('parameter_table_stat_indics', 
                      'parameter_table_indics', 
                      'parameter_table_indics_collapse',
                      ):
+            print(prop, save_data['field_name']['tab-production-indicators'].get(prop, None))
             val = save_data['field_name']['tab-production-indicators'][prop]
             assert val is not None and val != {}

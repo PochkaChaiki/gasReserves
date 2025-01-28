@@ -4,9 +4,10 @@ from layout import *
 from gas_reserves.plot import *
 from gas_reserves.calculations.reserves_calculations import *
 from gas_reserves.calculations.prod_indicators import *
+from gas_reserves.excel_report import *
 
 from utils import *
-
+from excel_report import make_data_to_excel
 from callbacks import *
 
 @callback(
@@ -63,6 +64,18 @@ def clear_main_output(n_clicks, rowData):
         row['value'] = None
     return rowData
 
-
+@callback(
+    Output('download_excel', 'data'),
+    Input('download_btn', 'n_clicks'),
+    State('persistence_storage', 'data'),
+    prevent_initial_call=True
+)
+def send_excel_report(n_clicks, storage_data):
+    excel_data = make_data_to_excel(storage_data=storage_data)
+    create_report(data=excel_data,
+                  template_path='Шаблон отчета.xlsx',
+                  output_path='Отчёт.xlsx')
+    
+    return dcc.send_file('../Отчёт.xlsx')
 
 

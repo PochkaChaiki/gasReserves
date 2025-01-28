@@ -112,7 +112,7 @@ def save_data_to_profiles_tab(storage_data: dict,
                          prop=prop,
                          default=None)
         
-        if data is None:
+        if data is None or data == [] or data == [{}]:
             data = []
             for var in keys[keys_to_add]:
                 data.append({'parameter': varnamesIndicators[var], 'value': input_data.loc['value', var]})

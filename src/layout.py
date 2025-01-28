@@ -6,6 +6,8 @@ import dash_ag_grid as dag
 Layout = html.Div(
     [
         dcc.Store(id='persistence_storage', storage_type='session'),
+        dcc.Download(id='download_excel'),
+        html.Button(id='download_btn', n_clicks=None),
         html.Header(
         dcc.Tabs(id="tabs-calcs", value="tab-reserves-calcs", children=[
             dcc.Tab(label="Подсчёт запасов", value="tab-reserves-calcs"),

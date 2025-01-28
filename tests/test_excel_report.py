@@ -51,7 +51,7 @@ class TestExcelReport:
                     'abandon_pressure': 1.615,
                     'filtr_resistance_A': 0.000952,
                     'filtr_resistance_B': 0.000013,
-                    'macro_roughness_l': 0.019,
+                    'hydraulic_resistance': 0.019,
                     'trail_length': 2500,
                     'input_cs_temp': 310,
                 },

@@ -46,7 +46,7 @@ def get_value(storage_data: dict | None,
               default: object | None = None) -> object:
     if storage_data is None:
         return default
-    if storage_data.get(field_name, None):
+    if storage_data.get(field_name, None) is None:
         return default
     if storage_data[field_name].get(tab, None) is None:
         return default
