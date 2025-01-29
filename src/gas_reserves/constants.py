@@ -81,10 +81,6 @@ shortnamesVarnamesIndicators = {
     'n_wells': 'Nскв, шт.',
 }
 
-reversed_shortnames = {
-    shortnamesVarnamesIndicators[key]: key for key in shortnamesVarnamesIndicators.keys()
-}
-
 varnamesIndicators = {
     'permeability':'Проницаемость, 1e(-3) мкм^2',
     'init_reservoir_pressure': 'Начальное пластовое давление, МПа',

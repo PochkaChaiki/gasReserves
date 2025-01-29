@@ -76,6 +76,6 @@ def send_excel_report(n_clicks, storage_data):
                   template_path='Шаблон отчета.xlsx',
                   output_path='Отчёт.xlsx')
     
-    return dcc.send_file('../Отчёт.xlsx')
+    return dcc.send_file('Отчёт.xlsx')
 
 

@@ -93,7 +93,7 @@ def collect_prod_profile_init_data(storage_data: str, field_name:str) -> dict:
         
     prod_profile_init_data['filtr_resistance_A'] = filtr_resistance_A
     prod_profile_init_data['filtr_resistance_B'] = filtr_resistance_B
-    prod_profile_init_data['hidraulic_resistance'] = hydraulic_resistance
+    prod_profile_init_data['hydraulic_resistance'] = hydraulic_resistance
     return prod_profile_init_data
 
 
@@ -136,7 +136,6 @@ def collect_profiles_report(storage_data: str, field_name: str) -> dict:
                 profiles_report[key]['temp_correction'] = row['value']
         if profiles_report['P10'].get('temp_correction', None) is not None:
             break
-    print(profiles_report)
     prod_calcs_table = get_value(storage_data=storage_data,
                                  field_name=field_name,
                                  tab='tab-production-indicators',
@@ -175,7 +174,7 @@ def collect_images(storage_data: str, field_name: str)->dict:
 
     prod_kig_plot: go.Figure = go.Figure(get_value(storage_data=storage_data,
                                          field_name=field_name,
-                                         tab='tab-reserves-calcs',
+                                         tab='tab-production-indicators',
                                          prop='prod_kig_plot'))
     images['profile'] = prod_kig_plot.to_image('png')
     return images
