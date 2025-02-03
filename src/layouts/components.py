@@ -9,7 +9,8 @@ def update_table_columns(cell, rowData):
     if cell and cell[0]['colId'] == 'distribution':
         base_columns = [
             {'headerName': 'Параметр', 'field': 'parameter', 'editable': True},
-            {'headerName': 'Распределение', 'field': 'distribution', 'editable': True, 'cellEditor': 'agSelectCellEditor',
+            {'headerName': 'Распределение', 'field': 'distribution', 'editable': True,
+             'cellEditor': 'agSelectCellEditor',
              'cellEditorParams': {
                  'values': ['Нормальное', 'Равномерное', 'Треугольное', 'Усечённое нормальное']
              },
@@ -21,36 +22,56 @@ def update_table_columns(cell, rowData):
             distribution = row.get('distribution', 'Нормальное')
             if distribution == 'Нормальное':
                 additional_columns = [
-                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                    {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True,
+                     'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True,
+                     'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True,
+                     'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True,
+                     'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Мода', 'field': 'mode', 'editable': True,
+                     'hide': True, 'cellDataType': 'number'},
                     
                 ]
             elif distribution == 'Треугольное':
                 additional_columns = [
-                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True,
+                     'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True,
+                     'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True,
+                     'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True,
+                     'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Мода', 'field': 'mode', 'editable': True,
+                     'hide': False, 'cellDataType': 'number'},
                 ]
             elif distribution == 'Равномерное':
                 additional_columns = [
-                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True, 'hide': True, 'cellDataType': 'number'},
-                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True,
+                     'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True,
+                     'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True,
+                     'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True,
+                     'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Мода', 'field': 'mode', 'editable': True,
+                     'hide': True, 'cellDataType': 'number'},
                 ]
             elif distribution == 'Усечённое нормальное':
                 additional_columns = [
-                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': False, 'cellDataType': 'number'},
-                    {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True, 'cellDataType': 'number'},
+                    {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True,
+                     'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Стандартное отклонение', 'field': 'std_dev', 'editable': True,
+                     'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True,
+                     'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True,
+                     'hide': False, 'cellDataType': 'number'},
+                    {'headerName': 'Мода', 'field': 'mode', 'editable': True,
+                     'hide': True, 'cellDataType': 'number'},
                 ]
 
         return base_columns + additional_columns
@@ -64,20 +85,26 @@ def distribution_input(name, id, placeholder, initial_data=None):
         ]
         initial_columns = [
             {'headerName': 'Параметр', 'field': 'parameter', 'editable': False},
-            {'headerName': 'Распределение', 'field': 'distribution', 'editable': True, 'cellEditor': 'agSelectCellEditor',
+            {'headerName': 'Распределение', 'field': 'distribution', 'editable': True,
+             'cellEditor': 'agSelectCellEditor',
              'cellEditorParams': {
                  'values': ['Нормальное', 'Равномерное', 'Треугольное', 'Усечённое нормальное']
              },
             },
-            {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True, 'hide': True, 'cellDataType': 'number', 
+            {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True,
+             'hide': True, 'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
-            {'headerName': 'Ст. отклонение', 'field': 'std_dev', 'editable': True, 'hide': True, 'cellDataType': 'number', 
+            {'headerName': 'Ст. отклонение', 'field': 'std_dev', 'editable': True,
+             'hide': True, 'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
-            {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True, 'hide': True, 'cellDataType': 'number', 
+            {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True,
+             'hide': True, 'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
-            {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True, 'hide': True, 'cellDataType': 'number', 
+            {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True,
+             'hide': True, 'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
-            {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True, 'cellDataType': 'number', 
+            {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True,
+             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
         ]
     else:

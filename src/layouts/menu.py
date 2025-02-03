@@ -6,7 +6,6 @@ def make_menu() -> dbc.Offcanvas:
         dbc.Card([
             dbc.CardBody([
                 dbc.Stack([], id='menu_nav', gap=1),
-                # dbc.Nav([], id='menu_nav', vertical=True, pills=True),
                 dbc.Button(['Добавить месторождение', html.I(className='bi bi-plus-square')],
                            id='open_field_modal',
                            n_clicks=None,
@@ -47,11 +46,11 @@ def make_field_item(field_name: str):
             dbc.Button(html.I(className='bi bi-trash'),
                        id={'type': 'delete_item', 'index': f'delete_{hashed_id}'},
                        color='danger',
-                       class_name='col-2').to_plotly_json(),
+                       class_name='col-2'),
             dbc.Button(field_name,
                        id={'type': 'open_field', 'index': f'open_{hashed_id}'},
-                       className='col-10', color='secondary', outline=True).to_plotly_json(),
-        ]).to_plotly_json()
-    ], className='row', id=hashed_id).to_plotly_json()
+                       className='col-10', color='secondary', outline=True),
+        ])
+    ], className='row', id=hashed_id)
 
 

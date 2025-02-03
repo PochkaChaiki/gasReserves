@@ -3,13 +3,14 @@ from src.gas_reserves.constants import *
 
 
 def get_production_indicators_inputs(values: dict):
-    keys_with_indics, keys_to_collapse = ['effective_thickness', 'geo_gas_reserves'], ['filtr_resistance_A',
-                                                                                       'filtr_resistance_B',
-                                                                                       'critical_temp',
-                                                                                       'critical_pressure']
-    keys_to_omit = {'permeability', 'annual_production', 'pipe_roughness', 'init_num_wells', 'coef_K',
-                    'adiabatic_index', 'lambda_trail', 'lambda_fontain', 'macro_roughness_l',
-                    'density_athmospheric', 'porosity_coef', 'gas_saturation_coef'}
+    keys_with_indics = ['effective_thickness', 'geo_gas_reserves']
+    keys_to_collapse = ['filtr_resistance_A','filtr_resistance_B',
+                        'critical_temp', 'critical_pressure']
+
+    keys_to_omit = {'permeability', 'annual_production', 'pipe_roughness',
+                    'init_num_wells', 'coef_K', 'adiabatic_index', 'lambda_trail',
+                    'lambda_fontain', 'macro_roughness_l', 'density_athmospheric',
+                    'porosity_coef', 'gas_saturation_coef', 'trail_roughness'}
 
     data: list[dict] = values.get('parameter_table_indics', [])
     keys_not_to_include = set(keys_to_collapse) | set(keys_with_indics) | keys_to_omit
@@ -21,33 +22,50 @@ def get_production_indicators_inputs(values: dict):
         keys = [row['parameter'] for row in data]
         keys_to_add = reversed_varnamesIndicators.keys() - set(keys)
         for key in list(reversed_varnamesIndicators.keys()):
-            if reversed_varnamesIndicators[key] not in keys_not_to_include and key in keys_to_add:
+            if (reversed_varnamesIndicators[key] not in keys_not_to_include
+                    and key in keys_to_add):
                 data.append({'parameter': key, 'value': None})
 
     stat_indics_data = values.get('parameter_table_stat_indics', None)
     if stat_indics_data is None:
-        stat_indics_data = [{'parameter': varnamesIndicators[key], 'value': None} for key in
-                            ('effective_thickness', 'geo_gas_reserves', 'porosity_coef', 'gas_saturation_coef')]
+        stat_indics_data = [
+            {'parameter': varnamesIndicators[key], 'value': None} for key in
+                ('effective_thickness', 'geo_gas_reserves',
+                 'porosity_coef', 'gas_saturation_coef')
+        ]
 
     data_to_collapse: list[dict] = values.get('parameter_table_indics_collapse', [])
     if len(data_to_collapse) == 0:
-        data_to_collapse = [{'parameter': varnamesIndicators[key], 'value': None} for key in keys_to_collapse]
+        data_to_collapse = [
+            {'parameter': varnamesIndicators[key], 'value': None}
+            for key in keys_to_collapse
+        ]
     else:
-        keys = [reversed_varnamesIndicators[row['parameter']] for row in data_to_collapse]
+        keys = [
+            reversed_varnamesIndicators[row['parameter']]
+            for row in data_to_collapse
+        ]
 
         keys_to_add = set(keys_to_collapse) - set(keys)
         for key in keys_to_collapse:
             if key in keys_to_add:
-                data_to_collapse.append({'parameter': varnamesIndicators[key], 'value': None})
+                data_to_collapse.append(
+                    {'parameter': varnamesIndicators[key], 'value': None}
+                )
 
     return dbc.Col([
-        distribution_input(varnamesIndicators['permeability'], "permeability", "Проницаемость",
+        distribution_input(varnamesIndicators['permeability'],
+                           "permeability",
+                           "Проницаемость",
                            values.get('p_permeability', None)),
 
         make_input_group(data, 'indics'),
         dbc.Accordion([
             dbc.AccordionItem([
-                make_indics_table(None, stat_indics_data, 'stat_indics', True),
+                make_indics_table(None,
+                                  stat_indics_data,
+                                  'stat_indics',
+                                  True),
                 make_input_group(data_to_collapse, 'indics_collapse')
             ], title='Дополнительные параметры')
         ],
@@ -69,7 +87,7 @@ def make_prod_calcs_table(values: dict = None):
                 'n_wells': '',
                 'ukpg_pressure': '',
                 'cs_power': '',
-            }] for i in range(3)
+            }] for _ in range(3)
         ]
     columns = [
         {
@@ -140,19 +158,23 @@ def make_prod_calcs_table(values: dict = None):
         [
             dbc.AccordionItem(
                 dag.AgGrid(
-                    id=f'prod_calcs_table_{id}',
-                    columnDefs=columns,
-                    rowData=data[i],
-                    defaultColDef={"editable": False, "sortable": False, "filter": False},
-                    dashGridOptions={
+                    id = f'prod_calcs_table_{profile_id}',
+                    columnDefs = columns,
+                    rowData = data[i],
+                    defaultColDef = {
+                        "editable": False,
+                        "sortable": False,
+                        "filter": False
+                    },
+                    dashGridOptions = {
                         "rowSelection": "single",
                         "stopEditingWhenCellsLoseFocus": True,
                         "domLayout": "autoHeight"
                     },
-                    columnSize='responsiveSizeToFit'
+                    columnSize = 'responsiveSizeToFit'
                 ),
-                title=f'{id} таблица'
-            ) for id, i in zip(('P10', 'P50', 'P90'), range(3))
+                title = f'{profile_id} таблица'
+            ) for profile_id, i in zip(('P10', 'P50', 'P90'), range(3))
         ],
         start_collapsed=True,
         always_open=True

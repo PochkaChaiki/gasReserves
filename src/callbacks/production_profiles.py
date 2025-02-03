@@ -27,6 +27,7 @@ from src.utils import *
         State('parameter-table-indics_collapse', 'rowData'),
         State('parameter-table-stat_indics', 'rowData'),
         State('persistence_storage', 'data'),
+        State('current_field', 'children'),
     ],
     prevent_initial_call=True,
 )
@@ -35,7 +36,8 @@ def calculate_production_indicators(n_clicks: int,
                                     p_indics: list[dict], 
                                     p_indics_collapse: list[dict], 
                                     p_stat_indics: list[dict], 
-                                    storage_data: dict):
+                                    storage_data: dict,
+                                    current_field: str):
     if n_clicks is None or n_clicks == 0 or ctx.triggered_id != 'prod_calcs':
         return [[no_update for _ in range(3)], no_update, no_update, no_update]
 
@@ -46,13 +48,13 @@ def calculate_production_indicators(n_clicks: int,
     permeability_Pinds = st.scoreatpercentile(stat_perm['permeability'], [10, 50, 90])
 
     init_data = {}
-    for el in p_indics:
+    for el in p_indics + p_indics_collapse:
         if el['value'] is not None:
             init_data[reversed_varnamesIndicators[el['parameter']]] = el['value']
 
-    for el in p_indics_collapse:
-        if el['value'] is not None:
-            init_data[reversed_varnamesIndicators[el['parameter']]] = el['value']
+    # for el in p_indics_collapse:
+    #     if el['value'] is not None:
+    #         init_data[reversed_varnamesIndicators[el['parameter']]] = el['value']
 
     stat_indics_data = {}
     for row in p_stat_indics:
@@ -82,13 +84,14 @@ def calculate_production_indicators(n_clicks: int,
         prod_kig_fig = plot_summary_chart(prod_kig_fig, result[['annual_production', 'kig', 'n_wells']], name)
 
         if name == 'P50':
-            save_filtr_resistance_A, save_filtr_resistance_B = input_data['filtr_resistance_A']['value'], input_data['filtr_resistance_B']['value']
+            save_filtr_resistance_A = input_data['filtr_resistance_A']['value']
+            save_filtr_resistance_B  = input_data['filtr_resistance_B']['value']
     
 
     pressures_fig = plot_united_pressures(pressures_graphs)
 
     save_data = save_tab_production_indicators(storage_data=storage_data,
-                                               field_name='Месторождение1',
+                                               field_name=current_field,
                                                p_permeability=p_permeability,
                                                parameter_table_indics=p_indics,
                                                parameter_table_stat_indics=p_stat_indics,

@@ -11,7 +11,7 @@ from src.layouts import *
 from src.utils import *
 
 
-
+# noinspection PyTupleAssignmentBalance
 def prepare_inputs(p_area: list[dict],
                    p_effective_thickness: list[dict],
                    p_porosity_coef: list[dict],
@@ -20,10 +20,14 @@ def prepare_inputs(p_area: list[dict],
                    add_params: list[dict]) -> tuple[pd.DataFrame, pd.DataFrame]:
     
 
-    area_value, area = *parse_params(dist_dict[p_area[0]['distribution']], p_area[0]),
-    et_value, effective_thickness = *parse_params(dist_dict[p_effective_thickness[0]['distribution']], p_effective_thickness[0]),
-    pc_value, porosity_coef = *parse_params(dist_dict[p_porosity_coef[0]['distribution']], p_porosity_coef[0]),
-    gsc_value, gas_saturation_coef = *parse_params(dist_dict[p_gas_saturation_coef[0]['distribution']], p_gas_saturation_coef[0]),
+    area_value, area = *parse_params(dist_dict[p_area[0]['distribution']],
+                                     p_area[0]),
+    et_value, effective_thickness = *parse_params(dist_dict[p_effective_thickness[0]['distribution']],
+                                                  p_effective_thickness[0]),
+    pc_value, porosity_coef = *parse_params(dist_dict[p_porosity_coef[0]['distribution']],
+                                            p_porosity_coef[0]),
+    gsc_value, gas_saturation_coef = *parse_params(dist_dict[p_gas_saturation_coef[0]['distribution']],
+                                                   p_gas_saturation_coef[0]),
 
     stat_params={
         "area": area,
@@ -93,7 +97,13 @@ def save_data_to_profiles_tab(storage_data: dict,
 
     pass_df = result_df.copy()
     pass_df = pass_df.drop(varnames['area'])
-    pass_data = [{'parameter': var, 'P90': result_df.loc[var, 'P90'], 'P50': result_df.loc[var, 'P50'], 'P10': result_df.loc[var, 'P10']} for var in pass_df.index]
+    pass_data = [
+        {'parameter': var,
+         'P90': result_df.loc[var, 'P90'],
+         'P50': result_df.loc[var, 'P50'],
+         'P10': result_df.loc[var, 'P10']}
+        for var in pass_df.index
+    ]
     save_data = save_to_storage(storage_data=storage_data, 
                                 field_name=field_name, 
                                 tab='tab-production-indicators', 
@@ -105,7 +115,8 @@ def save_data_to_profiles_tab(storage_data: dict,
         keys_input = ['init_reservoir_pressure', 'reservoir_temp', 'relative_density', 'init_overcompress_coef'],
         keys_input_hide = ['critical_temp', 'critical_pressure']
     )
-    for prop, keys_to_add in zip(['parameter_table_indics', 'parameter_table_indics_collapse'], ['keys_input', 'keys_input_hide']):
+    for prop, keys_to_add in zip(['parameter_table_indics', 'parameter_table_indics_collapse'],
+                                 ['keys_input', 'keys_input_hide']):
         data: list[dict] = get_value(storage_data=storage_data,
                                      field_name=field_name,
                                      tab='tab-production-indicators',
@@ -149,6 +160,7 @@ def save_data_to_profiles_tab(storage_data: dict,
         State('parameter-table-calcs', 'rowData'),
         State('parameter-table-output_calcs', 'rowData'),
         State('persistence_storage', 'data'),
+        State('current_field', 'children'),
     ],
     prevent_initial_call=True,
     )
@@ -159,7 +171,8 @@ def calculate_gas_reserves(n_clicks: int,
                            p_gas_saturation_coef: list[dict],
                            params: list[dict],
                            add_params: list[dict],
-                           storage_data: dict):
+                           storage_data: dict,
+                           current_field: str):
     
     if n_clicks is None or n_clicks == 0 or ctx.triggered_id != 'calculate_reserves_button':
         return [no_update for _ in range(6)]
@@ -177,17 +190,26 @@ def calculate_gas_reserves(n_clicks: int,
                                                           stat_data=stat_data)
 
 
-    res_table = [{'parameter': var, 'P90': result_df.loc[var, 'P90'], 'P50': result_df.loc[var, 'P50'], 'P10': result_df.loc[var, 'P10']} for var in result_df.index]
+    res_table = [
+        {'parameter': var,
+         'P90': result_df.loc[var, 'P90'],
+         'P50': result_df.loc[var, 'P50'],
+         'P10': result_df.loc[var, 'P10']}
+        for var in result_df.index
+    ]
 
     output_data_columns = ['area_volume', 'pore_volume', 'temp_correction', 'critical_pressure',
                            'critical_temp', 'init_overcompress_coef', 'fin_overcompress_coef',
                            'geo_gas_reserves', 'dry_gas_init_reserves']
 
-    output_data_calcs = [{'parameter': varnames[var], 'value': input_data.loc['value', var]} for var in output_data_columns]
+    output_data_calcs = [
+        {'parameter': varnames[var], 'value': input_data.loc['value', var]}
+        for var in output_data_columns
+    ]
 
 # Save data for tab persistence ---------------------------------------------------------------------------------------------------------------------
     save_data = save_tab_reserves_calcs(storage_data=storage_data,
-                                        field_name='Месторождение1',
+                                        field_name=current_field,
                                         p_area=p_area,
                                         p_effective_thickness=p_effective_thickness,
                                         p_porosity_coef=p_porosity_coef,
@@ -201,7 +223,7 @@ def calculate_gas_reserves(n_clicks: int,
 
 # Adding calculated earlier in reserves' calculation tab values to inputs of production indicators tab ----------------------------------------------
     save_data = save_data_to_profiles_tab(storage_data=save_data,
-                                          field_name='Месторождение1',
+                                          field_name=current_field,
                                           result_df=result_df,
                                           input_data=input_data)
 

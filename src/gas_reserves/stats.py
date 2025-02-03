@@ -1,4 +1,4 @@
-from gas_reserves.constants import *
+from src.gas_reserves.constants import *
 import scipy.stats as st
 import pandas as pd
 

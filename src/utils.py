@@ -66,20 +66,56 @@ def save_tab_reserves_calcs(storage_data: dict | None,
                             tornado_diagram: go.Figure | None,
                             ecdf_plot: go.Figure | None,
                             pdf_plot: go.Figure | None) -> dict:
-    storage_data = save_to_storage(storage_data, field_name, 'tab-reserves-calcs', 'p_area', p_area)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-reserves-calcs', 'p_effective_thickness',
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-reserves-calcs',
+                                   'p_area',
+                                   p_area)
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-reserves-calcs',
+                                   'p_effective_thickness',
                                    p_effective_thickness)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-reserves-calcs', 'p_porosity_coef', p_porosity_coef)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-reserves-calcs', 'p_gas_saturation_coef',
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-reserves-calcs',
+                                   'p_porosity_coef',
+                                   p_porosity_coef)
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-reserves-calcs',
+                                   'p_gas_saturation_coef',
                                    p_gas_saturation_coef)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-reserves-calcs', 'parameter_table_calcs',
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-reserves-calcs',
+                                   'parameter_table_calcs',
                                    parameter_table_calcs)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-reserves-calcs', 'parameter_table_output_calcs',
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-reserves-calcs',
+                                   'parameter_table_output_calcs',
                                    parameter_table_output_calcs)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-reserves-calcs', 'indics_calcs', indics_calcs)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-reserves-calcs', 'tornado_diagram', tornado_diagram)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-reserves-calcs', 'ecdf_plot', ecdf_plot)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-reserves-calcs', 'pdf_plot', pdf_plot)
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-reserves-calcs',
+                                   'indics_calcs',
+                                   indics_calcs)
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-reserves-calcs',
+                                   'tornado_diagram',
+                                   tornado_diagram)
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-reserves-calcs',
+                                   'ecdf_plot',
+                                   ecdf_plot)
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-reserves-calcs',
+                                   'pdf_plot',
+                                   pdf_plot)
 
     return storage_data
 
@@ -95,23 +131,50 @@ def save_tab_production_indicators(storage_data: dict | None,
                                    prod_kig_plot: go.Figure | None,
                                    filtr_resistance_A: float | None,
                                    filtr_resistance_B: float | None) -> dict:
-    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'p_permeability',
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-production-indicators',
+                                   'p_permeability',
                                    p_permeability)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'parameter_table_indics',
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-production-indicators',
+                                   'parameter_table_indics',
                                    parameter_table_indics)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'parameter_table_stat_indics',
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-production-indicators',
+                                   'parameter_table_stat_indics',
                                    parameter_table_stat_indics)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators',
-                                   'parameter_table_indics_collapse', parameter_table_indics_collapse)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'prod_calcs_table',
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-production-indicators',
+                                   'parameter_table_indics_collapse',
+                                   parameter_table_indics_collapse)
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-production-indicators',
+                                   'prod_calcs_table',
                                    prod_calcs_table)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'pressures_on_stages_plot',
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-production-indicators',
+                                   'pressures_on_stages_plot',
                                    pressures_on_stages_plot)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'prod_kig_plot',
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-production-indicators',
+                                   'prod_kig_plot',
                                    prod_kig_plot)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'filtr_resistance_A',
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-production-indicators',
+                                   'filtr_resistance_A',
                                    filtr_resistance_A)
-    storage_data = save_to_storage(storage_data, field_name, 'tab-production-indicators', 'filtr_resistance_B',
+    storage_data = save_to_storage(storage_data,
+                                   field_name,
+                                   'tab-production-indicators',
+                                   'filtr_resistance_B',
                                    filtr_resistance_B)
 
     return storage_data

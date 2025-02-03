@@ -10,13 +10,25 @@ def make_reserves_input_group(values: dict):
         data = [{'parameter': varnames[key], 'value': None} for key in keys]
 
     return dbc.Col([
-        distribution_input(varnames['area'], "area", "Площадь", values.get('p_area', None)),
+        distribution_input(varnames['area'],
+                           "area",
+                           "Площадь",
+                           values.get('p_area', None)),
 
-        distribution_input(varnames['effective_thickness'], "effective_thickness", "Толщина", values.get('p_effective_thickness', None)),
+        distribution_input(varnames['effective_thickness'],
+                           "effective_thickness",
+                           "Толщина",
+                           values.get('p_effective_thickness', None)),
 
-        distribution_input(varnames['porosity_coef'], "porosity_coef", "Пористость", values.get('p_porosity_coef', None)),
+        distribution_input(varnames['porosity_coef'],
+                           "porosity_coef",
+                           "Пористость",
+                           values.get('p_porosity_coef', None)),
 
-        distribution_input(varnames['gas_saturation_coef'], "gas_saturation_coef", "Газонасыщенность", values.get('p_gas_saturation_coef', None)),
+        distribution_input(varnames['gas_saturation_coef'],
+                           "gas_saturation_coef",
+                           "Газонасыщенность",
+                           values.get('p_gas_saturation_coef', None)),
 
         make_input_group(data, 'calcs'),
 
@@ -24,7 +36,9 @@ def make_reserves_input_group(values: dict):
     ])
 
 def make_reserves_main_outputs(values: dict):
-    keys_to_omit = {'area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef', 'init_reservoir_pressure', 'relative_density', 'reservoir_temp', 'reserves', 'fin_reservoir_pressure'}
+    keys_to_omit = {'area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef',
+                    'init_reservoir_pressure', 'relative_density', 'reservoir_temp',
+                    'reserves', 'fin_reservoir_pressure'}
 
     data = values.get('parameter_table_output_calcs', None)
     if data is None:

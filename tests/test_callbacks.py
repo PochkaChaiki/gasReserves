@@ -1,4 +1,4 @@
-from src import callbacks as cs
+import src.callbacks as cs
 from src.gas_reserves.constants import *
 
 import pytest
@@ -97,12 +97,12 @@ class TestCallbackReservesCalcs:
                             p_gas_saturation_coef,
                             params,
                             add_params):
-        input_data, stat_data = cs.reserves_calcs.prepare_inputs(p_area, 
-                                                                          p_effective_thickness, 
-                                                                          p_porosity_coef, 
-                                                                          p_gas_saturation_coef, 
-                                                                          params, 
-                                                                          add_params)
+        input_data, stat_data = cs.prepare_inputs(p_area,
+                                                  p_effective_thickness,
+                                                  p_porosity_coef,
+                                                  p_gas_saturation_coef,
+                                                  params,
+                                                  add_params)
 
         assert isinstance(input_data, pd.DataFrame)
         assert isinstance(stat_data, pd.DataFrame)
@@ -133,19 +133,19 @@ class TestCallbackReservesCalcs:
 
     @pytest.fixture
     def fixt_prepare_inputs(self):
-        input_data, stat_data = cs.reserves_calcs.prepare_inputs(self.p_area[0], 
-                                                                          self.p_effective_thickness[0], 
-                                                                          self.p_porosity_coef[0], 
-                                                                          self.p_gas_saturation_coef[0], 
-                                                                          self.params[0], 
-                                                                          self.add_params[0])
+        input_data, stat_data = cs.prepare_inputs(self.p_area[0],
+                                                  self.p_effective_thickness[0],
+                                                  self.p_porosity_coef[0],
+                                                  self.p_gas_saturation_coef[0],
+                                                  self.params[0],
+                                                  self.add_params[0])
         return input_data, stat_data
 
     
     def test_calculate(self, fixt_prepare_inputs):
         input_data, stat_data = fixt_prepare_inputs
 
-        result_df, tornado_fig, ecdf_fig, pdf_fig = cs.reserves_calcs.calculate(input_data, stat_data)
+        result_df, tornado_fig, ecdf_fig, pdf_fig = cs.calculate(input_data, stat_data)
         assert isinstance(result_df, pd.DataFrame)
         assert isinstance(tornado_fig, go.Figure)
         assert isinstance(ecdf_fig, go.Figure)
@@ -171,9 +171,7 @@ class TestCallbackReservesCalcs:
     def fixt_prepare_inputs_and_calculate(self, fixt_prepare_inputs):
         
         input_data, stat_data = fixt_prepare_inputs
-        result_df, _, _, _ = cs.reserves_calcs.calculate(
-            input_data, stat_data
-        )
+        result_df, _, _, _ = cs.calculate(input_data, stat_data)
 
         return result_df, input_data
 
@@ -182,7 +180,7 @@ class TestCallbackReservesCalcs:
                                        storage_data, 
                                        fixt_prepare_inputs_and_calculate):
         result_df, input_data = fixt_prepare_inputs_and_calculate
-        save_data = cs.reserves_calcs.save_data_to_profiles_tab(
+        save_data = cs.save_data_to_profiles_tab(
             storage_data, 'field_name', result_df, input_data
         )
 

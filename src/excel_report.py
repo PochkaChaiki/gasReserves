@@ -1,10 +1,10 @@
-from utils import *
-from gas_reserves.constants import *
+from src.utils import *
+from src.gas_reserves.constants import *
 
 def collect_stat_params(storage_data: dict, field_name: str) -> dict:
     stat_params = {}
     dist_params = ['area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef', 'permeability']
-    tabs_list = ['tab-reserves-calcs' for i in range(4)]
+    tabs_list = ['tab-reserves-calcs' for _ in range(4)]
     tabs_list.append('tab-production-indicators')
 
     for tab, param_name in zip(tabs_list, dist_params):
@@ -34,22 +34,25 @@ def collect_stat_params(storage_data: dict, field_name: str) -> dict:
 def collect_init_data(storage_data: dict, field_name: str) -> dict:
     init_data = {}
     parameter_table_calcs = get_value(storage_data=storage_data,
-                                          field_name=field_name,
-                                          tab='tab-reserves-calcs',
-                                          prop='parameter_table_calcs', default=[])
+                                      field_name=field_name,
+                                      tab='tab-reserves-calcs',
+                                      prop='parameter_table_calcs',
+                                      default=[])
     parameter_table_output_calcs = get_value(storage_data=storage_data,
-                                          field_name=field_name,
-                                          tab='tab-reserves-calcs',
-                                          prop='parameter_table_output_calcs', default=[])
+                                             field_name=field_name,
+                                             tab='tab-reserves-calcs',
+                                             prop='parameter_table_output_calcs',
+                                             default=[])
     init_data_params = {'relative_density', 'reservoir_temp', 'init_reservoir_pressure', 
                             'temp_correction', 'init_overcompress_coef', 'num_of_vars'}
+
     for row in parameter_table_calcs:
         if reversed_varnames[row['parameter']] in init_data_params:
             init_data[reversed_varnames[row['parameter']]] = row['value']
         
     for row in parameter_table_output_calcs:
         if reversed_varnames[row['parameter']] in init_data_params:
-            init_data[reversed_varnames[row['parameter']]] = row['value']
+            init_data[reversed_varnames[row['parameter']]] = round(row['value'], 3) if row['value'] else None
     return init_data
 
 
@@ -85,11 +88,13 @@ def collect_prod_profile_init_data(storage_data: dict, field_name:str) -> dict:
         
     for row in parameter_table_indics:
         if reversed_varnamesIndicators[row['parameter']] in prod_init_data_params:
-            prod_profile_init_data[reversed_varnamesIndicators[row['parameter']]] = row['value']
+            prod_profile_init_data[reversed_varnamesIndicators[row['parameter']]] = round(row['value'], 3) \
+                if row['value'] else None
         
     for row in parameter_table_indics_collapse:
         if reversed_varnamesIndicators[row['parameter']] in prod_init_data_params:
-            prod_profile_init_data[reversed_varnamesIndicators[row['parameter']]] = row['value']
+            prod_profile_init_data[reversed_varnamesIndicators[row['parameter']]] = round(row['value'], 3) \
+                if row['value'] else None
         
     prod_profile_init_data['filtr_resistance_A'] = filtr_resistance_A
     prod_profile_init_data['filtr_resistance_B'] = filtr_resistance_B
@@ -101,10 +106,10 @@ def collect_prod_profile_init_data(storage_data: dict, field_name:str) -> dict:
 def collect_profiles_report(storage_data: dict, field_name: str) -> dict:
     profiles_report = {'P10': {}, 'P50': {}, 'P90': {}}
     parameter_table_stat_indics = get_value(storage_data=storage_data,
-                                               field_name=field_name,
-                                               tab='tab-production-indicators',
-                                               prop='parameter_table_stat_indics',
-                                               default=[])
+                                            field_name=field_name,
+                                            tab='tab-production-indicators',
+                                            prop='parameter_table_stat_indics',
+                                            default=[])
 
     parameter_table_indics = get_value(storage_data=storage_data,
                                        field_name=field_name,
@@ -119,23 +124,29 @@ def collect_profiles_report(storage_data: dict, field_name: str) -> dict:
 
     for row in parameter_table_stat_indics:
         for key in profiles_report.keys():
-            profiles_report[key][reversed_varnamesIndicators[row['parameter']]] = row[key]
+            profiles_report[key][reversed_varnamesIndicators[row['parameter']]] = round(row[key], 3) \
+                if row[key] else None
 
     for row in parameter_table_indics:
         for key in profiles_report.keys():
             if reversed_varnamesIndicators[row['parameter']] in ('relative_density', 'reservoir_temp', 
-                                                       'init_reservoir_pressure',  
-                                                       'init_overcompress_coef'):
-                profiles_report[key][reversed_varnamesIndicators[row['parameter']]] = row['value']
+                                                                 'init_reservoir_pressure',
+                                                                 'init_overcompress_coef'):
+                profiles_report[key][reversed_varnamesIndicators[row['parameter']]] = round(row['value'], 3) \
+                    if row['value'] else None
             elif reversed_varnamesIndicators[row['parameter']] == 'prod_rate':
-                profiles_report[key]['annual_production'] = row['value'] * profiles_report[key]['geo_gas_reserves']
+                profiles_report[key]['annual_production'] = round(row['value'] * profiles_report[key]['geo_gas_reserves'], 3) \
+                    if row['value'] else None
     
     for row in parameter_table_output_calcs:
         for key in profiles_report.keys():
             if varnames['temp_correction'] == row['parameter']:
-                profiles_report[key]['temp_correction'] = row['value']
+                profiles_report[key]['temp_correction'] = round(row['value'], 3) \
+                    if row['value'] else None
         if profiles_report['P10'].get('temp_correction', None) is not None:
             break
+
+
     prod_calcs_table = get_value(storage_data=storage_data,
                                  field_name=field_name,
                                  tab='tab-production-indicators',
@@ -144,13 +155,10 @@ def collect_profiles_report(storage_data: dict, field_name: str) -> dict:
         acc, kig, nw, year = 0, 0, 0, 0
         for row in data:
             acc += row['annual_production']
-        kig = data[-1]['kig']
-        nw = data[-1]['n_wells']
-        year = data[-1]['year']
-        profiles_report[indic]['accumulated_production'] = acc
-        profiles_report[indic]['kig'] = kig
-        profiles_report[indic]['num_of_wells'] = nw
-        profiles_report[indic]['years'] = year
+        profiles_report[indic]['accumulated_production'] = round(acc, 3) if acc else None
+        profiles_report[indic]['kig'] = round(data[-1]['kig'], 3) if data[-1]['kig'] else None
+        profiles_report[indic]['num_of_wells'] = data[-1]['n_wells']
+        profiles_report[indic]['years'] = data[-1]['year']
     
     return profiles_report
 
