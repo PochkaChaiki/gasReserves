@@ -10,3 +10,4 @@ tpest.py
 /dist
 *.md
 .pytest*
+/.idea

@@ -1,14 +1,11 @@
-from dash import Input, Output, State, callback, ALL, dcc, ctx, no_update
+from dash import Input, Output, State, callback
 
-from layout import *
-from gas_reserves.plot import *
-from gas_reserves.calculations.reserves_calculations import *
-from gas_reserves.calculations.prod_indicators import *
-from gas_reserves.excel_report import *
+from src.layouts.components import *
+from src.layouts.menu import make_field_item
+from src.gas_reserves.excel_report import *
 
-from utils import *
-from excel_report import make_data_to_excel
-from callbacks import *
+from src.excel_report import make_data_to_excel
+
 
 @callback(
     Output('parameter-table-area', 'columnDefs'),
@@ -78,4 +75,15 @@ def send_excel_report(n_clicks, storage_data):
     
     return dcc.send_file('Отчёт.xlsx')
 
+
+@callback(
+    Output('menu', 'is_open'),
+
+    Input('toggle_menu', 'n_clicks'),
+    State('menu', 'is_open'),
+)
+def toggle_menu(n_clicks, is_open):
+    if n_clicks:
+        return not is_open
+    return is_open
 

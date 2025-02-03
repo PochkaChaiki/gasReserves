@@ -1,14 +1,14 @@
-from dash import callback, Output, Input, State, ctx, no_update, dcc
-import pandas as pd
+from dash import callback, Output, Input, State, ctx, no_update
 
-from utils import *
+from src.gas_reserves.process_input import *
+from src.gas_reserves.stats import *
+from src.gas_reserves.constants import *
+from src.gas_reserves.plot import *
+from src.gas_reserves.calculations.reserves_calculations import *
+from src.gas_reserves.calculations.prod_indicators import *
 
-from gas_reserves.constants import *
-from gas_reserves.plot import *
-from gas_reserves.calculations.reserves_calculations import *
-from gas_reserves.calculations.prod_indicators import *
-
-from layout import *
+from src.layouts import *
+from src.utils import *
 
 
 
@@ -53,7 +53,7 @@ def prepare_inputs(p_area: list[dict],
     input_data = make_input_data(pd.DataFrame(init_data, index=["value"], dtype=np.float64))
     stat_data = generate_stats(stat_params, np.int64(init_data['num_of_vars']))
 
-    return (input_data, stat_data)
+    return input_data, stat_data
 
 
 def calculate(input_data: pd.DataFrame,
@@ -82,7 +82,7 @@ def calculate(input_data: pd.DataFrame,
         result_df.loc[var, 'P50'] = st.scoreatpercentile(stat_data[reversed_varnames[var]], 50)
         result_df.loc[var, 'P10'] = st.scoreatpercentile(stat_data[reversed_varnames[var]], 90)
     
-    return (result_df, tornado_fig, ecdf_fig, pdf_fig)
+    return result_df, tornado_fig, ecdf_fig, pdf_fig
 
 
 def save_data_to_profiles_tab(storage_data: dict,
@@ -106,13 +106,13 @@ def save_data_to_profiles_tab(storage_data: dict,
         keys_input_hide = ['critical_temp', 'critical_pressure']
     )
     for prop, keys_to_add in zip(['parameter_table_indics', 'parameter_table_indics_collapse'], ['keys_input', 'keys_input_hide']):
-        data = get_value(storage_data=storage_data,
-                         field_name=field_name,
-                         tab='tab-production-indicators',
-                         prop=prop,
-                         default=None)
+        data: list[dict] = get_value(storage_data=storage_data,
+                                     field_name=field_name,
+                                     tab='tab-production-indicators',
+                                     prop=prop,
+                                     default=[])
         
-        if data is None or data == [] or data == [{}]:
+        if len(data) == 0 or data == [{}]:
             data = []
             for var in keys[keys_to_add]:
                 data.append({'parameter': varnamesIndicators[var], 'value': input_data.loc['value', var]})

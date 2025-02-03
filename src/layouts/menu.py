@@ -1,0 +1,57 @@
+from dash import html, dcc
+import dash_bootstrap_components as dbc
+
+def make_menu() -> dbc.Offcanvas:
+    return dbc.Offcanvas([
+        dbc.Card([
+            dbc.CardBody([
+                dbc.Stack([], id='menu_nav', gap=1),
+                # dbc.Nav([], id='menu_nav', vertical=True, pills=True),
+                dbc.Button(['Добавить месторождение', html.I(className='bi bi-plus-square')],
+                           id='open_field_modal',
+                           n_clicks=None,
+                           color='success'
+                           ),
+            ]),
+            dbc.CardFooter([
+                dbc.Button([
+                    'Сохранить',
+                    html.I(className='bi bi-download')
+                ], id='save_btn', n_clicks=0),
+                dbc.Button([
+                    'Экспорт Отчёта Excel',
+                    html.I(className='bi bi-file-earmark-spreadsheet')
+                ], id='download_btn', n_clicks=0),
+                dbc.Button('Загрузить', id='upload_btn', n_clicks=0),
+            ])
+        ]),
+        dbc.Modal([
+            dbc.ModalHeader(dbc.ModalTitle('Введите название месторождения'), close_button=True),
+            dbc.ModalBody([
+                dbc.Input(placeholder='Месторождение...', type='text', id='field_name', required=True),
+            ]),
+            dbc.ModalFooter([
+                dbc.Button('Добавить', id='add_field', color='success', n_clicks=0),
+            ])
+        ], is_open=False, id='add_field_modal')
+
+
+    ], is_open=False, id='menu')
+
+
+
+def make_field_item(field_name: str):
+    hashed_id = str(hash(field_name))
+    return dbc.Row([
+        dbc.ButtonGroup([
+            dbc.Button(html.I(className='bi bi-trash'),
+                       id={'type': 'delete_item', 'index': f'delete_{hashed_id}'},
+                       color='danger',
+                       class_name='col-2').to_plotly_json(),
+            dbc.Button(field_name,
+                       id={'type': 'open_field', 'index': f'open_{hashed_id}'},
+                       className='col-10', color='secondary', outline=True).to_plotly_json(),
+        ]).to_plotly_json()
+    ], className='row', id=hashed_id).to_plotly_json()
+
+

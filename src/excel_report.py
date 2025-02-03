@@ -1,7 +1,7 @@
 from utils import *
 from gas_reserves.constants import *
 
-def collect_stat_params(storage_data: str, field_name: str) -> dict:
+def collect_stat_params(storage_data: dict, field_name: str) -> dict:
     stat_params = {}
     dist_params = ['area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef', 'permeability']
     tabs_list = ['tab-reserves-calcs' for i in range(4)]
@@ -31,7 +31,7 @@ def collect_stat_params(storage_data: str, field_name: str) -> dict:
 
 
 
-def collect_init_data(storage_data: str, field_name: str) -> dict:
+def collect_init_data(storage_data: dict, field_name: str) -> dict:
     init_data = {}
     parameter_table_calcs = get_value(storage_data=storage_data,
                                           field_name=field_name,
@@ -54,7 +54,7 @@ def collect_init_data(storage_data: str, field_name: str) -> dict:
 
 
 
-def collect_prod_profile_init_data(storage_data: str, field_name:str) -> dict:
+def collect_prod_profile_init_data(storage_data: dict, field_name:str) -> dict:
     prod_profile_init_data = {}
     parameter_table_indics = get_value(storage_data=storage_data,
                                        field_name=field_name,
@@ -98,7 +98,7 @@ def collect_prod_profile_init_data(storage_data: str, field_name:str) -> dict:
 
 
 
-def collect_profiles_report(storage_data: str, field_name: str) -> dict:
+def collect_profiles_report(storage_data: dict, field_name: str) -> dict:
     profiles_report = {'P10': {}, 'P50': {}, 'P90': {}}
     parameter_table_stat_indics = get_value(storage_data=storage_data,
                                                field_name=field_name,
@@ -156,26 +156,35 @@ def collect_profiles_report(storage_data: str, field_name: str) -> dict:
 
 
 
-def collect_images(storage_data: str, field_name: str)->dict:
+def collect_images(storage_data: dict, field_name: str)->dict:
     images = {}
 
-    pdf_plot: go.Figure = go.Figure(get_value(storage_data=storage_data,
-                                    field_name=field_name,
-                                    tab='tab-reserves-calcs',
-                                    prop='pdf_plot'))
+    pdf_plot: go.Figure = go.Figure(
+        get_value(storage_data=storage_data,
+                  field_name=field_name,
+                  tab='tab-reserves-calcs',
+                  prop='pdf_plot',
+                  default=None)
+    )
 
     images['hist'] = pdf_plot.to_image('png')
 
-    tornado_diagram: go.Figure = go.Figure(get_value(storage_data=storage_data,
-                                           field_name=field_name,
-                                           tab='tab-reserves-calcs',
-                                           prop='tornado_diagram'))
+    tornado_diagram: go.Figure = go.Figure(
+        get_value(storage_data=storage_data,
+                  field_name=field_name,
+                  tab='tab-reserves-calcs',
+                  prop='tornado_diagram',
+                  default=None)
+    )
     images['tornado'] = tornado_diagram.to_image('png')
 
-    prod_kig_plot: go.Figure = go.Figure(get_value(storage_data=storage_data,
-                                         field_name=field_name,
-                                         tab='tab-production-indicators',
-                                         prop='prod_kig_plot'))
+    prod_kig_plot: go.Figure = go.Figure(
+        get_value(storage_data=storage_data,
+                  field_name=field_name,
+                  tab='tab-production-indicators',
+                  prop='prod_kig_plot',
+                  default=None)
+    )
     images['profile'] = prod_kig_plot.to_image('png')
     return images
 

@@ -1,16 +1,11 @@
-from dash import callback, Output, Input, State, ctx, no_update, dcc
-import pandas as pd
+from dash import callback, Output, Input, State, ctx, no_update
 
-from utils import *
-
-from gas_reserves.constants import *
-from gas_reserves.plot import *
-from gas_reserves.calculations.reserves_calculations import *
-from gas_reserves.calculations.prod_indicators import *
-
-from layout import *
-
-
+from src.gas_reserves.calculations.prod_indicators import *
+from src.gas_reserves.plot import *
+from src.gas_reserves.process_input import make_init_data_for_prod_indics
+from src.gas_reserves.stats import generate_stats
+from src.layouts.components import *
+from src.utils import *
 
 
 @callback(

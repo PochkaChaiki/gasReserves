@@ -1,10 +1,9 @@
-from dash import Dash, html, dcc, callback, Input, Output, State
-from layout import *
-from callbacks import *
-from callback import *
-import json
+from dash import Dash
+from src.layouts import *
+from src.callback import *
+from src.utils import *
 
-app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP], 
+app = Dash(external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP],
            suppress_callback_exceptions=True)
 
 app.layout = Layout
@@ -22,30 +21,6 @@ def render_content(tab, data):
         values = get_tab(data, 'Месторождение1', tab)
         return render_production_indicators(values)
     
-
-
-
-def render_reserves_calcs(data):
-    return html.Div([
-        dbc.Row([
-            make_reserves_input_group(data),
-            make_reserves_main_outputs(data),
-        ]),
-        dbc.Row([make_output(data)])
-        
-    ])
-
-def render_production_indicators(data):
-    return html.Div([
-        dbc.Row([
-            dbc.Col(get_production_indicators_inputs(data)),
-            dbc.Col(make_prod_calcs_table(data))
-        ]),
-        dbc.Row([
-            make_prod_indics_plots(data)
-        ])
-    ])
-
 
 
 if __name__ == '__main__':
