@@ -21,7 +21,8 @@ def make_menu() -> dbc.Offcanvas:
                     'Экспорт Отчёта Excel',
                     html.I(className='bi bi-file-earmark-spreadsheet')
                 ], id='download_btn', n_clicks=0),
-                dbc.Button('Загрузить', id='upload_btn', n_clicks=0),
+                dbc.Button(id='update_fields_btn', n_clicks=0, style={'display': 'none'}),
+                dcc.Upload(dbc.Button('Загрузить', id='upload_btn', n_clicks=0), id='load_save'),
             ])
         ]),
         dbc.Modal([

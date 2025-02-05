@@ -1,3 +1,6 @@
+import base64
+import json
+
 from dash import callback, Output, Input, State, ALL, MATCH, ctx, no_update
 from src.layouts.menu import *
 from src.utils import appropriate_name
@@ -50,14 +53,43 @@ def add_field_modal(n_clicks, field_name: str, field_items: list[dict], storage_
 @callback(
     Output('menu_nav', 'children'),
 
-    Input('upload_btn', 'n_clicks'),
+    Input('update_fields_btn', 'n_clicks'),
     State('persistence_storage', 'data')
 )
-def upload_fields(n_clicks, storage_data):
+def update_fields(n_clicks, storage_data):
     fields = []
     if storage_data:
         fields = [make_field_item(field_name) for field_name in storage_data]
     return fields
+
+@callback(
+    Output('persistence_storage', 'data', allow_duplicate=True),
+    Output('update_fields_btn', 'n_clicks'),
+
+    Input('load_save', 'contents'),
+    State('update_fields_btn', 'n_clicks'),
+    prevent_initial_call=True
+)
+def load_save(contents, update_fields_btn):
+    if contents is not None:
+        content_type, content_string = contents.split(',')
+        decoded = base64.b64decode(content_string)
+        storage_data = json.loads(decoded)
+        update_fields_btn = 1
+        return storage_data, update_fields_btn
+    return no_update, no_update
+
+@callback(
+    Output('download_excel', 'data', allow_duplicate=True),
+    Input('save_btn', 'n_clicks'),
+    State('persistence_storage', 'data'),
+    prevent_initial_call=True
+)
+def send_storage_data(n_clicks, storage_data):
+    with open('save.json', 'w', encoding='utf-8') as file:
+        json.dump(storage_data, file, ensure_ascii=False, indent=4)
+
+    return dcc.send_file('save.json')
 
 
 @callback(
