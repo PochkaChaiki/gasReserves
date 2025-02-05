@@ -4,6 +4,7 @@ from src.callbacks.production_profiles import *
 from src.callbacks.reserves_calcs import *
 from src.callbacks.menu import *
 from src.callbacks.single_page import *
+from src.callbacks.risks import *
 from src.callback import *
 
 from src.layouts.single_page import *

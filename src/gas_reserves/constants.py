@@ -144,3 +144,24 @@ Pind_color = {
     'P50': '#8C04A8',
     'P90': '#00B74A'
 }
+
+varnamesRisks = {
+    'seismic_exploration_work': 'Сейсморазведочные работы',
+    'grid_density': 'Плотность сетки разведочного бурения',
+    'core_research': 'Керновые исследования',
+    'c1_reserves': 'Доля запасов категории С1',
+    'hydrocarbon_properties': 'Физико-химические свойства углеводородов',
+    'exploration_wells_amount': 'Количество разведочных скважин с проведением ГИС',
+    'distance_from_infra': 'Удаленность от существующей инфраструктуры, км',
+}
+
+seismic_exploration_work_kriterias = {
+    '3D-сейсмика': 1,
+    '2D-сейсмика': 0.5,
+    'Отсутствует': 0,
+}
+
+hydrocarbon_properties = {
+    'Есть': 1,
+    'Отсутствуют': 0,
+}

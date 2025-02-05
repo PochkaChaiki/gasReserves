@@ -1,5 +1,4 @@
 from dash import html, dcc
-import dash_bootstrap_components as dbc
 from src.gas_reserves.constants import *
 import dash_ag_grid as dag
 
@@ -157,24 +156,30 @@ def make_indics_table(name: str | None, data: list[dict], id: str, editable: boo
     )
 
 
-def make_input_group(initial_data: list[dict], id: str):
+def make_input_group(initial_data: list[dict], id: str, style: dict = None):
     
     initial_columns = [
         {'headerName': 'Параметр', 'field': 'parameter'},
         {'headerName': 'Значение', 'field': 'value', 'editable': True, 'cellDataType': 'number', 
             'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
     ]
+    grid_options = {
+        "rowSelection": "single",
+        "stopEditingWhenCellsLoseFocus": True,
+        "domLayout": "autoHeight"
+    }
+
+    if style:
+        grid_options.pop('domLayout', None)
+
     return dag.AgGrid(
         id='parameter-table-'+id,
         columnDefs=initial_columns,
         rowData=initial_data,
         defaultColDef={"editable": False, "sortable": False, "filter": False},
-        dashGridOptions={
-            "rowSelection": "single",
-            "stopEditingWhenCellsLoseFocus": True,
-            "domLayout": "autoHeight"
-        },
-        columnSize='responsiveSizeToFit'
+        dashGridOptions=grid_options,
+        columnSize='responsiveSizeToFit',
+        style=style,
     )
 
 

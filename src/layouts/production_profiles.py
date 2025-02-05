@@ -1,6 +1,6 @@
 from src.layouts.components import *
 from src.gas_reserves.constants import *
-
+import dash_bootstrap_components as dbc
 
 def get_production_indicators_inputs(values: dict):
     keys_with_indics = ['effective_thickness', 'geo_gas_reserves']
@@ -206,7 +206,8 @@ def render_production_indicators(data):
     return html.Div([
         dbc.Row([
             dbc.Col(get_production_indicators_inputs(data)),
-            dbc.Col(make_prod_calcs_table(data))
+            dbc.Col(make_prod_calcs_table(data)),
+            dag.AgGrid(id='values', columnDefs=[{'headerName': 'Value', 'field': 'value'}])
         ]),
         dbc.Row([
             make_prod_indics_plots(data)

@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, ctx, no_update
+from dash import callback, Output, Input, State, ctx, no_update, dcc
 
 from src.gas_reserves.process_input import *
 from src.gas_reserves.stats import *
@@ -8,6 +8,7 @@ from src.gas_reserves.calculations.reserves_calculations import *
 from src.gas_reserves.calculations.prod_indicators import *
 
 from src.layouts import *
+from src.layouts.components import make_indics_table
 from src.utils import *
 
 

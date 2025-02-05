@@ -13,7 +13,8 @@ def make_main_contents():
         html.Header(
             dcc.Tabs(id="tabs-calcs", value="tab-reserves-calcs", children=[
                 dcc.Tab(label="Подсчёт запасов", value="tab-reserves-calcs"),
-                dcc.Tab(label="Показатели разработки", value="tab-production-indicators")
+                dcc.Tab(label="Показатели разработки", value="tab-production-indicators"),
+                dcc.Tab(label="Риски и неопределённости", value="tab-risks-and-uncertainties")
             ])),
         html.Div(id="tabs-content")
     ])

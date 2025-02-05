@@ -1,5 +1,6 @@
 from dash import callback, Output, Input, State, ALL, ctx, no_update
 
+from src.layouts.risks import render_risks_and_uncertainties
 from src.layouts.single_page import *
 from src.layouts.reserves_calcs import render_reserves_calcs
 from src.layouts.production_profiles import render_production_indicators
@@ -45,3 +46,7 @@ def render_content(tab, data, field_name):
     elif tab == 'tab-production-indicators':
         values = get_tab(data, field_name, tab)
         return render_production_indicators(values)
+
+    elif tab == 'tab-risks-and-uncertainties':
+        values = get_tab(data, field_name, tab)
+        return render_risks_and_uncertainties(values)
