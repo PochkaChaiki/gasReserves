@@ -124,6 +124,7 @@ def update_table_data(value,
         kriteria_core_research_table=core_research,
         kriteria_c1_reserves_table=c1_reserves,
         kriteria_hydrocarbon_properties_table=hydrocarbon_properties,
+        study_coef=study_coef,
     )
 
     return (study_coef, seismic_exploration_work, grid_density,

@@ -79,7 +79,7 @@ def collect_prod_profile_init_data(storage_data: dict, field_name:str) -> dict:
                                    prop='filtr_resistance_B', default=None)
     
     # ! Mock for now ! ----------------------------------------------------------!!!!!!
-    hydraulic_resistance = 1000000
+    hydraulic_resistance = 0.019
         
     prod_init_data_params = {'prod_rate', 'operations_ratio', 'reserve_ratio', 'machines_num',
                              'time_to_build', 'well_height', 'pipe_diameter', 'main_gas_pipeline_pressure',
@@ -196,6 +196,61 @@ def collect_images(storage_data: dict, field_name: str)->dict:
     images['profile'] = prod_kig_plot.to_image('png')
     return images
 
+def collect_risks(storage_data: dict, field_name: str)->tuple[dict, dict, float]:
+    tab='tab-risks-and-uncertainties'
+    parameter_table_risks = get_value(storage_data=storage_data,
+                                      field_name=field_name,
+                                      tab=tab,
+                                      prop='parameter_table_risks',
+                                      default=[])
+    kriteria_seismic_exploration_work_table = get_value(storage_data=storage_data,
+                                                        field_name=field_name,
+                                                        tab=tab,
+                                                        prop='kriteria_seismic_exploration_work_table',
+                                                        default=[])
+    kriteria_grid_density_table = get_value(storage_data=storage_data,
+                                            field_name=field_name,
+                                            tab=tab,
+                                            prop='kriteria_grid_density_table',
+                                            default=[])
+    kriteria_core_research_table = get_value(storage_data=storage_data,
+                                             field_name=field_name,
+                                             tab=tab,
+                                             prop='kriteria_core_research_table',
+                                             default=[])
+    kriteria_c1_reserves_table = get_value(storage_data=storage_data,
+                                           field_name=field_name,
+                                           tab=tab,
+                                           prop='kriteria_c1_reserves_table',
+                                           default=[])
+    kriteria_hydrocarbon_properties_table = get_value(storage_data=storage_data,
+                                                      field_name=field_name,
+                                                      tab=tab,
+                                                      prop='kriteria_hydrocarbon_properties_table',
+                                                      default=[])
+    study_coef = get_value(storage_data=storage_data,
+                           field_name=field_name,
+                           tab=tab,
+                           prop='study_coef',
+                           default=0)
+
+    risk_params = {}
+    for row in parameter_table_risks:
+        risk_params[reversed_varnamesRisks[row['parameter']]] = row['value']
+
+    risks_kriterias = {}
+    for param in (kriteria_seismic_exploration_work_table,
+                  kriteria_grid_density_table,
+                  kriteria_core_research_table,
+                  kriteria_c1_reserves_table,
+                  kriteria_hydrocarbon_properties_table):
+        risks_kriterias[reversed_varnamesRisks[param[0]['parameter']]] = dict(
+            kriteria=param[0]['kriteria'],
+            value=param[0]['value'],
+            weight=param[0]['weight'],
+        )
+
+    return risk_params, risks_kriterias, study_coef
 
 
 def make_data_to_excel(storage_data: dict) -> dict:
@@ -203,22 +258,26 @@ def make_data_to_excel(storage_data: dict) -> dict:
     
     for field_name in list(storage_data.keys()):
 
-        stat_params = collect_stat_params(storage_data=storage_data, field_name=field_name)
+        stat_params = collect_stat_params(storage_data, field_name)
 
-        init_data = collect_init_data(storage_data=storage_data,field_name=field_name)
+        init_data = collect_init_data(storage_data, field_name)
 
-        prod_profile_init_data = collect_prod_profile_init_data(storage_data=storage_data, field_name=field_name)
+        prod_profile_init_data = collect_prod_profile_init_data(storage_data, field_name)
 
-        profiles_report = collect_profiles_report(storage_data=storage_data, field_name=field_name)
+        profiles_report = collect_profiles_report(storage_data, field_name)
 
-        images = collect_images(storage_data=storage_data, field_name=field_name)
+        images = collect_images(storage_data, field_name)
 
+        risk_params, risks_kriterias, study_coef = collect_risks(storage_data, field_name)
         field = {
             'stat_params': stat_params,
             'init_data': init_data,
             'prod_profile_init_data': prod_profile_init_data,
             'profiles_report': profiles_report,
-            'images': images
+            'images': images,
+            'risk_params': risk_params,
+            'risks_kriterias': risks_kriterias,
+            'study_coef': study_coef,
         }
         data[field_name] = field
     return data

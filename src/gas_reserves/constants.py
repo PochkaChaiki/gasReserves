@@ -155,6 +155,10 @@ varnamesRisks = {
     'distance_from_infra': 'Удаленность от существующей инфраструктуры, км',
 }
 
+reversed_varnamesRisks = {
+    varnamesRisks[key]: key for key in varnamesRisks
+}
+
 seismic_exploration_work_kriterias = {
     '3D-сейсмика': 1,
     '2D-сейсмика': 0.5,

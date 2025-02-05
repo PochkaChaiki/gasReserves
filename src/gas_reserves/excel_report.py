@@ -26,32 +26,42 @@ def copy_sheet(source_wb: xl.Workbook, source_sheet_name: wsxl.Worksheet, target
         target_sheet.merge_cells(range_string=merged_cell.coord)
 
 
-
-# ---------------------------------------------------------------------------------------------
-# Data dict: 
-# data = {
-#     "placement1": {
-#         "stat_params": {
-#             "var": {
-#                 "distribution": str,
-#                 "params": str,
-#             },    
-#         },
-#         "init_data": dict,
-#         "prod_profile_init_data": dict,
-#         "profiles_report": pd.DataFrame,
-#         "images": {"hist": bytes, "tornado": bytes, "profile": bytes}
-#     }, 
-#     "placement2": {
-#         ...
-#     },
-#     "placement3": {
-#         ...
-#     },
-#     ...
-# }
-# ---------------------------------------------------------------------------------------------
-
+'''
+---------------------------------------------------------------------------------------------
+Data dict: 
+data = {
+    "placement1": {
+        "stat_params": {
+            "var": {
+                "distribution": str,
+                "params": str,
+            },    
+        },
+        "init_data": dict,
+        "prod_profile_init_data": dict,
+        "risks_params": dict,
+        "risks_kriterias": {
+            "seismic...": {
+                "kriteria":,
+                "value":,
+                "weight":,
+            },
+            ...
+        },
+        "study_coef": float,
+        "profiles_report": pd.DataFrame,
+        "images": {"hist": bytes, "tornado": bytes, "profile": bytes},
+    }, 
+    "placement2": {
+        ...
+    },
+    "placement3": {
+        ...
+    },
+    ...
+}
+---------------------------------------------------------------------------------------------
+'''
 def insert_to_sheet(data: dict, sheet: wsxl.Worksheet):
     vars = ['area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef']
     stat_params: dict = data['stat_params']
@@ -85,27 +95,55 @@ def insert_to_sheet(data: dict, sheet: wsxl.Worksheet):
     sheet['J120'].value = prod_profile_init_data['hydraulic_resistance']
     sheet['J121'].value = prod_profile_init_data['trail_length']
     sheet['J122'].value = prod_profile_init_data['input_cs_temp']
-    
+
+    risks_params: dict = data['risk_params']
+    sheet['H139'].value = risks_params['exploration_wells_amount']
+    sheet['H140'].value = risks_params['distance_from_infra']
+
+    risks_kriterias: dict = data['risks_kriterias']
+    sheet['H143'].value = risks_kriterias['seismic_exploration_work']['kriteria']
+    sheet['J143'].value = risks_kriterias['seismic_exploration_work']['value']
+    sheet['K143'].value = risks_kriterias['seismic_exploration_work']['weight']
+
+    sheet['H144'].value = risks_kriterias['grid_density']['kriteria']
+    sheet['J144'].value = risks_kriterias['grid_density']['value']
+    sheet['K144'].value = risks_kriterias['grid_density']['weight']
+
+    sheet['H145'].value = risks_kriterias['core_research']['kriteria']
+    sheet['J145'].value = risks_kriterias['core_research']['value']
+    sheet['K145'].value = risks_kriterias['core_research']['weight']
+
+    sheet['H146'].value = risks_kriterias['c1_reserves']['kriteria']
+    sheet['J146'].value = risks_kriterias['c1_reserves']['value']
+    sheet['K146'].value = risks_kriterias['c1_reserves']['weight']
+
+    sheet['H147'].value = risks_kriterias['hydrocarbon_properties']['kriteria']
+    sheet['J147'].value = risks_kriterias['hydrocarbon_properties']['value']
+    sheet['K147'].value = risks_kriterias['hydrocarbon_properties']['weight']
+
+    study_coef: float = data['study_coef']
+    sheet['F150'].value = study_coef
+
     profiles_report: pd.DataFrame = data['profiles_report']
     sheet['C25'].value = profiles_report['P90']['geo_gas_reserves']
     sheet['C27'].value = profiles_report['P50']['geo_gas_reserves']
     sheet['C29'].value = profiles_report['P10']['geo_gas_reserves']
     for profile, col in zip(('P90', 'P50', 'P10'), ('F', 'H', 'J')):
         vars = profiles_report[profile]
-        sheet[f'{col}141'].value = vars['geo_gas_reserves']
-        sheet[f'{col}142'].value = vars['effective_thickness']
-        sheet[f'{col}143'].value = vars['porosity_coef']
-        sheet[f'{col}144'].value = vars['gas_saturation_coef']
-        sheet[f'{col}145'].value = vars['relative_density']
-        sheet[f'{col}146'].value = vars['reservoir_temp']
-        sheet[f'{col}147'].value = vars['init_reservoir_pressure']
-        sheet[f'{col}148'].value = vars['temp_correction']
-        sheet[f'{col}149'].value = vars['init_overcompress_coef']
-        sheet[f'{col}150'].value = vars['annual_production']
-        sheet[f'{col}151'].value = vars['accumulated_production']
-        sheet[f'{col}152'].value = vars['kig']
-        sheet[f'{col}153'].value = vars['num_of_wells']
-        sheet[f'{col}154'].value = vars['years']
+        sheet[f'{col}169'].value = vars['geo_gas_reserves']
+        sheet[f'{col}170'].value = vars['effective_thickness']
+        sheet[f'{col}171'].value = vars['porosity_coef']
+        sheet[f'{col}172'].value = vars['gas_saturation_coef']
+        sheet[f'{col}173'].value = vars['relative_density']
+        sheet[f'{col}174'].value = vars['reservoir_temp']
+        sheet[f'{col}175'].value = vars['init_reservoir_pressure']
+        sheet[f'{col}176'].value = vars['temp_correction']
+        sheet[f'{col}177'].value = vars['init_overcompress_coef']
+        sheet[f'{col}178'].value = vars['annual_production']
+        sheet[f'{col}179'].value = vars['accumulated_production']
+        sheet[f'{col}180'].value = vars['kig']
+        sheet[f'{col}181'].value = vars['num_of_wells']
+        sheet[f'{col}182'].value = vars['years']
     
     images = data['images']
     for img_name, img_data in images.items():
@@ -143,14 +181,6 @@ def create_report(data: dict, template_path: str, output_path: str):
     for placement in prod_sites:
         copy_sheet(template_wb, 'Sheet1', output_wb, placement)
         insert_to_sheet(data[placement], output_wb[placement])
-
-
-    # ws = output_wb.active
-
-    # for cellObj, val in zip(ws['M1':'M5'], [1, 2, 3, 4, 5]):
-    #     for cell in cellObj:
-    #         cell.value = val
-    # print(ws['M1':'M5'])
 
     output_wb.save(output_path)
 
