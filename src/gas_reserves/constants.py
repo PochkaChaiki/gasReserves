@@ -153,6 +153,7 @@ varnamesRisks = {
     'hydrocarbon_properties': 'Физико-химические свойства углеводородов',
     'exploration_wells_amount': 'Количество разведочных скважин с проведением ГИС',
     'distance_from_infra': 'Удаленность от существующей инфраструктуры, км',
+    'study_coef': 'Коэффициент изученности, д.е.',
 }
 
 reversed_varnamesRisks = {
@@ -168,4 +169,13 @@ seismic_exploration_work_kriterias = {
 hydrocarbon_properties = {
     'Есть': 1,
     'Отсутствуют': 0,
+}
+
+varnamesAnalysis = {
+    'area': varnames['area'],
+    'study_coef': varnamesRisks['study_coef'],
+    'uncertainty_coef': 'Коэффициент неопределённости, д.е.',
+    'annual_production': 'Годовые отборы на период постоянной добычи, млн. м3',
+    'distance_from_infra': varnamesRisks['distance_from_infra'],
+    'accumulated_production': 'Накопленная добыча газа, млн. м3',
 }

@@ -11,3 +11,4 @@ tpest.py
 *.md
 .pytest*
 /.idea
+*.json

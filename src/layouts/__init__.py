@@ -3,3 +3,4 @@ from . import reserves_calcs
 from . import single_page
 from . import menu
 from . import components
+from . import comparison_analysis

@@ -135,7 +135,8 @@ def collect_profiles_report(storage_data: dict, field_name: str) -> dict:
                 profiles_report[key][reversed_varnamesIndicators[row['parameter']]] = round(row['value'], 3) \
                     if row['value'] else None
             elif reversed_varnamesIndicators[row['parameter']] == 'prod_rate':
-                profiles_report[key]['annual_production'] = round(row['value'] * profiles_report[key]['geo_gas_reserves'], 3) \
+                profiles_report[key]['annual_production'] = round(
+                    row['value'] * profiles_report[key]['geo_gas_reserves'], 3) \
                     if row['value'] else None
     
     for row in parameter_table_output_calcs:

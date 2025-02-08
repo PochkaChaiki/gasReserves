@@ -8,7 +8,7 @@ from src.utils import *
 
 
 @callback(
-    Output('main-contents', 'children'),
+    Output('main-contents', 'children', allow_duplicate=True),
     Output('current_field', 'children', allow_duplicate=True),
 
     Input({'type': 'open_field', 'index': ALL}, 'n_clicks'),
@@ -30,6 +30,8 @@ def show_main_contents(n_clicks, field_items, current_field):
             return no_update, no_update
     else:
         return make_front_page(), ''
+
+
 
 
 @callback(

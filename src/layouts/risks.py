@@ -6,7 +6,8 @@ import dash_ag_grid as dag
 def make_kriterias_table(values: dict,
                          kriteria_name: str,
                          hide_header: bool = False,
-                         cellDataType: str = None,
+                         cell_data_type: str = None,
+                         kriteria_cell_editable: bool = True,
                          select_cell_editor: bool = False,
                          cell_editor_params: list = None,
                          ):
@@ -17,29 +18,36 @@ def make_kriterias_table(values: dict,
                  'value': 0,
                  'weight': 0}]
 
+    kriteria_header = {
+        'headerName': 'Критерий',
+        'field': 'kriteria',
+        'editable': kriteria_cell_editable,
+        'cellDataType': cell_data_type
+    }
 
-    columns = [{'headerName': 'Показатель', 'field': 'parameter'}]
+    if cell_data_type == 'number':
+        kriteria_header['valueFormatter'] = {"function": "d3.format('.3f')(params.value)"}
     if select_cell_editor:
-        columns.append(
-            {
-                'headerName': 'Критерий',
-                'field': 'kriteria',
-                'editable': True,
-                'cellEditor': 'agSelectCellEditor',
-                'cellDataType': cellDataType,
-                # 'cellEditorPopup': True,
-                'cellEditorParams': {
-                    'values': cell_editor_params
-                },
-            },
-        )
-    else:
-        columns.append({'headerName': 'Критерий', 'field': 'kriteria', 'editable': True, 'cellDataType': cellDataType})
+        kriteria_header['cellEditor'] = 'agSelectCellEditor'
+        kriteria_header['cellEditorParams'] = {'values': cell_editor_params}
 
-    columns.extend([
-        {'headerName': 'Значение', 'field': 'value', 'cellDataType': 'number'},
-        {'headerName': 'Вес', 'field': 'weight', 'editable': True, 'cellDataType': 'number'},
-    ])
+    columns = [
+        {'headerName': 'Показатель', 'field': 'parameter'},
+        kriteria_header,
+        {
+            'headerName': 'Значение',
+            'field': 'value',
+            'cellDataType': 'number',
+            'valueFormatter': {"function": "d3.format('.3f')(params.value)"},
+        },
+        {
+            'headerName': 'Вес',
+            'field': 'weight',
+            'editable': True,
+            'cellDataType': 'number',
+            'valueFormatter': {"function": "d3.format('.3f')(params.value)"},
+        },
+    ]
 
 
     grid_options = {
@@ -86,28 +94,29 @@ def render_risks_and_uncertainties(data):
             dbc.Col([
                 make_kriterias_table(values=data,
                                      kriteria_name='seismic_exploration_work',
-                                     cellDataType='string',
+                                     cell_data_type='string',
                                      select_cell_editor=True,
                                      cell_editor_params=list(seismic_exploration_work_kriterias.keys())),
 
                 make_kriterias_table(values=data,
                                      kriteria_name='grid_density',
-                                     cellDataType='number',
+                                     cell_data_type='string',
+                                     kriteria_cell_editable=False,
                                      hide_header=True),
 
                 make_kriterias_table(values=data,
                                      kriteria_name='core_research',
-                                     cellDataType='number',
+                                     cell_data_type='number',
                                      hide_header=True),
 
                 make_kriterias_table(values=data,
                                      kriteria_name='c1_reserves',
-                                     cellDataType='number',
+                                     cell_data_type='number',
                                      hide_header=True),
 
                 make_kriterias_table(values=data,
                                      kriteria_name='hydrocarbon_properties',
-                                     cellDataType='string',
+                                     cell_data_type='string',
                                      hide_header=True,
                                      select_cell_editor=True,
                                      cell_editor_params=list(hydrocarbon_properties.keys())),

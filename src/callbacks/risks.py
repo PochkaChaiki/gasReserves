@@ -84,9 +84,9 @@ def update_table_data(value,
 
 
     values = prepare_values(kriterias=kriterias,
-                                area=area,
-                                effective_thickness=effective_thickness,
-                                exploration_wells_amount=exploration_wells_amount)
+                            area=area*1_000,
+                            effective_thickness=effective_thickness,
+                            exploration_wells_amount=exploration_wells_amount)
 
     weights = dict(
         seismic_exploration_work = seismic_exploration_work[0]['weight'],

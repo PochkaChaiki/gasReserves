@@ -6,6 +6,7 @@ from src.layouts.menu import *
 from src.utils import appropriate_name
 
 
+
 @callback(
     Output('add_field_modal', 'is_open', allow_duplicate=True),
 
@@ -17,6 +18,7 @@ def add_field(n_clicks, is_open):
         return not is_open
 
     return is_open
+
 
 
 @callback(
@@ -50,6 +52,7 @@ def add_field_modal(n_clicks, field_name: str, field_items: list[dict], storage_
     return False, field_items, storage_data
 
 
+
 @callback(
     Output('menu_nav', 'children'),
 
@@ -61,6 +64,8 @@ def update_fields(n_clicks, storage_data):
     if storage_data:
         fields = [make_field_item(field_name) for field_name in storage_data]
     return fields
+
+
 
 @callback(
     Output('persistence_storage', 'data', allow_duplicate=True),
@@ -79,6 +84,8 @@ def load_save(contents, update_fields_btn):
         return storage_data, update_fields_btn
     return no_update, no_update
 
+
+
 @callback(
     Output('download_excel', 'data', allow_duplicate=True),
     Input('save_btn', 'n_clicks'),
@@ -90,6 +97,7 @@ def send_storage_data(n_clicks, storage_data):
         json.dump(storage_data, file, ensure_ascii=False, indent=4)
 
     return dcc.send_file('save.json')
+
 
 
 @callback(
@@ -120,6 +128,8 @@ def delete_field(n_clicks:list[int], fields_list: list[dict], storage_data: dict
         fields_list.remove(field_to_delete)
         
     return fields_list, storage_data, current_field
+
+
 
 @callback(
     Output({'type': 'open_field', 'index': ALL}, 'outline'),

@@ -11,6 +11,11 @@ def make_menu() -> dbc.Offcanvas:
                            n_clicks=None,
                            color='success'
                            ),
+                html.Br(),
+                dbc.Button(['Сравнительный анализ', html.I(className='bi bi-search')],
+                           id='analyze_fields',
+                           n_clicks=None,
+                           color='primary')
             ]),
             dbc.CardFooter([
                 dbc.Button([
