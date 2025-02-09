@@ -133,6 +133,13 @@ def make_prod_calcs_table(values: dict = None):
             'valueFormatter': {"function": "d3.format('.2f')(params.value)"}
         },
         {
+            'headerName': shortnamesVarnamesIndicators['downhole_pressure'],
+            'headerTooltip': displayVarnamesIndicators['downhole_pressure'],
+            'field': 'downhole_pressure',
+            'cellDataType': 'number',
+            'valueFormatter': {"function": "d3.format('.2f')(params.value)"}
+        },
+        {
             'headerName': shortnamesVarnamesIndicators['n_wells'],
             'headerTooltip': displayVarnamesIndicators['n_wells'],
             'field': 'n_wells',
@@ -207,7 +214,6 @@ def render_production_indicators(data):
         dbc.Row([
             dbc.Col(get_production_indicators_inputs(data)),
             dbc.Col(make_prod_calcs_table(data)),
-            dag.AgGrid(id='values', columnDefs=[{'headerName': 'Value', 'field': 'value'}])
         ]),
         dbc.Row([
             make_prod_indics_plots(data)

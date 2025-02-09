@@ -78,8 +78,7 @@ def calculate_production_indicators(n_clicks: int,
         result['avg_production'] = result['annual_production'] / result['n_wells']
 
         results_list.append(result.to_dict('records'))
-        pressures_df = result[['current_pressure', 'wellhead_pressure', 'ukpg_pressure']]
-        pressures_df['downhole_pressure'] = result['current_pressure'] - input_data.loc['value', 'max_depression']
+        pressures_df = result[['current_pressure', 'wellhead_pressure', 'ukpg_pressure', 'downhole_pressure']]
         pressures_graphs.append(plot_pressure_on_production_stages(pressures_df, name))
         prod_kig_fig = plot_summary_chart(prod_kig_fig, result[['annual_production', 'kig', 'n_wells']], name)
 
