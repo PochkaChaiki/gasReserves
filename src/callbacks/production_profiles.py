@@ -52,9 +52,6 @@ def calculate_production_indicators(n_clicks: int,
         if el['value'] is not None:
             init_data[reversed_varnamesIndicators[el['parameter']]] = el['value']
 
-    # for el in p_indics_collapse:
-    #     if el['value'] is not None:
-    #         init_data[reversed_varnamesIndicators[el['parameter']]] = el['value']
 
     stat_indics_data = {}
     for row in p_stat_indics:

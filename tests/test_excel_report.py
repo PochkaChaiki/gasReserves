@@ -1,4 +1,4 @@
-import gas_reserves as gr
+import src.gas_reserves as gr
 from pytest import *
 import pytest
 import pandas as pd
