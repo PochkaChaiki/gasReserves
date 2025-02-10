@@ -1,7 +1,7 @@
+from src.comparison_analysis import analyze_fields, make_bubble_charts
 from src.utils import *
 from src.gas_reserves.constants import *
 
-import pandas as pd
 
 def collect_stat_params(storage_data: dict, field_name: str) -> dict:
     stat_params = {}
@@ -31,22 +31,7 @@ def collect_stat_params(storage_data: dict, field_name: str) -> dict:
 
     return stat_params
 
-def get_values_from_records(records: list[dict],
-                            out: dict,
-                            keys: list,
-                            constants: dict,
-                            index: list = None,
-                            col: str = 'value') -> dict:
-    index = index or ['parameter']
-    df = pd.DataFrame.from_records(records, index=index)
-    if not df.empty:
-        df = df[col]
 
-    for key in keys:
-        value = df[constants.get(key, None)]
-        out[key] = round(value, 3) if value else None
-
-    return out
 
 
 def collect_init_data(storage_data: dict, field_name: str) -> dict:
@@ -278,7 +263,18 @@ def collect_risks(storage_data: dict, field_name: str)->tuple[dict, dict, float]
     return risk_params, risks_kriterias, study_coef
 
 
+def collect_comparison_analysis(storage_data: dict)->tuple[pd.DataFrame, dict]:
+    df_values = analyze_fields(storage_data)
+    return df_values.copy(), dict(
+        study_coef_chart = make_bubble_charts(df_values, 'study_coef').to_image('png'),
+        uncertainty_coef_chart = make_bubble_charts(df_values, 'uncertainty_coef').to_image('png'),
+        annual_production_chart = make_bubble_charts(df_values, 'annual_production').to_image('png'),
+        distance_from_infra_chart = make_bubble_charts(df_values, 'distance_from_infra').to_image('png'),
+    )
+
+
 def make_data_to_excel(storage_data: dict) -> dict:
+    excel_data = {}
     data = {}
     
     for field_name in list(storage_data.keys()):
@@ -294,6 +290,7 @@ def make_data_to_excel(storage_data: dict) -> dict:
         images = collect_images(storage_data, field_name)
 
         risk_params, risks_kriterias, study_coef = collect_risks(storage_data, field_name)
+
         field = {
             'stat_params': stat_params,
             'init_data': init_data,
@@ -305,4 +302,11 @@ def make_data_to_excel(storage_data: dict) -> dict:
             'study_coef': study_coef,
         }
         data[field_name] = field
-    return data
+    excel_data['fields'] = data
+
+    comparison_values, comparison_images = collect_comparison_analysis(storage_data)
+    excel_data['comparison'] = dict(
+        comparison_values = comparison_values,
+        comparison_images = comparison_images,
+    )
+    return excel_data

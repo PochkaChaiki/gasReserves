@@ -2,6 +2,9 @@ import base64
 import json
 
 from dash import callback, Output, Input, State, ALL, MATCH, ctx, no_update
+
+from src.excel_report import make_data_to_excel
+from src.gas_reserves.excel_report import create_report
 from src.layouts.menu import *
 from src.utils import appropriate_name
 
@@ -148,3 +151,30 @@ def open_field(n_clicks, fields_list):
         return outline_list
 
     return no_update
+
+
+@callback(
+    Output('download_excel', 'data', allow_duplicate=True),
+    Input('download_btn', 'n_clicks'),
+    State('persistence_storage', 'data'),
+    prevent_initial_call=True
+)
+def send_excel_report(n_clicks, storage_data):
+    excel_data = make_data_to_excel(storage_data=storage_data)
+    create_report(excel_data=excel_data,
+                  template_path='Шаблон отчета.xlsx',
+                  output_path='./temp/Отчёт.xlsx')
+
+    return dcc.send_file('Отчёт.xlsx')
+
+
+@callback(
+    Output('menu', 'is_open'),
+
+    Input('toggle_menu', 'n_clicks'),
+    State('menu', 'is_open'),
+)
+def toggle_menu(n_clicks, is_open):
+    if n_clicks:
+        return not is_open
+    return is_open

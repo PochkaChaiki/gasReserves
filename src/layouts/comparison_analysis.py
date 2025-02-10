@@ -1,11 +1,9 @@
 from dash import html, dcc
 import dash_ag_grid as dag
 import dash_bootstrap_components as dbc
-
 import pandas as pd
-from plotly import graph_objects as go
-from src.gas_reserves.constants import *
 
+from src.comparison_analysis import make_bubble_charts
 
 
 def make_analysis_table(df_data: pd.DataFrame):
@@ -29,32 +27,7 @@ def make_analysis_table(df_data: pd.DataFrame):
         }
     )
 
-def make_bubble_charts(values: pd.DataFrame,
-                       y: str) -> go.Figure:
 
-    fig = go.Figure()
-    for field in values.columns:
-        fig.add_trace(
-            go.Scatter(
-                x=[values.loc[varnamesAnalysis['area'], field]],
-                y=[values.loc[varnamesAnalysis[y], field]],
-                mode='markers',
-                name=field,
-                marker_size=values.loc[varnamesAnalysis['accumulated_production'], field] / 100,
-            )
-        )
-
-    fig.update_layout(
-        xaxis=dict(
-            tickformat=".0f",  # Full Format
-            title=dict(text=varnamesAnalysis['area'])
-        ),
-        yaxis=dict(
-            title=varnamesAnalysis[y]
-        )
-    )
-
-    return fig
 
 def make_comparison_analysis_page(values: pd.DataFrame = None):
 

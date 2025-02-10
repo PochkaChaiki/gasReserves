@@ -1,4 +1,5 @@
 import plotly.graph_objects as go
+import pandas as pd
 
 '''
 persistence_storage = {
@@ -308,3 +309,21 @@ def appropriate_name(name: str, list: list[str]) -> str:
         better_name = name + f'({str(names_count)})'
         return better_name
     return name
+
+
+def get_values_from_records(records: list[dict],
+                            out: dict,
+                            keys: list,
+                            constants: dict,
+                            index: list = None,
+                            col: str = 'value') -> dict:
+    index = index or ['parameter']
+    df = pd.DataFrame.from_records(records, index=index)
+    if not df.empty:
+        df = df[col]
+
+    for key in keys:
+        value = df[constants.get(key, None)]
+        out[key] = round(value, 3) if value else None
+
+    return out
