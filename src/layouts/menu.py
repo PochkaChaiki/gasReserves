@@ -38,7 +38,8 @@ def make_menu() -> dbc.Offcanvas:
             dbc.ModalFooter([
                 dbc.Button('Добавить', id='add_field', color='success', n_clicks=0),
             ])
-        ], is_open=False, id='add_field_modal')
+        ], is_open=False, id='add_field_modal'),
+        dcc.Download(id='download_save'),
 
 
     ], is_open=False, id='menu')

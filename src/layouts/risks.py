@@ -1,4 +1,6 @@
 from dash import html
+
+from src.constants import disable_cell_color
 from src.layouts.components import *
 import dash_bootstrap_components as dbc
 import dash_ag_grid as dag
@@ -22,9 +24,11 @@ def make_kriterias_table(values: dict,
         'headerName': 'Критерий',
         'field': 'kriteria',
         'editable': kriteria_cell_editable,
-        'cellDataType': cell_data_type
+        'cellDataType': cell_data_type,
     }
 
+    if not kriteria_cell_editable:
+        kriteria_header['cellStyle'] = {'background-color': disable_cell_color}
     if cell_data_type == 'number':
         kriteria_header['valueFormatter'] = {"function": "d3.format('.3f')(params.value)"}
     if select_cell_editor:
@@ -32,7 +36,11 @@ def make_kriterias_table(values: dict,
         kriteria_header['cellEditorParams'] = {'values': cell_editor_params}
 
     columns = [
-        {'headerName': 'Показатель', 'field': 'parameter'},
+        {
+            'headerName': 'Показатель',
+            'field': 'parameter',
+            'cellStyle': {'background-color': disable_cell_color}
+        },
         kriteria_header,
         {
             'headerName': 'Значение',
@@ -128,8 +136,10 @@ def render_risks_and_uncertainties(data):
         ]),
         dbc.Row([
             html.Span([
-                html.H3('Критерий изученности, д.е.: '),
-                html.H3(study_coef, id='study_coef')
+                make_input_group([{'parameter': varnamesRisks['study_coef'], 'value': study_coef}],
+                                 id='study_coef',
+                                 style={'height': '100px'},
+                                 editable_value=False),
             ])
         ])
     ])

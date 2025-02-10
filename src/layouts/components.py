@@ -1,4 +1,6 @@
 from dash import html, dcc
+
+from src.constants import disable_cell_color
 from src.gas_reserves.constants import *
 import dash_ag_grid as dag
 
@@ -83,7 +85,8 @@ def distribution_input(name, id, placeholder, initial_data=None):
             {'parameter': name, 'distribution': placeholder}
         ]
         initial_columns = [
-            {'headerName': 'Параметр', 'field': 'parameter', 'editable': False},
+            {'headerName': 'Параметр', 'field': 'parameter', 'editable': False,
+             'cellStyle': {'background-color': disable_cell_color}},
             {'headerName': 'Распределение', 'field': 'distribution', 'editable': True,
              'cellEditor': 'agSelectCellEditor',
              'cellEditorParams': {
@@ -129,18 +132,21 @@ def make_indics_table(name: str | None, data: list[dict], id: str, editable: boo
             {'parameter': name, 'P90': None, 'P50': None, 'P10': None}
         ]
     columns = [
-        {'headerName': 'Параметр', 'field': 'parameter'},
+        {'headerName': 'Параметр', 'field': 'parameter', 'cellStyle': {'background-color': disable_cell_color}},
         {'headerName': 'P90', 'field': 'P90', 'cellDataType': 'number', 
             'editable': editable,
-            'valueFormatter': {"function": f"{locale}.format(',.2f')(params.value)"}
+            'valueFormatter': {"function": f"{locale}.format(',.2f')(params.value)"},
+            'cellStyle': {'background-color': disable_cell_color if not editable else '#FFFFFF'},
         },
         {'headerName': 'P50', 'field': 'P50', 'cellDataType': 'number', 
             'editable': editable,
-            'valueFormatter': {"function": f"{locale}.format(',.2f')(params.value)"}
+            'valueFormatter': {"function": f"{locale}.format(',.2f')(params.value)"},
+            'cellStyle': {'background-color': disable_cell_color if not editable else '#FFFFFF'},
         },
         {'headerName': 'P10', 'field': 'P10', 'cellDataType': 'number', 
             'editable': editable,
-            'valueFormatter': {"function": f"{locale}.format(',.2f')(params.value)"}
+            'valueFormatter': {"function": f"{locale}.format(',.2f')(params.value)"},
+            'cellStyle': {'background-color': disable_cell_color if not editable else '#FFFFFF'},
         },
     ]
     return dag.AgGrid(
@@ -156,11 +162,11 @@ def make_indics_table(name: str | None, data: list[dict], id: str, editable: boo
     )
 
 
-def make_input_group(initial_data: list[dict], id: str, style: dict = None):
+def make_input_group(initial_data: list[dict], id: str, style: dict = None, editable_value: bool = True):
     
     initial_columns = [
-        {'headerName': 'Параметр', 'field': 'parameter'},
-        {'headerName': 'Значение', 'field': 'value', 'editable': True, 'cellDataType': 'number', 
+        {'headerName': 'Параметр', 'field': 'parameter', 'cellStyle': {'background-color': disable_cell_color}},
+        {'headerName': 'Значение', 'field': 'value', 'editable': editable_value, 'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
     ]
     grid_options = {

@@ -13,7 +13,7 @@ NO_DICT_UPDATE = dict(
 )
 
 @callback(
-    Output('study_coef', 'children'),
+    Output('parameter-table-study_coef', 'rowData'),
     Output('kriteria-seismic_exploration_work-table', 'rowData'),
     Output('kriteria-grid_density-table', 'rowData'),
     Output('kriteria-core_research-table', 'rowData'),
@@ -103,6 +103,7 @@ def update_table_data(value,
     seismic_exploration_work[0]['value'] = values['seismic_exploration_work']
     seismic_exploration_work[0]['weight'] = prepared_weights['seismic_exploration_work']
 
+    grid_density[0]['kriteria'] = f'{round(area / exploration_wells_amount / 10, 3)} га/скважин'
     grid_density[0]['value'] = values['grid_density']
     grid_density[0]['weight'] = prepared_weights['grid_density']
 
@@ -127,7 +128,7 @@ def update_table_data(value,
         study_coef=study_coef,
     )
 
-    return (study_coef, seismic_exploration_work, grid_density,
+    return ([{'parameter': varnamesRisks['study_coef'], 'value': study_coef}], seismic_exploration_work, grid_density,
             core_research, c1_reserves, hydrocarbon_properties,
             save_data)
     # return value

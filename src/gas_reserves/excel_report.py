@@ -33,36 +33,40 @@ def copy_sheet(source_wb: xl.Workbook, source_sheet_name: wsxl.Worksheet, target
 ---------------------------------------------------------------------------------------------
 Data dict: 
 data = {
-    "placement1": {
-        "stat_params": {
-            "var": {
-                "distribution": str,
-                "params": str,
-            },    
-        },
-        "init_data": dict,
-        "prod_profile_init_data": dict,
-        "risks_params": dict,
-        "risks_kriterias": {
-            "seismic...": {
-                "kriteria":,
-                "value":,
-                "weight":,
+    'fields': {
+        "placement1": {
+            "stat_params": {
+                "var": {
+                    "distribution": str,
+                    "params": str,
+                },    
             },
+            "init_data": dict,
+            "prod_profile_init_data": dict,
+            "risks_params": dict,
+            "risks_kriterias": {
+                "seismic...": {
+                    "kriteria":,
+                    "value":,
+                    "weight":,
+                },
+                ...
+            },
+            "study_coef": float,
+            "profiles_report": pd.DataFrame,
+            "images": {"hist": bytes, "tornado": bytes, "profile": bytes},
+        }, 
+        "placement2": {
             ...
         },
-        "study_coef": float,
-        "profiles_report": pd.DataFrame,
-        "images": {"hist": bytes, "tornado": bytes, "profile": bytes},
-    }, 
-    "placement2": {
+        "placement3": {
+            ...
+        },
         ...
     },
-    "placement3": {
-        ...
-    },
-    ...
-}
+    'comparison': {
+        'comparison_values': {},
+        'comparison_images': {},
 ---------------------------------------------------------------------------------------------
 '''
 def insert_to_sheet(data: dict, sheet: wsxl.Worksheet):

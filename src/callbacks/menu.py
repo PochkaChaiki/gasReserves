@@ -90,7 +90,7 @@ def load_save(contents, update_fields_btn):
 
 
 @callback(
-    Output('download_excel', 'data', allow_duplicate=True),
+    Output('download_save', 'data'),
     Input('save_btn', 'n_clicks'),
     State('persistence_storage', 'data'),
     prevent_initial_call=True
@@ -154,10 +154,12 @@ def open_field(n_clicks, fields_list):
 
 
 @callback(
-    Output('download_excel', 'data', allow_duplicate=True),
+    Output('download_excel', 'data'),
+    # Output('download_btn', 'disabled'),
+
     Input('download_btn', 'n_clicks'),
     State('persistence_storage', 'data'),
-    prevent_initial_call=True
+    prevent_initial_call = True,
 )
 def send_excel_report(n_clicks, storage_data):
     excel_data = make_data_to_excel(storage_data=storage_data)
@@ -167,6 +169,18 @@ def send_excel_report(n_clicks, storage_data):
 
     return dcc.send_file('Отчёт.xlsx')
 
+
+@callback(
+    Output('download_btn', 'disabled'),
+
+    Input('persistence_storage', 'modified_timestamp'),
+    State('persistence_storage', 'data'),
+    prevent_initial_call=True
+)
+def disable_button(timestamp, storage_data):
+    if len(storage_data.keys()) == 0:
+        return True
+    return False
 
 @callback(
     Output('menu', 'is_open'),
