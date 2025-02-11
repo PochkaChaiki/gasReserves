@@ -1,7 +1,7 @@
 import base64
 import json
 
-from dash import callback, Output, Input, State, ALL, MATCH, ctx, no_update
+from dash import callback, Output, Input, State, ALL, MATCH, ctx, no_update, clientside_callback
 
 from src.excel_report import make_data_to_excel
 from src.gas_reserves.excel_report import create_report
@@ -10,17 +10,21 @@ from src.utils import appropriate_name
 
 
 
-@callback(
-    Output('add_field_modal', 'is_open', allow_duplicate=True),
+clientside_callback(
+    """
+    function(n_clicks, is_open) {
+        if (n_clicks !== null) {
+            return !is_open;
+        }
+        return is_open;
+    }
+    """,
+Output('add_field_modal', 'is_open', allow_duplicate=True),
 
     Input('open_field_modal', 'n_clicks'),
     State('add_field_modal', 'is_open'),
-    prevent_initial_call=True)
-def add_field(n_clicks, is_open):
-    if n_clicks:
-        return not is_open
-
-    return is_open
+    prevent_initial_call=True
+)
 
 
 
@@ -155,7 +159,6 @@ def open_field(n_clicks, fields_list):
 
 @callback(
     Output('download_excel', 'data'),
-    # Output('download_btn', 'disabled'),
 
     Input('download_btn', 'n_clicks'),
     State('persistence_storage', 'data'),
@@ -178,17 +181,33 @@ def send_excel_report(n_clicks, storage_data):
     prevent_initial_call=True
 )
 def disable_button(timestamp, storage_data):
-    if len(storage_data.keys()) == 0:
+    if storage_data is None or len(storage_data.keys()) == 0:
         return True
     return False
 
-@callback(
+clientside_callback(
+    """
+    function(n_clicks, is_open) {
+        if (n_clicks !== null) {
+            return !is_open;
+        }
+        return is_open;
+    }
+    """,
     Output('menu', 'is_open'),
-
     Input('toggle_menu', 'n_clicks'),
     State('menu', 'is_open'),
+    prevent_initial_call=True
 )
-def toggle_menu(n_clicks, is_open):
-    if n_clicks:
-        return not is_open
-    return is_open
+
+@callback(
+    Output('analyze_fields', 'disabled'),
+
+    Input('persistence_storage', 'modified_timestamp'),
+    State('persistence_storage', 'data'),
+    prevent_initial_call=True
+)
+def disable_comparison_button(timestamp, storage_data):
+    if storage_data is None or len(storage_data.keys()) == 0:
+        return True
+    return False

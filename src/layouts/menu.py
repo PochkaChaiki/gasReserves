@@ -6,29 +6,34 @@ def make_menu() -> dbc.Offcanvas:
         dbc.Card([
             dbc.CardBody([
                 dbc.Stack([], id='menu_nav', gap=1),
-                dbc.Button(['Добавить месторождение', html.I(className='bi bi-plus-square')],
-                           id='open_field_modal',
-                           n_clicks=None,
-                           color='success'
-                           ),
-                html.Br(),
-                dbc.Button(['Сравнительный анализ', html.I(className='bi bi-search')],
-                           id='analyze_fields',
-                           n_clicks=None,
-                           color='primary')
+                dbc.Stack([
+                    dbc.Button(['Добавить месторождение ', html.I(className='bi bi-plus-square')],
+                               id='open_field_modal',
+                               n_clicks=None,
+                               color='success'
+                               ),
+                    dbc.Button(['Сравнительный анализ ', html.I(className='bi bi-search')],
+                               id='analyze_fields',
+                               n_clicks=None,
+                               color='primary')
+                ], gap=1, class_name='mt-1'),
             ]),
-            dbc.CardFooter([
+            dbc.CardFooter(dbc.Stack([
+
                 dbc.Button([
-                    'Сохранить',
+                    'Сохранить ',
                     html.I(className='bi bi-download')
                 ], id='save_btn', n_clicks=0),
                 dbc.Button([
-                    'Экспорт Отчёта Excel',
-                    html.I(className='bi bi-file-earmark-spreadsheet')
+                    dbc.Spinner([
+                        'Экспорт Отчёта Excel ',
+                        html.I(className='bi bi-file-earmark-spreadsheet'),
+                        dcc.Download(id='download_excel'),
+                    ])
                 ], id='download_btn', n_clicks=0),
                 dbc.Button(id='update_fields_btn', n_clicks=0, style={'display': 'none'}),
-                dcc.Upload(dbc.Button('Загрузить', id='upload_btn', n_clicks=0), id='load_save'),
-            ])
+                dcc.Upload(dbc.Stack(dbc.Button('Загрузить', id='upload_btn', n_clicks=0)), id='load_save'),
+            ], gap=1))
         ]),
         dbc.Modal([
             dbc.ModalHeader(dbc.ModalTitle('Введите название месторождения'), close_button=True),

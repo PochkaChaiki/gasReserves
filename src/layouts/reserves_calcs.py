@@ -31,9 +31,9 @@ def make_reserves_input_group(values: dict):
                            "Газонасыщенность",
                            values.get('p_gas_saturation_coef', None)),
 
-        make_input_group(data, 'calcs'),
+        html.Div(make_input_group(data, 'calcs'), className='my-2'),
 
-        dbc.Button("Расчитать", id="calculate_reserves_button", n_clicks=0)
+        dbc.Button("Расчитать", id="calculate_reserves_button", n_clicks=0, class_name='my-2')
     ])
 
 def make_reserves_main_outputs(values: dict):
@@ -45,9 +45,9 @@ def make_reserves_main_outputs(values: dict):
     if data is None:
         data = [{'parameter': varnames[key], 'value': None} for key in varnames.keys() if key not in keys_to_omit]
     return dbc.Col([
-        make_input_group(data, 'output_calcs'),
+        html.Div(make_input_group(data, 'output_calcs'), className='mb-2'),
 
-        dbc.Button("Очистить", id="clear_main_output", n_clicks=0)
+        dbc.Button("Очистить", id="clear_main_output", n_clicks=0, class_name='my-2')
     ])
 
 def make_output(values: dict):
@@ -90,6 +90,6 @@ def render_reserves_calcs(data):
         dbc.Row([
             make_reserves_input_group(data),
             make_reserves_main_outputs(data),
-        ]),
-        dbc.Row([make_output(data)])
+        ], class_name='my-2'),
+        dbc.Row([make_output(data)], class_name='my-2'),
     ])

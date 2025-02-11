@@ -59,7 +59,7 @@ def get_production_indicators_inputs(values: dict):
                            "Проницаемость",
                            values.get('p_permeability', None)),
 
-        make_input_group(data, 'indics'),
+        html.Div(make_input_group(data, 'indics'), className='my-2'),
         dbc.Accordion([
             dbc.AccordionItem([
                 make_indics_table(None,
@@ -70,8 +70,10 @@ def get_production_indicators_inputs(values: dict):
             ], title='Дополнительные параметры')
         ],
             start_collapsed=True,
-            always_open=True),
-        dbc.Button('Произвести расчёт', id='prod_calcs', n_clicks=0)
+            always_open=True,
+            class_name='my-2'
+        ),
+        dbc.Button('Произвести расчёт', id='prod_calcs', n_clicks=0, class_name='my-2')
     ])
 
 
@@ -174,11 +176,11 @@ def make_prod_calcs_table(values: dict = None):
                         "filter": False
                     },
                     dashGridOptions = {
-                        "rowSelection": "single",
                         "stopEditingWhenCellsLoseFocus": True,
-                        "domLayout": "autoHeight"
+                        # "domLayout": "autoHeight"
                     },
-                    columnSize = 'responsiveSizeToFit'
+                    columnSize = 'responsiveSizeToFit',
+                    style={'height': '400px'},
                 ),
                 title = f'{profile_id} таблица'
             ) for profile_id, i in zip(('P10', 'P50', 'P90'), range(3))
@@ -214,8 +216,8 @@ def render_production_indicators(data):
         dbc.Row([
             dbc.Col(get_production_indicators_inputs(data)),
             dbc.Col(make_prod_calcs_table(data)),
-        ]),
+        ], class_name='my-2'),
         dbc.Row([
             make_prod_indics_plots(data)
-        ])
+        ], class_name='my-2')
     ])

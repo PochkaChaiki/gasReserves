@@ -26,19 +26,20 @@ def make_main_contents():
 Layout = html.Div(
     [
         dcc.Store(id='persistence_storage', storage_type='session'),
-        dcc.Download(id='download_excel'),
         html.Div([
             dbc.Row([
 
                 html.Div([
-                    dbc.Button(['Menu ', html.I(className="bi bi-list")], id='toggle_menu', n_clicks=0),
-                    html.Span([
-                        make_menu(),
-                        html.Span(id='current_field'),
-                    ]),
+                    html.Div([
+                        dbc.Button(['Menu ', html.I(className="bi bi-list")], id='toggle_menu', n_clicks=0),
+                        html.Span([
+                            make_menu(),
+                            html.Span(id='current_field', style={'float': 'right'}, className='pe-3 my-2'),
+                        ]),
+                    ], className='px-3'),
                     html.Div([
                         make_front_page(),
-                    ], id='main-contents')
+                    ], id='main-contents', className='p-3')
                 ], style={'display': 'inline'})
 
             ], style={'display': 'inline'}),

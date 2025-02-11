@@ -9,7 +9,8 @@ import dash_ag_grid as dag
 def update_table_columns(cell, rowData):
     if cell and cell[0]['colId'] == 'distribution':
         base_columns = [
-            {'headerName': 'Параметр', 'field': 'parameter', 'editable': True},
+            {'headerName': 'Параметр', 'field': 'parameter', 'editable': True,
+             'cellStyle': {'background-color': disable_cell_color}},
             {'headerName': 'Распределение', 'field': 'distribution', 'editable': True,
              'cellEditor': 'agSelectCellEditor',
              'cellEditorParams': {
@@ -118,7 +119,6 @@ def distribution_input(name, id, placeholder, initial_data=None):
         rowData=initial_data,
         defaultColDef={"editable": False, "sortable": False, "filter": False},
         dashGridOptions={
-            "rowSelection": "single",
             "stopEditingWhenCellsLoseFocus": True,
         },
         columnSize='responsiveSizeToFit',
@@ -156,7 +156,6 @@ def make_indics_table(name: str | None, data: list[dict], id: str, editable: boo
         defaultColDef={"editable": False, "sortable": False, "filter": False},
         dashGridOptions={
             "domLayout": "autoHeight",
-            "rowSelection": "single",
         },
         columnSize='responsiveSizeToFit',
     )
@@ -165,12 +164,21 @@ def make_indics_table(name: str | None, data: list[dict], id: str, editable: boo
 def make_input_group(initial_data: list[dict], id: str, style: dict = None, editable_value: bool = True):
     
     initial_columns = [
-        {'headerName': 'Параметр', 'field': 'parameter', 'cellStyle': {'background-color': disable_cell_color}},
-        {'headerName': 'Значение', 'field': 'value', 'editable': editable_value, 'cellDataType': 'number',
-            'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
+        {
+            'headerName': 'Параметр',
+            'field': 'parameter',
+            'cellStyle': {'background-color': disable_cell_color}
+        },
+        {
+            'headerName': 'Значение',
+            'field': 'value',
+            'editable': editable_value,
+            'cellDataType': 'number',
+            'valueFormatter': {"function": "d3.format('.3f')(params.value)"},
+            'cellStyle': {'background-color': disable_cell_color if not editable_value else '#FFFFFF'},
+        },
     ]
     grid_options = {
-        "rowSelection": "single",
         "stopEditingWhenCellsLoseFocus": True,
         "domLayout": "autoHeight"
     }

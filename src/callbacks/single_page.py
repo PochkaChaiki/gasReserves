@@ -17,7 +17,7 @@ from src.utils import *
     prevent_initial_call=True
 )
 def show_main_contents(n_clicks, field_items, current_field):
-    if len(ctx.triggered) == 1 and ctx.triggered_id and ctx.triggered[0]['value']:
+    if len(ctx.triggered) == 1 and ctx.triggered_id and ctx.triggered[0]['value'] and isinstance(ctx.triggered_id, dict):
         field_name = ''
         hashed_id = ctx.triggered_id['index'][len('open_'):]
         for field in field_items:

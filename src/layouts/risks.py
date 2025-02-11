@@ -47,6 +47,7 @@ def make_kriterias_table(values: dict,
             'field': 'value',
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.3f')(params.value)"},
+            'cellStyle': {'background-color': disable_cell_color},
         },
         {
             'headerName': 'Вес',
@@ -54,12 +55,11 @@ def make_kriterias_table(values: dict,
             'editable': True,
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.3f')(params.value)"},
+            'cellStyle': {'background-color': disable_cell_color},
         },
     ]
 
-
     grid_options = {
-        'rowSelection': 'single',
         "stopEditingWhenCellsLoseFocus": True,
     }
 
@@ -133,13 +133,14 @@ def render_risks_and_uncertainties(data):
                 dbc.Button('Произвести расчёты', id='risks_btn', n_clicks=None)
             ]),
 
-        ]),
+        ], class_name='my-2'),
         dbc.Row([
-            html.Span([
+            dbc.Col([
                 make_input_group([{'parameter': varnamesRisks['study_coef'], 'value': study_coef}],
                                  id='study_coef',
                                  style={'height': '100px'},
                                  editable_value=False),
-            ])
-        ])
+            ]),
+            dbc.Col()
+        ], class_name='my-2')
     ])
