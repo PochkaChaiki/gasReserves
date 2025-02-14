@@ -2,7 +2,17 @@ from src.layouts.components import *
 from src.gas_reserves.constants import *
 import dash_bootstrap_components as dbc
 
-def get_production_indicators_inputs(values: dict):
+def make_filtr_resistance_indics(frs_A: list, frs_B: list):
+    data = [{'parameter': varnamesIndicators['filtr_resistance_A'],
+             'P10': frs_A[0], 'P50': frs_A[1], 'P90': frs_A[2]},
+            {'parameter': varnamesIndicators['filtr_resistance_B'],
+             'P10': frs_B[0], 'P50': frs_B[1], 'P90': frs_B[2]}]
+    return make_indics_table('Полученные коэффициенты сопротивления',
+                             data,
+                             'filtr_resistance',
+                             editable=False)
+
+def make_production_indicators_inputs(values: dict):
     keys_with_indics = ['effective_thickness', 'geo_gas_reserves']
     keys_to_collapse = ['filtr_resistance_A','filtr_resistance_B',
                         'critical_temp', 'critical_pressure']
@@ -66,7 +76,8 @@ def get_production_indicators_inputs(values: dict):
                                   stat_indics_data,
                                   'stat_indics',
                                   True),
-                make_input_group(data_to_collapse, 'indics_collapse')
+                make_input_group(data_to_collapse, 'indics_collapse'),
+                html.Div(id='filtr_resistance_indics'),
             ], title='Дополнительные параметры')
         ],
             start_collapsed=True,
@@ -214,7 +225,7 @@ def make_prod_indics_plots(values: dict):
 def render_production_indicators(data):
     return html.Div([
         dbc.Row([
-            dbc.Col(get_production_indicators_inputs(data)),
+            dbc.Col(make_production_indicators_inputs(data)),
             dbc.Col(make_prod_calcs_table(data)),
         ], class_name='my-2'),
         dbc.Row([

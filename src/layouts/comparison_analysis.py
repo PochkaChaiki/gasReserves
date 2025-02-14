@@ -32,7 +32,7 @@ def make_analysis_table(df_data: pd.DataFrame):
 def make_comparison_analysis_page(values: pd.DataFrame = None):
 
     return html.Div([
-        dbc.Container([
+        html.Div([
             make_analysis_table(values.copy())
         ], id='analysis_table'),
         dbc.Container([

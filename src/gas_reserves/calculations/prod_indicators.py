@@ -47,6 +47,33 @@ def __count_downhole_pressure_after_min_wellhead(data, curr_p, curr_d_prod, well
         return np.sqrt(expr_inside_sqrt)
     return 0
 
+def __count_bcs_power(data, ukpg_pressure, curr_d_prod, n_wells):
+    power = 0
+    if data['main_gas_pipeline_pressure'] > ukpg_pressure > 0:
+        power = (0.004 * curr_d_prod * n_wells * data['input_cs_temp']
+                 * count_overcomp_coef(ukpg_pressure, data, data['input_cs_temp'])
+                 / data['efficiency_cs'] * adiabatic_index / (adiabatic_index - 1)
+                 * ((data['main_gas_pipeline_pressure'] / ukpg_pressure) ** ((adiabatic_index - 1)
+                                                                             / adiabatic_index) - 1))
+    return power
+
+def __count_ukpg_pressure(data, wellhead_p, downhole_p, curr_d_prod, n_wells):
+    value_inside_sqrt_ukpg_pressure = (wellhead_p ** 2 - data['lambda_trail'] * data['relative_density']
+                                       * count_overcomp_coef(
+                2 / 3 * (downhole_p + wellhead_p ** 2 / (downhole_p + wellhead_p)),
+                data,
+                data['avg_well_temp'])
+                                       * data['avg_trail_temp'] * data['trail_length'] * (
+                                               curr_d_prod * n_wells) ** 2
+                                       / data['trail_diameter'] ** 5 / coef_K ** 2)
+
+    if value_inside_sqrt_ukpg_pressure >= 0.1 ** 2:
+        ukpg_pressure = np.sqrt(value_inside_sqrt_ukpg_pressure)
+    else:
+        ukpg_pressure = 0.1
+
+    return ukpg_pressure
+
 
 def calculate_indicators(data):
     __list_kig = []
@@ -65,6 +92,7 @@ def calculate_indicators(data):
     kig = 0
     current_daily_production = 0
     downhole_pressure = 0
+    wellhead_pressure = 0
     n_wells = 0
 
     while kig < 0.5:
@@ -128,26 +156,13 @@ def calculate_indicators(data):
                 ukpg_pressure = __list_ukpg_pressure,
                 cs_power = __list_cs_power))
 
+        ukpg_pressure = __count_ukpg_pressure(data,
+                                              wellhead_pressure,
+                                              downhole_pressure,
+                                              current_daily_production,
+                                              n_wells)
 
-
-        ukpg_pressure = np.sqrt(
-            wellhead_pressure**2 - data['lambda_trail'] * data['relative_density']
-            * count_overcomp_coef(
-                2/3 * (downhole_pressure + wellhead_pressure**2 / (downhole_pressure + wellhead_pressure)),
-                data, data['avg_well_temp'])
-            * data['avg_trail_temp'] * data['trail_length'] * (current_daily_production * n_wells)**2
-            / data['trail_diameter']**5 / coef_K**2 )
-
-        if np.isnan(ukpg_pressure) or ukpg_pressure <= 0.1:
-            ukpg_pressure = 0.1
-
-        power = 0
-        if data['main_gas_pipeline_pressure'] > ukpg_pressure > 0:
-            power = (0.004 * current_daily_production * n_wells * data['input_cs_temp']
-                     * count_overcomp_coef(ukpg_pressure, data, data['input_cs_temp'])
-                     / data['efficiency_cs'] * adiabatic_index / (adiabatic_index - 1)
-                     * ((data['main_gas_pipeline_pressure'] / ukpg_pressure) ** ((adiabatic_index - 1)
-                                                                                 / adiabatic_index) - 1))
+        power = __count_bcs_power(data, ukpg_pressure, current_daily_production, n_wells)
 
 
         sum_current_annual_production += current_annual_production
@@ -197,14 +212,7 @@ def calculate_indicators(data):
         new_current_daily_production = count_daily_production(current_pressure, data)
 
 
-
-        wellhead_pressure = __count_wellhead_pressure(data,
-                                                      current_pressure,
-                                                      new_current_daily_production,
-                                                      downhole_pressure,
-                                                      overcompress_coef)
-
-        if wellhead_pressure <= data['min_necessary_wellhead_pressure']:
+        if round(wellhead_pressure, 3) <= data['min_necessary_wellhead_pressure']:
             wellhead_pressure = data['min_necessary_wellhead_pressure']
             downhole_pressure = __count_downhole_pressure_after_min_wellhead(data,
                                                                              current_pressure,
@@ -214,6 +222,19 @@ def calculate_indicators(data):
             data['max_depression'] = current_pressure - downhole_pressure
         else:
             downhole_pressure = __count_downhole_pressure(current_pressure, data)
+            wellhead_pressure = __count_wellhead_pressure(data,
+                                                          current_pressure,
+                                                          new_current_daily_production,
+                                                          downhole_pressure,
+                                                          overcompress_coef)
+            if round(wellhead_pressure, 3) <= data['min_necessary_wellhead_pressure']:
+                wellhead_pressure = data['min_necessary_wellhead_pressure']
+                downhole_pressure = __count_downhole_pressure_after_min_wellhead(data,
+                                                                                 current_pressure,
+                                                                                 new_current_daily_production,
+                                                                                 wellhead_pressure,
+                                                                                 overcompress_coef)
+                data['max_depression'] = current_pressure - downhole_pressure
 
         current_annual_production = (
                 365 * n_wells * data['operations_ratio']
@@ -225,26 +246,13 @@ def calculate_indicators(data):
 
         current_daily_production = new_current_daily_production
 
-        ukpg_pressure = np.sqrt(
-            wellhead_pressure ** 2 - data['lambda_trail'] * data['relative_density']
-            * count_overcomp_coef(
-                2 / 3 * (downhole_pressure + wellhead_pressure ** 2 / (downhole_pressure + wellhead_pressure)),
-                data,
-                data['avg_well_temp']) \
-            * data['avg_trail_temp'] * data['trail_length'] * (current_daily_production * n_wells) ** 2
-            / data['trail_diameter'] ** 5 / coef_K ** 2)
+        ukpg_pressure = __count_ukpg_pressure(data,
+                                              wellhead_pressure,
+                                              downhole_pressure,
+                                              current_daily_production,
+                                              n_wells)
 
-        if np.isnan(ukpg_pressure) or ukpg_pressure <= 0.1:
-            ukpg_pressure = 0.1
-
-        power = 0
-        if data['main_gas_pipeline_pressure'] > ukpg_pressure > 0:
-            power = (0.004 * current_daily_production * n_wells * data['input_cs_temp']
-                     * count_overcomp_coef(ukpg_pressure, data, data['input_cs_temp'])
-                     / data['efficiency_cs'] * adiabatic_index / (adiabatic_index - 1)
-                     * ((data['main_gas_pipeline_pressure']/ukpg_pressure)**((adiabatic_index - 1)
-                                                                             / adiabatic_index) - 1))
-
+        power = __count_bcs_power(data, ukpg_pressure, current_daily_production, n_wells)
 
         sum_current_annual_production += current_annual_production
         kig = sum_current_annual_production / data['geo_gas_reserves']

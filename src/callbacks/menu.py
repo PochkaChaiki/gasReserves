@@ -77,6 +77,7 @@ def update_fields(n_clicks, storage_data):
 @callback(
     Output('persistence_storage', 'data', allow_duplicate=True),
     Output('update_fields_btn', 'n_clicks'),
+    Output('load_save', 'contents'),
 
     Input('load_save', 'contents'),
     State('update_fields_btn', 'n_clicks'),
@@ -88,8 +89,8 @@ def load_save(contents, update_fields_btn):
         decoded = base64.b64decode(content_string)
         storage_data = json.loads(decoded)
         update_fields_btn = 1
-        return storage_data, update_fields_btn
-    return no_update, no_update
+        return storage_data, update_fields_btn, None
+    return no_update, no_update, None
 
 
 
@@ -167,14 +168,15 @@ def open_field(n_clicks, fields_list):
 def send_excel_report(n_clicks, storage_data):
     excel_data = make_data_to_excel(storage_data=storage_data)
     create_report(excel_data=excel_data,
-                  template_path='Шаблон отчета.xlsx',
-                  output_path='./temp/Отчёт.xlsx')
+                  template_path='./Шаблон отчёта.xlsx',
+                  output_path='./~temp/Отчёт.xlsx')
 
-    return dcc.send_file('Отчёт.xlsx')
+    return dcc.send_file('./~temp/Отчёт.xlsx')
 
 
 @callback(
     Output('download_btn', 'disabled'),
+    Output('save_btn', 'disabled'),
 
     Input('persistence_storage', 'modified_timestamp'),
     State('persistence_storage', 'data'),
@@ -182,8 +184,8 @@ def send_excel_report(n_clicks, storage_data):
 )
 def disable_button(timestamp, storage_data):
     if storage_data is None or len(storage_data.keys()) == 0:
-        return True
-    return False
+        return True, True
+    return False, False
 
 clientside_callback(
     """

@@ -12,3 +12,4 @@ tpest.py
 .pytest*
 /.idea
 *.json
+/assets

@@ -323,7 +323,7 @@ def get_values_from_records(records: list[dict],
         df = df[col]
 
     for key in keys:
-        value = df[constants.get(key, None)]
+        value = df.get(constants.get(key, None))
         out[key] = round(value, 3) if value else None
 
     return out

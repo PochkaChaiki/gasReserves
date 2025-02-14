@@ -254,10 +254,12 @@ def collect_risks(storage_data: dict, field_name: str)->tuple[dict, dict, float]
                   kriteria_core_research_table,
                   kriteria_c1_reserves_table,
                   kriteria_hydrocarbon_properties_table):
+        if len(param) == 0:
+            continue
         risks_kriterias[reversed_varnamesRisks[param[0]['parameter']]] = dict(
-            kriteria=param[0]['kriteria'],
-            value=param[0]['value'],
-            weight=param[0]['weight'],
+            kriteria=round(param[0]['kriteria'], 3) if type(param[0]['kriteria']) is not str else param[0]['kriteria'],
+            value=round(param[0]['value'], 3) if param[0]['value'] else None,
+            weight=round(param[0]['weight'], 3) if param[0]['weight'] else None,
         )
 
     return risk_params, risks_kriterias, study_coef
@@ -265,6 +267,7 @@ def collect_risks(storage_data: dict, field_name: str)->tuple[dict, dict, float]
 
 def collect_comparison_analysis(storage_data: dict)->tuple[pd.DataFrame, dict]:
     df_values = analyze_fields(storage_data)
+
     return df_values.copy(), dict(
         study_coef_chart = make_bubble_charts(df_values, 'study_coef').to_image('png'),
         uncertainty_coef_chart = make_bubble_charts(df_values, 'uncertainty_coef').to_image('png'),

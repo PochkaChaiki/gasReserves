@@ -3,12 +3,10 @@ import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
 import numpy as np
-import scipy.stats as st
 
 import plotly.figure_factory as ff
 
 from .constants import *
-
 
 
 def plot_vars_distribution(stat_data: pd.DataFrame) -> go.Figure:
@@ -30,6 +28,7 @@ def plot_tornado(df_affection: pd.DataFrame) -> go.Figure:
             orientation='h',
             # name='Влияние в меньшую сторону',
             name='',
+            marker_color=chart_colors[0],
             ),
         row=1,
         col=1
@@ -41,6 +40,7 @@ def plot_tornado(df_affection: pd.DataFrame) -> go.Figure:
             orientation='h',
             # name='Влияние в большую сторону',
             name='',
+            marker_color=chart_colors[1],
             ),
         row=1,
         col=2
@@ -82,14 +82,15 @@ def plot_tornado(df_affection: pd.DataFrame) -> go.Figure:
 
 def plot_ecdf_indicators(vars: pd.DataFrame, title: str) -> go.Figure:
 
-    fig = px.ecdf(vars, title=title)
+    fig = px.ecdf(vars, title=title, color_discrete_sequence=chart_colors)
     indicators = st.scoreatpercentile(vars, [10, 50, 90])
     fig.add_trace(
         go.Scatter(
             x=indicators, 
             y=[0.1, 0.5, 0.9], 
             mode='markers', 
-            marker_size=20, 
+            marker_size=20,
+            marker_color=chart_colors[1],
         )
     )
     fig.add_annotation(x=indicators[0], y=0.1, text=f'P10 = {indicators[0]:.0f} млн. м3', showarrow=True, arrowhead=2,
@@ -130,7 +131,7 @@ def plot_ecdf_indicators(vars: pd.DataFrame, title: str) -> go.Figure:
 
 def plot_pdf_indicators(vars: pd.DataFrame, title: str) -> go.Figure:
 
-    fig = ff.create_distplot([vars], [title], show_hist=False, show_rug=False)
+    fig = ff.create_distplot([vars], [title], show_hist=False, show_rug=False, colors=chart_colors)
 
     indicators = st.scoreatpercentile(vars, [10, 50, 90])
     kde = st.gaussian_kde(vars)
@@ -141,6 +142,7 @@ def plot_pdf_indicators(vars: pd.DataFrame, title: str) -> go.Figure:
             y=ys, 
             mode='markers', 
             marker_size=20,
+            marker_color=chart_colors[1],
         )
     )
     
@@ -176,8 +178,13 @@ def plot_pdf_indicators(vars: pd.DataFrame, title: str) -> go.Figure:
 
 def plot_pressure_on_production_stages(pressureVals: pd.DataFrame, name: str) -> go.Figure:
     fig = go.Figure()
-    for pressure in pressureVals.columns:
-        fig.add_trace(go.Scatter(name=displayVarnamesIndicators[pressure], x=pressureVals.index.values.tolist(), y=pressureVals[pressure], mode="lines+markers"))
+    for pressure, color_id in zip(pressureVals.columns, range(4)):
+        fig.add_trace(go.Scatter(name=displayVarnamesIndicators[pressure],
+                                 x=pressureVals.index.values.tolist(),
+                                 y=pressureVals[pressure],
+                                 mode="lines+markers",
+                                 line=dict(color=chart_colors[color_id]),
+                                 marker=dict(color=chart_colors[color_id]),))
     fig.update_layout(
         title=dict(text=name)
     )
@@ -202,7 +209,6 @@ def plot_united_pressures(charts: list[go.Figure]) -> go.Figure:
             tracegroupgap=222,
             itemsizing='trace',
             groupclick='toggleitem',
-            # traceorder='grouped'
         )
     )
     return fig

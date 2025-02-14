@@ -5,6 +5,7 @@ from src.gas_reserves.plot import *
 from src.gas_reserves.process_input import make_init_data_for_prod_indics
 from src.gas_reserves.stats import generate_stats
 from src.layouts.components import *
+from src.layouts.production_profiles import make_filtr_resistance_indics
 from src.utils import *
 
 
@@ -17,6 +18,7 @@ from src.utils import *
         ],
         Output('pressures-graph', 'children'),
         Output('prod-kig', 'children'),
+        Output('filtr_resistance_indics', 'children'),
         Output('persistence_storage', 'data', allow_duplicate=True),
     ],
     
@@ -39,7 +41,7 @@ def calculate_production_indicators(n_clicks: int,
                                     storage_data: dict,
                                     current_field: str):
     if n_clicks is None or n_clicks == 0 or ctx.triggered_id != 'prod_calcs':
-        return [[no_update for _ in range(3)], no_update, no_update, no_update]
+        return [[no_update for _ in range(3)], no_update, no_update, no_update, no_update]
 
     _, permeability_params = *parse_params(dist_dict[p_permeability[0]['distribution']], p_permeability[0]),
     stat_params = {"permeability": permeability_params}
@@ -61,6 +63,8 @@ def calculate_production_indicators(n_clicks: int,
     pressures_graphs = []
     results_list = []
     save_filtr_resistance_A, save_filtr_resistance_B = None, None
+    filtr_resistance_A_list = []
+    filtr_resistance_B_list = []
     for perm, name in zip(permeability_Pinds, ['P10', 'P50', 'P90']):
         init_data['permeability'] = perm
         init_data['effective_thickness'] = stat_indics_data[varnamesIndicators['effective_thickness']][name]
@@ -78,10 +82,11 @@ def calculate_production_indicators(n_clicks: int,
         pressures_df = result[['current_pressure', 'wellhead_pressure', 'ukpg_pressure', 'downhole_pressure']]
         pressures_graphs.append(plot_pressure_on_production_stages(pressures_df, name))
         prod_kig_fig = plot_summary_chart(prod_kig_fig, result[['annual_production', 'kig', 'n_wells']], name)
-
+        filtr_resistance_A_list.append(input_data['filtr_resistance_A']['value'])
+        filtr_resistance_B_list.append(input_data['filtr_resistance_B']['value'])
         if name == 'P50':
             save_filtr_resistance_A = input_data['filtr_resistance_A']['value']
-            save_filtr_resistance_B  = input_data['filtr_resistance_B']['value']
+            save_filtr_resistance_B = input_data['filtr_resistance_B']['value']
     
 
     pressures_fig = plot_united_pressures(pressures_graphs)
@@ -100,7 +105,8 @@ def calculate_production_indicators(n_clicks: int,
     
     return [results_list, 
             dcc.Graph(figure=pressures_fig), 
-            dcc.Graph(figure=prod_kig_fig), 
+            dcc.Graph(figure=prod_kig_fig),
+            make_filtr_resistance_indics(filtr_resistance_A_list, filtr_resistance_B_list),
             save_data]
 
 

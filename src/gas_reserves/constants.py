@@ -117,7 +117,7 @@ varnamesIndicators = {
     'lambda_fontain': 'Лямбда скважины',
     'prod_rate': 'Темп годовых отборов на период постоянной добычи, д.е.',
     'abandon_pressure': 'Давление забрасывания, МПа',
-    'min_necessary_wellhead_pressure': 'Минимальное необходимое устьевое давление, МПа',
+    'min_necessary_wellhead_pressure': 'Минимальное устьевое давление, МПа',
 
     'macro_roughness_l':'Коэффициент макрошероховатости, д.е.',
     'filtr_resistance_A': 'Коэффициент фильтрационного сопротивления A, МПа2/(тыс.м3/сут)',
@@ -140,11 +140,12 @@ locale = """d3.formatLocale({
 })"""
 
 
-Pind_color = {
-    'P10': '#FFB700',
-    'P50': '#8C04A8',
-    'P90': '#00B74A'
-}
+# Pind_color = {
+#     'P10': '#FFB700',
+#     'P50': '#8C04A8',
+#     'P90': '#00B74A'
+# }
+
 
 varnamesRisks = {
     'seismic_exploration_work': 'Сейсморазведочные работы',
@@ -179,4 +180,25 @@ varnamesAnalysis = {
     'annual_production': 'Годовые отборы на период постоянной добычи, млн. м3',
     'distance_from_infra': varnamesRisks['distance_from_infra'],
     'accumulated_production': 'Накопленная добыча газа, млн. м3',
+}
+
+chart_colors = [
+    '#2FB4E9',
+    '#F38B00',
+    '#3FBFAD',
+    '#9193E9',
+    '#004077',
+    '#FF5733',
+    '#FFC300',
+    '#B3DEE2',
+    '#B4B4DC',
+    '#A63B36',
+    '#A6703A',
+]
+
+Pind_color = {
+    'P10': chart_colors[1],
+    'P50': chart_colors[2],
+    'P90': chart_colors[3],
+
 }
