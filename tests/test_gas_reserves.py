@@ -1,4 +1,4 @@
-import gas_reserves as gr
+import src.gas_reserves as gr
 from pytest import *
 import pytest
 
@@ -53,7 +53,8 @@ class TestStats:
 
         stats_data = gr.stats.generate_stats(stat_params, 200)
 
-        assert set(stats_data.columns) == set(['area', 'effective_thickness', 'porosity_coef', 'gas_saturation_coef']) and len(stats_data) == 200
+        assert set(stats_data.columns) == {'area', 'effective_thickness', 'porosity_coef',
+                                           'gas_saturation_coef'} and len(stats_data) == 200
 
 
 class TestProcessInput:

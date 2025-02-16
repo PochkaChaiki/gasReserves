@@ -1,6 +1,8 @@
 import plotly.graph_objects as go
 import pandas as pd
 
+from src.constants import DIST_DICT
+
 '''
 persistence_storage = {
     'field_name': {
@@ -219,16 +221,18 @@ def save_to_storage(storage_data: dict | None,
     return storage_data
 
 
-def params_to_string(parsed_params: dict) -> str:
-    if parsed_params['distribution'] == 'norm':
-        return f'M = {parsed_params['params']['loc']}, std = {parsed_params['params']['scale']}'
-    if parsed_params['distribution'] == 'uniform':
-        return f'a = {parsed_params['params']['loc']}, b = {parsed_params['params']['loc'] + parsed_params['params']['scale']}'
-    if parsed_params['distribution'] == 'triang':
-        return f'a = {parsed_params['params']['loc']}, b = {parsed_params['params']['loc'] + parsed_params['params']['scale']}, c = {parsed_params['adds']['c']}'
-    if parsed_params['distribution'] == 'truncnorm':
-        return f'M = {parsed_params['params']['loc']}, std = {parsed_params['params']['scale']}, ' + \
-            f'a = {parsed_params['adds']['a']}, b = {parsed_params['adds']['a'] + parsed_params['adds']['b']}'
+def params_to_string(params: dict) -> str:
+
+    distribution = DIST_DICT.get(params['distribution'])
+    if distribution == 'norm':
+        return f'M = {params['mean']}, std = {params['std_dev']}'
+    if distribution == 'uniform':
+        return f'a = {params['min_value']}, b = {params['max_value']}'
+    if distribution == 'triang':
+        return f'a = {params['min_value']}, b = {params['max_value']}, c = {params['mode']}'
+    if distribution == 'truncnorm':
+        return f'M = {params['mean']}, std = {params['std_dev']}' + \
+            f'a = {params['min_value']}, b = {params['max_value']}'
     return ''
 
 
@@ -277,13 +281,15 @@ def parse_params(dist: str,
     elif dist == "truncnorm":
         min_value = params.get('min_value', 0)
         max_value = params.get('max_value', 1)
-        a = min_value
-        b = max_value - min_value
-        return params.get('mean', 0), {
+        loc = params.get('mean', 0)
+        scale = params.get('std_dev', 1)
+        a = (min_value - loc) / scale
+        b = (max_value - loc) / scale
+        return loc, {
             "distribution": dist,
             "params": {
-                "loc": params.get('mean', 0),
-                "scale": params.get('std_dev', 1),
+                "loc": loc,
+                "scale": scale,
             },
             "adds": {
                 "a": a,

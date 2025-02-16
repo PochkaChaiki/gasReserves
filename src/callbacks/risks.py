@@ -1,7 +1,7 @@
 from dash import callback, Output, Input, State, ALL, no_update, ctx
 
 from src.gas_reserves.calculations.risks_and_uncertainties import prepare_values, prepare_weights, calculate_study_coef
-from src.constants import VARNAMES_RISKS
+from src.constants import VARNAMES_RISKS, VARNAMES
 from src.utils import get_value, save_tab_risks_and_uncertainties
 
 NO_DICT_UPDATE = dict(
@@ -58,9 +58,9 @@ def update_table_data(value,
     area = 0
     effective_thickness = 0
     for row in indics_calcs:
-        if area == 0 and row['parameter'] == varnames['area']:
+        if area == 0 and row['parameter'] == VARNAMES['area']:
             area = row['P50']
-        if effective_thickness == 0 and row['parameter'] == varnames['effective_thickness']:
+        if effective_thickness == 0 and row['parameter'] == VARNAMES['effective_thickness']:
             effective_thickness = row['P50']
 
     if area == 0 and effective_thickness == 0:
@@ -113,8 +113,8 @@ def update_table_data(value,
     c1_reserves[0]['value'] = values['c1_reserves']
     c1_reserves[0]['weight'] = prepared_weights['c1_reserves']
 
-    hydrocarbon_properties[0]['value'] = values['HYDROCARBON_PROPERTIES']
-    hydrocarbon_properties[0]['weight'] = prepared_weights['HYDROCARBON_PROPERTIES']
+    hydrocarbon_properties[0]['value'] = values['hydrocarbon_properties']
+    hydrocarbon_properties[0]['weight'] = prepared_weights['hydrocarbon_properties']
 
     save_data = save_tab_risks_and_uncertainties(
         storage_data=storage_data,

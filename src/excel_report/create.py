@@ -1,5 +1,5 @@
 import openpyxl as xl
-from openpyxl.styles import Border, Side
+from openpyxl.styles import Border, Side, Font, Alignment
 import openpyxl.worksheet.worksheet as wsxl
 import pandas as pd
 from PIL import Image as PILImage
@@ -198,6 +198,9 @@ def insert_comparison(data: dict, sheet: wsxl.Worksheet):
                 top=Side(border_style='thin', color='FF000000'),
                 bottom=Side(border_style='thin', color='FF000000'),
             )
+            sheet[f'{chr(ord('A')+col_id)}{row_id}'].font = Font(name='Times New Roman', size=14)
+            sheet[f'{chr(ord('A')+col_id)}{row_id}'].alignment = Alignment(horizontal='center',
+                                                                           vertical='center')
 
 
     for column_cells in sheet.columns:

@@ -21,10 +21,9 @@ def collect_stat_params(storage_data: dict, field_name: str) -> dict:
             stat_params[param_name] = {'distribution': '', 'params': ''}
             continue
         row = param[0]
-        _, parsed = parse_params(DIST_DICT[row['distribution']], row)
         var = {
             'distribution': row['distribution'],
-            'params': params_to_string(parsed)
+            'params': params_to_string(row)
         }
 
         stat_params[param_name] = var

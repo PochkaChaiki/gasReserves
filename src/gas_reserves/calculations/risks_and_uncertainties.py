@@ -27,7 +27,7 @@ def prepare_values(kriterias: dict,
         core_research = core_research if core_research < 1 else 1,
         c1_reserves = kriterias.get('c1_reserves', 0),
         hydrocarbon_properties = HYDROCARBON_PROPERTIES[
-            kriterias.get('HYDROCARBON_PROPERTIES', 'Отсутствует')
+            kriterias.get('hydrocarbon_properties', 'Отсутствуют')
         ]
     )
 
