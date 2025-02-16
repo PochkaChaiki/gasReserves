@@ -1,9 +1,6 @@
-import src.gas_reserves as gr
-from pytest import *
-import pytest
 import pandas as pd
 import plotly.graph_objects as go
-import kaleido
+
 
 class TestExcelReport:
     def test_create_report(self):
@@ -114,5 +111,5 @@ class TestExcelReport:
                 }
             }
         }
-        gr.excel_report.create_report(data, 'Шаблон отчета.xlsx', 'Отчёт.xlsx')
+        src.excel_report.excel_report.create_report(data, 'Шаблон отчета.xlsx', 'Отчёт.xlsx')
         assert 1 == 1

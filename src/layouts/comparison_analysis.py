@@ -3,7 +3,7 @@ import dash_ag_grid as dag
 import dash_bootstrap_components as dbc
 import pandas as pd
 
-from src.comparison_analysis import make_bubble_charts
+from src.plot import make_bubble_charts
 
 
 def make_analysis_table(df_data: pd.DataFrame):

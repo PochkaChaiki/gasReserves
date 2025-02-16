@@ -5,10 +5,11 @@ import dash_bootstrap_components as dbc
 def make_front_page():
     return dbc.Container([
         dbc.Row(
-            dbc.Col(html.H1('Для выбора месторождения или добавления нового, нажмите на кнопку меню.')),
-            align='center',
+            dbc.Col([html.H1('Вероятностная оценка перспективности разработки месторождения газа.', className='text-center'),
+                     html.Img(src='/assets/main_logo.png')]),
+            align='center', class_name='my-auto align-middle'
         )
-    ])
+    ], style={'display': 'flex', 'flex-grow': '1', 'align-contents': 'center'})
 
 def make_main_contents():
     return html.Div([
@@ -26,24 +27,18 @@ def make_main_contents():
 Layout = html.Div(
     [
         dcc.Store(id='persistence_storage', storage_type='session'),
-        html.Div([
-            dbc.Row([
-
-                html.Div([
-                    html.Div([
-                        dbc.Button(['Menu ', html.I(className="bi bi-list")], id='toggle_menu', n_clicks=0),
-                        html.Span([
-                            make_menu(),
-                            html.Span(id='current_field', style={'float': 'right'}, className='pe-3 my-2'),
-                        ]),
-                    ], className='px-3'),
-                    html.Div([
-                        make_front_page(),
-                    ], id='main-contents', className='p-3')
-                ], style={'display': 'inline'})
-
-            ], style={'display': 'inline'}),
-        ])
+        dbc.Container([
+            html.Div([
+                dbc.Button(['Меню ', html.I(className="bi bi-list")], id='toggle_menu', n_clicks=0),
+                html.Span([
+                    make_menu(),
+                    html.Span(id='current_field', style={'float': 'right'}, className='pe-3 my-2'),
+                ]),
+            ], className='px-3'),
+            html.Div([
+                make_front_page(),
+            ], id='main-contents', className='p-3', style={'display': 'flex', 'flex-grow': '1', 'flex-direction': 'column'}),
+        ], class_name='py-3', fluid=True, style={'min-height': '100vh', 'display': 'flex', 'flex-direction': 'column'})
 
     ])
 

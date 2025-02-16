@@ -1,7 +1,7 @@
 from dash import callback, Output, Input, State, ALL, no_update, ctx
 
 from src.gas_reserves.calculations.risks_and_uncertainties import prepare_values, prepare_weights, calculate_study_coef
-from src.gas_reserves.constants import varnamesRisks, varnames
+from src.constants import VARNAMES_RISKS
 from src.utils import get_value, save_tab_risks_and_uncertainties
 
 NO_DICT_UPDATE = dict(
@@ -18,7 +18,7 @@ NO_DICT_UPDATE = dict(
     Output('kriteria-grid_density-table', 'rowData'),
     Output('kriteria-core_research-table', 'rowData'),
     Output('kriteria-c1_reserves-table', 'rowData'),
-    Output('kriteria-hydrocarbon_properties-table', 'rowData'),
+    Output('kriteria-HYDROCARBON_PROPERTIES-table', 'rowData'),
     Output('persistence_storage', 'data', allow_duplicate=True),
 
     Input('risks_btn', 'n_clicks'),
@@ -26,7 +26,7 @@ NO_DICT_UPDATE = dict(
     State('kriteria-grid_density-table', 'rowData'),
     State('kriteria-core_research-table', 'rowData'),
     State('kriteria-c1_reserves-table', 'rowData'),
-    State('kriteria-hydrocarbon_properties-table', 'rowData'),
+    State('kriteria-HYDROCARBON_PROPERTIES-table', 'rowData'),
     State('parameter-table-risks', 'rowData'),
 
     State('current_field', 'children'),
@@ -78,7 +78,7 @@ def update_table_data(value,
 
     exploration_wells_amount = 0
     for row in risks_parameters_table:
-        if row['parameter'] == varnamesRisks['exploration_wells_amount']:
+        if row['parameter'] == VARNAMES_RISKS['exploration_wells_amount']:
             exploration_wells_amount = row['value']
 
 
@@ -113,8 +113,8 @@ def update_table_data(value,
     c1_reserves[0]['value'] = values['c1_reserves']
     c1_reserves[0]['weight'] = prepared_weights['c1_reserves']
 
-    hydrocarbon_properties[0]['value'] = values['hydrocarbon_properties']
-    hydrocarbon_properties[0]['weight'] = prepared_weights['hydrocarbon_properties']
+    hydrocarbon_properties[0]['value'] = values['HYDROCARBON_PROPERTIES']
+    hydrocarbon_properties[0]['weight'] = prepared_weights['HYDROCARBON_PROPERTIES']
 
     save_data = save_tab_risks_and_uncertainties(
         storage_data=storage_data,
@@ -128,7 +128,6 @@ def update_table_data(value,
         study_coef=study_coef,
     )
 
-    return ([{'parameter': varnamesRisks['study_coef'], 'value': study_coef}], seismic_exploration_work, grid_density,
+    return ([{'parameter': VARNAMES_RISKS['study_coef'], 'value': study_coef}], seismic_exploration_work, grid_density,
             core_research, c1_reserves, hydrocarbon_properties,
             save_data)
-    # return value

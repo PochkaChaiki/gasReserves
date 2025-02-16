@@ -1,17 +1,16 @@
 import pandas as pd
-import plotly.graph_objects as go
 
 from src.utils import get_value
-from src.gas_reserves.constants import varnamesAnalysis, varnamesRisks, varnamesIndicators, chart_colors
+from src.constants import VARNAMES_ANALYSIS, VARNAMES_RISKS, VARNAMES_INDICATORS
 
 
 def analyze_fields(storage_data: dict) -> pd.DataFrame:
-    df_values = pd.DataFrame(index=[ varnamesAnalysis['area'],
-                                    varnamesAnalysis['study_coef'],
-                                    varnamesAnalysis['uncertainty_coef'],
-                                    varnamesAnalysis['annual_production'],
-                                    varnamesAnalysis['distance_from_infra'],
-                                    varnamesAnalysis['accumulated_production']
+    df_values = pd.DataFrame(index=[VARNAMES_ANALYSIS['area'],
+                                    VARNAMES_ANALYSIS['study_coef'],
+                                    VARNAMES_ANALYSIS['uncertainty_coef'],
+                                    VARNAMES_ANALYSIS['annual_production'],
+                                    VARNAMES_ANALYSIS['distance_from_infra'],
+                                    VARNAMES_ANALYSIS['accumulated_production']
                                     ],
                              columns=list(storage_data.keys()))
     for field in storage_data:
@@ -22,9 +21,9 @@ def analyze_fields(storage_data: dict) -> pd.DataFrame:
                                  default=[])
 
         for row in indics_calcs:
-            if row['parameter'] == varnamesAnalysis['area']:
-                df_values.loc[varnamesAnalysis['area'], field] = round(row['P50'], 3)
-                df_values.loc[varnamesAnalysis['uncertainty_coef'], field] = round(row['P90'] / row['P10'], 3)
+            if row['parameter'] == VARNAMES_ANALYSIS['area']:
+                df_values.loc[VARNAMES_ANALYSIS['area'], field] = round(row['P50'], 3)
+                df_values.loc[VARNAMES_ANALYSIS['uncertainty_coef'], field] = round(row['P90'] / row['P10'], 3)
                 break
 
         study_coef = get_value(storage_data,
@@ -32,7 +31,7 @@ def analyze_fields(storage_data: dict) -> pd.DataFrame:
                                tab='tab-risks-and-uncertainties',
                                prop='study_coef',
                                default=None)
-        df_values.loc[varnamesAnalysis['study_coef'], field] = round(study_coef, 3)
+        df_values.loc[VARNAMES_ANALYSIS['study_coef'], field] = round(study_coef, 3)
 
         parameter_table_output_calcs = get_value(storage_data,
                                                   field_name=field,
@@ -42,7 +41,7 @@ def analyze_fields(storage_data: dict) -> pd.DataFrame:
 
         geo_gas_reserves = 0
         for row in parameter_table_output_calcs:
-            if row['parameter'] == varnamesIndicators['geo_gas_reserves']:
+            if row['parameter'] == VARNAMES_INDICATORS['geo_gas_reserves']:
                 geo_gas_reserves = round(row['value'], 3)
                 break
 
@@ -53,11 +52,11 @@ def analyze_fields(storage_data: dict) -> pd.DataFrame:
                                            prop='parameter_table_indics',
                                            default=[])
         for row in parameter_table_indics:
-            if row['parameter'] == varnamesIndicators['prod_rate']:
+            if row['parameter'] == VARNAMES_INDICATORS['prod_rate']:
                 prod_rate = row['value']
                 break
 
-        df_values.loc[varnamesAnalysis['annual_production'], field] = round(prod_rate * geo_gas_reserves, 3)
+        df_values.loc[VARNAMES_ANALYSIS['annual_production'], field] = round(prod_rate * geo_gas_reserves, 3)
 
         prod_calcs_table = get_value(storage_data,
                                      field_name=field,
@@ -69,7 +68,7 @@ def analyze_fields(storage_data: dict) -> pd.DataFrame:
             for row in prod_calcs_table[1]:
                 accumulated_production += row['annual_production']
 
-        df_values.loc[varnamesAnalysis['accumulated_production'], field] = round(accumulated_production, 3)
+        df_values.loc[VARNAMES_ANALYSIS['accumulated_production'], field] = round(accumulated_production, 3)
 
         parameter_table_risks = get_value(storage_data,
                                           field_name=field,
@@ -78,41 +77,12 @@ def analyze_fields(storage_data: dict) -> pd.DataFrame:
                                           default=[])
         distance_from_infra = 0
         for row in parameter_table_risks:
-            if row['parameter'] == varnamesRisks['distance_from_infra']:
+            if row['parameter'] == VARNAMES_RISKS['distance_from_infra']:
                 distance_from_infra = row['value']
                 break
 
-        df_values.loc[varnamesAnalysis['distance_from_infra'], field] = distance_from_infra
+        df_values.loc[VARNAMES_ANALYSIS['distance_from_infra'], field] = distance_from_infra
 
     return df_values.copy()
 
 
-def make_bubble_charts(values: pd.DataFrame,
-                       y: str) -> go.Figure:
-
-    fig = go.Figure()
-    max_size = values.max(axis=1).loc[varnamesAnalysis['accumulated_production']]
-    coef = 100 / max_size
-    for field, field_id in zip(values.columns, range(len(values.columns))):
-        fig.add_trace(
-            go.Scatter(
-                x=[values.loc[varnamesAnalysis['area'], field]],
-                y=[values.loc[varnamesAnalysis[y], field]],
-                mode='markers',
-                name=field,
-                marker_size=values.loc[varnamesAnalysis['accumulated_production'], field] * coef,
-                marker_color=chart_colors[field_id % len(chart_colors)],
-            )
-        )
-
-    fig.update_layout(
-        xaxis=dict(
-            tickformat=".0f",  # Full Format
-            title=dict(text=varnamesAnalysis['area'])
-        ),
-        yaxis=dict(
-            title=varnamesAnalysis[y]
-        )
-    )
-
-    return fig

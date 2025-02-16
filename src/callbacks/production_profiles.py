@@ -1,7 +1,7 @@
-from dash import callback, Output, Input, State, ctx, no_update
+from dash import callback, Output, Input, State, ctx, no_update, dcc
 
 from src.gas_reserves.calculations.prod_indicators import *
-from src.gas_reserves.plot import *
+from src.plot import *
 from src.gas_reserves.process_input import make_init_data_for_prod_indics
 from src.gas_reserves.stats import generate_stats
 from src.layouts.components import *
@@ -43,7 +43,7 @@ def calculate_production_indicators(n_clicks: int,
     if n_clicks is None or n_clicks == 0 or ctx.triggered_id != 'prod_calcs':
         return [[no_update for _ in range(3)], no_update, no_update, no_update, no_update]
 
-    _, permeability_params = *parse_params(dist_dict[p_permeability[0]['distribution']], p_permeability[0]),
+    _, permeability_params = *parse_params(DIST_DICT[p_permeability[0]['distribution']], p_permeability[0]),
     stat_params = {"permeability": permeability_params}
     stat_perm = generate_stats(stat_params, 3000)
     
@@ -52,7 +52,7 @@ def calculate_production_indicators(n_clicks: int,
     init_data = {}
     for el in p_indics + p_indics_collapse:
         if el['value'] is not None:
-            init_data[reversed_varnamesIndicators[el['parameter']]] = el['value']
+            init_data[REVERSED_VARNAMES_INDICATORS[el['parameter']]] = el['value']
 
 
     stat_indics_data = {}
@@ -67,10 +67,10 @@ def calculate_production_indicators(n_clicks: int,
     filtr_resistance_B_list = []
     for perm, name in zip(permeability_Pinds, ['P10', 'P50', 'P90']):
         init_data['permeability'] = perm
-        init_data['effective_thickness'] = stat_indics_data[varnamesIndicators['effective_thickness']][name]
-        init_data['geo_gas_reserves'] = stat_indics_data[varnamesIndicators['geo_gas_reserves']][name]
-        init_data['porosity_coef'] = stat_indics_data[varnamesIndicators['porosity_coef']][name]
-        init_data['gas_saturation_coef'] = stat_indics_data[varnamesIndicators['gas_saturation_coef']][name]
+        init_data['effective_thickness'] = stat_indics_data[VARNAMES_INDICATORS['effective_thickness']][name]
+        init_data['geo_gas_reserves'] = stat_indics_data[VARNAMES_INDICATORS['geo_gas_reserves']][name]
+        init_data['porosity_coef'] = stat_indics_data[VARNAMES_INDICATORS['porosity_coef']][name]
+        init_data['gas_saturation_coef'] = stat_indics_data[VARNAMES_INDICATORS['gas_saturation_coef']][name]
 
         input_data = make_init_data_for_prod_indics(pd.DataFrame(init_data, index=["value"]))
 

@@ -1,32 +1,34 @@
 from src.layouts.components import *
-from src.gas_reserves.constants import *
-import dash_bootstrap_components as dbc
+from src.constants import *
 
+
+import dash_bootstrap_components as dbc
+from dash import html, dcc
 
 def make_reserves_input_group(values: dict):
     keys = ['init_reservoir_pressure', 'relative_density', 'reservoir_temp', 'num_of_vars']
 
     data = values.get('parameter_table_calcs', None)
     if data is None:    
-        data = [{'parameter': varnames[key], 'value': None} for key in keys]
+        data = [{'parameter': VARNAMES[key], 'value': None} for key in keys]
 
     return dbc.Col([
-        distribution_input(varnames['area'],
+        distribution_input(VARNAMES['area'],
                            "area",
                            "Площадь",
                            values.get('p_area', None)),
 
-        distribution_input(varnames['effective_thickness'],
+        distribution_input(VARNAMES['effective_thickness'],
                            "effective_thickness",
                            "Толщина",
                            values.get('p_effective_thickness', None)),
 
-        distribution_input(varnames['porosity_coef'],
+        distribution_input(VARNAMES['porosity_coef'],
                            "porosity_coef",
                            "Пористость",
                            values.get('p_porosity_coef', None)),
 
-        distribution_input(varnames['gas_saturation_coef'],
+        distribution_input(VARNAMES['gas_saturation_coef'],
                            "gas_saturation_coef",
                            "Газонасыщенность",
                            values.get('p_gas_saturation_coef', None)),
@@ -43,7 +45,7 @@ def make_reserves_main_outputs(values: dict):
 
     data = values.get('parameter_table_output_calcs', None)
     if data is None:
-        data = [{'parameter': varnames[key], 'value': None} for key in varnames.keys() if key not in keys_to_omit]
+        data = [{'parameter': VARNAMES[key], 'value': None} for key in VARNAMES.keys() if key not in keys_to_omit]
     return dbc.Col([
         html.Div(make_input_group(data, 'output_calcs'), className='mb-2'),
 

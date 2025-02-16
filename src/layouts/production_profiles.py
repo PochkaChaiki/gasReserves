@@ -1,11 +1,13 @@
 from src.layouts.components import *
-from src.gas_reserves.constants import *
+from src.constants import *
+
 import dash_bootstrap_components as dbc
+from dash import html, dcc
 
 def make_filtr_resistance_indics(frs_A: list, frs_B: list):
-    data = [{'parameter': varnamesIndicators['filtr_resistance_A'],
+    data = [{'parameter': VARNAMES_INDICATORS['filtr_resistance_A'],
              'P10': frs_A[0], 'P50': frs_A[1], 'P90': frs_A[2]},
-            {'parameter': varnamesIndicators['filtr_resistance_B'],
+            {'parameter': VARNAMES_INDICATORS['filtr_resistance_B'],
              'P10': frs_B[0], 'P50': frs_B[1], 'P90': frs_B[2]}]
     return make_indics_table('Полученные коэффициенты сопротивления',
                              data,
@@ -17,29 +19,29 @@ def make_production_indicators_inputs(values: dict):
     keys_to_collapse = ['filtr_resistance_A','filtr_resistance_B',
                         'critical_temp', 'critical_pressure']
 
-    keys_to_omit = {'permeability', 'annual_production', 'pipe_roughness',
-                    'init_num_wells', 'coef_K', 'adiabatic_index', 'lambda_trail',
+    keys_to_omit = {'permeability', 'annual_production', 'PIPE_ROUGHNESS',
+                    'init_num_wells', 'COEF_K', 'ADIABATIC_INDEX', 'lambda_trail',
                     'lambda_fontain', 'macro_roughness_l', 'density_athmospheric',
                     'porosity_coef', 'gas_saturation_coef', 'trail_roughness'}
 
     data: list[dict] = values.get('parameter_table_indics', [])
     keys_not_to_include = set(keys_to_collapse) | set(keys_with_indics) | keys_to_omit
     if len(data) == 0:
-        for key in list(varnamesIndicators.keys()):
+        for key in list(VARNAMES_INDICATORS.keys()):
             if key not in keys_not_to_include:
-                data.append({'parameter': varnamesIndicators[key], 'value': None})
+                data.append({'parameter': VARNAMES_INDICATORS[key], 'value': None})
     else:
         keys = [row['parameter'] for row in data]
-        keys_to_add = reversed_varnamesIndicators.keys() - set(keys)
-        for key in list(reversed_varnamesIndicators.keys()):
-            if (reversed_varnamesIndicators[key] not in keys_not_to_include
+        keys_to_add = REVERSED_VARNAMES_INDICATORS.keys() - set(keys)
+        for key in list(REVERSED_VARNAMES_INDICATORS.keys()):
+            if (REVERSED_VARNAMES_INDICATORS[key] not in keys_not_to_include
                     and key in keys_to_add):
                 data.append({'parameter': key, 'value': None})
 
     stat_indics_data = values.get('parameter_table_stat_indics', None)
     if stat_indics_data is None:
         stat_indics_data = [
-            {'parameter': varnamesIndicators[key], 'value': None} for key in
+            {'parameter': VARNAMES_INDICATORS[key], 'value': None} for key in
                 ('effective_thickness', 'geo_gas_reserves',
                  'porosity_coef', 'gas_saturation_coef')
         ]
@@ -47,12 +49,12 @@ def make_production_indicators_inputs(values: dict):
     data_to_collapse: list[dict] = values.get('parameter_table_indics_collapse', [])
     if len(data_to_collapse) == 0:
         data_to_collapse = [
-            {'parameter': varnamesIndicators[key], 'value': None}
+            {'parameter': VARNAMES_INDICATORS[key], 'value': None}
             for key in keys_to_collapse
         ]
     else:
         keys = [
-            reversed_varnamesIndicators[row['parameter']]
+            REVERSED_VARNAMES_INDICATORS[row['parameter']]
             for row in data_to_collapse
         ]
 
@@ -60,11 +62,11 @@ def make_production_indicators_inputs(values: dict):
         for key in keys_to_collapse:
             if key in keys_to_add:
                 data_to_collapse.append(
-                    {'parameter': varnamesIndicators[key], 'value': None}
+                    {'parameter': VARNAMES_INDICATORS[key], 'value': None}
                 )
 
     return dbc.Col([
-        distribution_input(varnamesIndicators['permeability'],
+        distribution_input(VARNAMES_INDICATORS['permeability'],
                            "permeability",
                            "Проницаемость",
                            values.get('p_permeability', None)),
@@ -104,71 +106,71 @@ def make_prod_calcs_table(values: dict = None):
         ]
     columns = [
         {
-            'headerName': shortnamesVarnamesIndicators['year'],
-            'headerTooltip': displayVarnamesIndicators['year'],
+            'headerName': SHORTNAMES_VARNAMES_INDICATORS['year'],
+            'headerTooltip': DISPLAY_VARNAMES_INDICATORS['year'],
             'field': 'year',
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.2f')(params.value)"}
         },
         {
-            'headerName': shortnamesVarnamesIndicators['avg_production'],
-            'headerTooltip': displayVarnamesIndicators['avg_production'],
+            'headerName': SHORTNAMES_VARNAMES_INDICATORS['avg_production'],
+            'headerTooltip': DISPLAY_VARNAMES_INDICATORS['avg_production'],
             'field': 'avg_production',
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.2f')(params.value)"}
         },
         {
-            'headerName': shortnamesVarnamesIndicators['kig'],
-            'headerTooltip': displayVarnamesIndicators['kig'],
+            'headerName': SHORTNAMES_VARNAMES_INDICATORS['kig'],
+            'headerTooltip': DISPLAY_VARNAMES_INDICATORS['kig'],
             'field': 'kig',
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.2f')(params.value)"}
         },
         {
-            'headerName': shortnamesVarnamesIndicators['annual_production'],
-            'headerTooltip': displayVarnamesIndicators['annual_production'],
+            'headerName': SHORTNAMES_VARNAMES_INDICATORS['annual_production'],
+            'headerTooltip': DISPLAY_VARNAMES_INDICATORS['annual_production'],
             'field': 'annual_production',
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.2f')(params.value)"}
         },
         {
-            'headerName': shortnamesVarnamesIndicators['current_pressure'],
-            'headerTooltip': displayVarnamesIndicators['current_pressure'],
+            'headerName': SHORTNAMES_VARNAMES_INDICATORS['current_pressure'],
+            'headerTooltip': DISPLAY_VARNAMES_INDICATORS['current_pressure'],
             'field': 'current_pressure',
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.2f')(params.value)"}
         },
         {
-            'headerName': shortnamesVarnamesIndicators['wellhead_pressure'],
-            'headerTooltip': displayVarnamesIndicators['wellhead_pressure'],
+            'headerName': SHORTNAMES_VARNAMES_INDICATORS['wellhead_pressure'],
+            'headerTooltip': DISPLAY_VARNAMES_INDICATORS['wellhead_pressure'],
             'field': 'wellhead_pressure',
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.2f')(params.value)"}
         },
         {
-            'headerName': shortnamesVarnamesIndicators['downhole_pressure'],
-            'headerTooltip': displayVarnamesIndicators['downhole_pressure'],
+            'headerName': SHORTNAMES_VARNAMES_INDICATORS['downhole_pressure'],
+            'headerTooltip': DISPLAY_VARNAMES_INDICATORS['downhole_pressure'],
             'field': 'downhole_pressure',
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.2f')(params.value)"}
         },
         {
-            'headerName': shortnamesVarnamesIndicators['n_wells'],
-            'headerTooltip': displayVarnamesIndicators['n_wells'],
+            'headerName': SHORTNAMES_VARNAMES_INDICATORS['n_wells'],
+            'headerTooltip': DISPLAY_VARNAMES_INDICATORS['n_wells'],
             'field': 'n_wells',
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.2f')(params.value)"}
         },
         {
-            'headerName': shortnamesVarnamesIndicators['ukpg_pressure'],
-            'headerTooltip': displayVarnamesIndicators['ukpg_pressure'],
+            'headerName': SHORTNAMES_VARNAMES_INDICATORS['ukpg_pressure'],
+            'headerTooltip': DISPLAY_VARNAMES_INDICATORS['ukpg_pressure'],
             'field': 'ukpg_pressure',
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.2f')(params.value)"}
         },
         {
-            'headerName': shortnamesVarnamesIndicators['cs_power'],
-            'headerTooltip': displayVarnamesIndicators['cs_power'],
+            'headerName': SHORTNAMES_VARNAMES_INDICATORS['cs_power'],
+            'headerTooltip': DISPLAY_VARNAMES_INDICATORS['cs_power'],
             'field': 'cs_power',
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.2f')(params.value)"}

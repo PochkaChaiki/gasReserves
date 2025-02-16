@@ -52,9 +52,9 @@ def __count_bcs_power(data, ukpg_pressure, curr_d_prod, n_wells):
     if data['main_gas_pipeline_pressure'] > ukpg_pressure > 0:
         power = (0.004 * curr_d_prod * n_wells * data['input_cs_temp']
                  * count_overcomp_coef(ukpg_pressure, data, data['input_cs_temp'])
-                 / data['efficiency_cs'] * adiabatic_index / (adiabatic_index - 1)
-                 * ((data['main_gas_pipeline_pressure'] / ukpg_pressure) ** ((adiabatic_index - 1)
-                                                                             / adiabatic_index) - 1))
+                 / data['efficiency_cs'] * ADIABATIC_INDEX / (ADIABATIC_INDEX - 1)
+                 * ((data['main_gas_pipeline_pressure'] / ukpg_pressure) ** ((ADIABATIC_INDEX - 1)
+                                                                             / ADIABATIC_INDEX) - 1))
     return power
 
 def __count_ukpg_pressure(data, wellhead_p, downhole_p, curr_d_prod, n_wells):
@@ -65,7 +65,7 @@ def __count_ukpg_pressure(data, wellhead_p, downhole_p, curr_d_prod, n_wells):
                 data['avg_well_temp'])
                                        * data['avg_trail_temp'] * data['trail_length'] * (
                                                curr_d_prod * n_wells) ** 2
-                                       / data['trail_diameter'] ** 5 / coef_K ** 2)
+                                       / data['trail_diameter'] ** 5 / COEF_K ** 2)
 
     if value_inside_sqrt_ukpg_pressure >= 0.1 ** 2:
         ukpg_pressure = np.sqrt(value_inside_sqrt_ukpg_pressure)

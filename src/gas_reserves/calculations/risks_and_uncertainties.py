@@ -1,4 +1,4 @@
-from src.gas_reserves.constants import seismic_exploration_work_kriterias, hydrocarbon_properties
+from src.gas_reserves.constants import SEISMIC_EXPLR_WORK_KRITERIAS, HYDROCARBON_PROPERTIES
 
 SIDE_OF_SQUARE = 4000.0
 
@@ -20,14 +20,14 @@ def prepare_values(kriterias: dict,
     core_research = (kriterias.get('core_research', 0) * SIDE_OF_SQUARE**2 / 3
                      / area / effective_thickness)
     return dict(
-        seismic_exploration_work = seismic_exploration_work_kriterias[
+        seismic_exploration_work = SEISMIC_EXPLR_WORK_KRITERIAS[
             kriterias.get('seismic_exploration_work', 'Отсутствует')
         ],
         grid_density = grid_density if grid_density < 1 else 1,
         core_research = core_research if core_research < 1 else 1,
         c1_reserves = kriterias.get('c1_reserves', 0),
-        hydrocarbon_properties = hydrocarbon_properties[
-            kriterias.get('hydrocarbon_properties', 'Отсутствует')
+        hydrocarbon_properties = HYDROCARBON_PROPERTIES[
+            kriterias.get('HYDROCARBON_PROPERTIES', 'Отсутствует')
         ]
     )
 

@@ -1,7 +1,10 @@
-from src.comparison_analysis import analyze_fields, make_bubble_charts
+from src.comparison_analysis import analyze_fields
+from src.plot import make_bubble_charts
 from src.utils import *
-from src.gas_reserves.constants import *
+from src.constants import *
 
+
+REVERSED_VARNAMES_RISKS = { VARNAMES_RISKS[key]: key for key in VARNAMES_RISKS }
 
 def collect_stat_params(storage_data: dict, field_name: str) -> dict:
     stat_params = {}
@@ -18,17 +21,13 @@ def collect_stat_params(storage_data: dict, field_name: str) -> dict:
             stat_params[param_name] = {'distribution': '', 'params': ''}
             continue
         row = param[0]
-        _, parsed = parse_params(dist_dict[row['distribution']], row)
+        _, parsed = parse_params(DIST_DICT[row['distribution']], row)
         var = {
             'distribution': row['distribution'],
             'params': params_to_string(parsed)
         }
 
-        if reversed_varnames.get(row['parameter'], None):
-            stat_params[reversed_varnames[row['parameter']]] = var
-        elif reversed_varnamesIndicators.get(row['parameter'], None):
-            stat_params[reversed_varnamesIndicators[row['parameter']]] = var
-
+        stat_params[param_name] = var
     return stat_params
 
 
@@ -49,9 +48,9 @@ def collect_init_data(storage_data: dict, field_name: str) -> dict:
     calcs_params = ['relative_density', 'reservoir_temp', 'init_reservoir_pressure', 'num_of_vars']
     output_calcs_params = ['temp_correction', 'init_overcompress_coef']
 
-    init_data = get_values_from_records(parameter_table_calcs, init_data, calcs_params, varnames)
+    init_data = get_values_from_records(parameter_table_calcs, init_data, calcs_params, VARNAMES)
 
-    init_data = get_values_from_records(parameter_table_output_calcs, init_data, output_calcs_params, varnames)
+    init_data = get_values_from_records(parameter_table_output_calcs, init_data, output_calcs_params, VARNAMES)
 
     return init_data
 
@@ -87,7 +86,7 @@ def collect_prod_profile_init_data(storage_data: dict, field_name:str) -> dict:
     prod_profile_init_data = get_values_from_records(parameter_table_indics,
                                                      prod_profile_init_data,
                                                      prod_init_data_params,
-                                                     varnamesIndicators)
+                                                     VARNAMES_INDICATORS)
 
         
     prod_profile_init_data['filtr_resistance_A'] = filtr_resistance_A
@@ -122,7 +121,7 @@ def collect_profiles_report(storage_data: dict, field_name: str) -> dict:
         profiles_report[key] = get_values_from_records(parameter_table_stat_indics,
                                                        profiles_report[key],
                                                        stat_indics_params,
-                                                       varnamesIndicators,
+                                                       VARNAMES_INDICATORS,
                                                        col=key)
 
 
@@ -133,12 +132,12 @@ def collect_profiles_report(storage_data: dict, field_name: str) -> dict:
     indics_data = get_values_from_records(parameter_table_indics,
                                           {},
                                           indics_params,
-                                          varnamesIndicators)
+                                          VARNAMES_INDICATORS)
 
     prod_rate = get_values_from_records(parameter_table_indics,
                                         {},
                                         ['prod_rate'],
-                                        varnamesIndicators)
+                                        VARNAMES_INDICATORS)
 
     for key in profiles_report.keys():
         profiles_report[key] = dict(profiles_report[key], **indics_data)
@@ -152,7 +151,7 @@ def collect_profiles_report(storage_data: dict, field_name: str) -> dict:
     temp_correction = get_values_from_records(parameter_table_output_calcs,
                                               {},
                                               ['temp_correction'],
-                                              varnames)
+                                              VARNAMES)
     for key in profiles_report.keys():
         profiles_report[key] = dict(profiles_report[key], **temp_correction)
 
@@ -246,7 +245,7 @@ def collect_risks(storage_data: dict, field_name: str)->tuple[dict, dict, float]
 
     risk_params = {}
     for row in parameter_table_risks:
-        risk_params[reversed_varnamesRisks[row['parameter']]] = row['value']
+        risk_params[REVERSED_VARNAMES_RISKS[row['parameter']]] = row['value']
 
     risks_kriterias = {}
     for param in (kriteria_seismic_exploration_work_table,
@@ -256,7 +255,7 @@ def collect_risks(storage_data: dict, field_name: str)->tuple[dict, dict, float]
                   kriteria_hydrocarbon_properties_table):
         if len(param) == 0:
             continue
-        risks_kriterias[reversed_varnamesRisks[param[0]['parameter']]] = dict(
+        risks_kriterias[REVERSED_VARNAMES_RISKS[param[0]['parameter']]] = dict(
             kriteria=round(param[0]['kriteria'], 3) if type(param[0]['kriteria']) is not str else param[0]['kriteria'],
             value=round(param[0]['value'], 3) if param[0]['value'] else None,
             weight=round(param[0]['weight'], 3) if param[0]['weight'] else None,

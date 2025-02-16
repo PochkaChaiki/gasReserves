@@ -1,6 +1,7 @@
 from dash import html
 
-from src.constants import disable_cell_color
+from src.constants import *
+from src.gas_reserves.constants import *
 from src.layouts.components import *
 import dash_bootstrap_components as dbc
 import dash_ag_grid as dag
@@ -15,7 +16,7 @@ def make_kriterias_table(values: dict,
                          ):
     data = values.get(f'kriteria_{kriteria_name}_table', None)
     if data is None:
-        data = [{'parameter': varnamesRisks[kriteria_name],
+        data = [{'parameter': VARNAMES_RISKS[kriteria_name],
                  'kriteria': None,
                  'value': 0,
                  'weight': 0}]
@@ -28,7 +29,7 @@ def make_kriterias_table(values: dict,
     }
 
     if not kriteria_cell_editable:
-        kriteria_header['cellStyle'] = {'background-color': disable_cell_color}
+        kriteria_header['cellStyle'] = {'background-color': DISABLE_CELL_COLOR}
     if cell_data_type == 'number':
         kriteria_header['valueFormatter'] = {"function": "d3.format('.3f')(params.value)"}
     if select_cell_editor:
@@ -39,7 +40,7 @@ def make_kriterias_table(values: dict,
         {
             'headerName': 'Показатель',
             'field': 'parameter',
-            'cellStyle': {'background-color': disable_cell_color}
+            'cellStyle': {'background-color': DISABLE_CELL_COLOR}
         },
         kriteria_header,
         {
@@ -47,7 +48,7 @@ def make_kriterias_table(values: dict,
             'field': 'value',
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.3f')(params.value)"},
-            'cellStyle': {'background-color': disable_cell_color},
+            'cellStyle': {'background-color': DISABLE_CELL_COLOR},
         },
         {
             'headerName': 'Вес',
@@ -55,7 +56,7 @@ def make_kriterias_table(values: dict,
             'editable': True,
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.3f')(params.value)"},
-            'cellStyle': {'background-color': disable_cell_color},
+            'cellStyle': {'background-color': DISABLE_CELL_COLOR},
         },
     ]
 
@@ -84,7 +85,7 @@ def make_kriterias_table(values: dict,
 def make_input_params_table(values: dict):
     data = values.get('parameter_table_risks', None)
     if data is None:
-        data = [{'parameter': varnamesRisks[key], 'value': None}
+        data = [{'parameter': VARNAMES_RISKS[key], 'value': None}
                 for key in ('exploration_wells_amount', 'distance_from_infra')]
     return dbc.Col(
         make_input_group(data, 'risks', style={'height': '135px'})
@@ -104,7 +105,7 @@ def render_risks_and_uncertainties(data):
                                      kriteria_name='seismic_exploration_work',
                                      cell_data_type='string',
                                      select_cell_editor=True,
-                                     cell_editor_params=list(seismic_exploration_work_kriterias.keys())),
+                                     cell_editor_params=list(SEISMIC_EXPLR_WORK_KRITERIAS.keys())),
 
                 make_kriterias_table(values=data,
                                      kriteria_name='grid_density',
@@ -123,11 +124,11 @@ def render_risks_and_uncertainties(data):
                                      hide_header=True),
 
                 make_kriterias_table(values=data,
-                                     kriteria_name='hydrocarbon_properties',
+                                     kriteria_name='HYDROCARBON_PROPERTIES',
                                      cell_data_type='string',
                                      hide_header=True,
                                      select_cell_editor=True,
-                                     cell_editor_params=list(hydrocarbon_properties.keys())),
+                                     cell_editor_params=list(HYDROCARBON_PROPERTIES.keys())),
 
                 html.Br(),
                 dbc.Button('Произвести расчёты', id='risks_btn', n_clicks=None)
@@ -136,7 +137,7 @@ def render_risks_and_uncertainties(data):
         ], class_name='my-2'),
         dbc.Row([
             dbc.Col([
-                make_input_group([{'parameter': varnamesRisks['study_coef'], 'value': study_coef}],
+                make_input_group([{'parameter': VARNAMES_RISKS['study_coef'], 'value': study_coef}],
                                  id='study_coef',
                                  style={'height': '100px'},
                                  editable_value=False),

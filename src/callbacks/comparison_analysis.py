@@ -1,12 +1,11 @@
 from dash import callback, Output, Input, State
 
-from src.gas_reserves.constants import *
+from src.constants import *
 from src.utils import *
 
 from src.layouts.comparison_analysis import make_comparison_analysis_page
 from src.comparison_analysis import analyze_fields
 
-import pandas as pd
 
 
 

@@ -5,14 +5,12 @@ import pandas as pd
 from PIL import Image as PILImage
 from openpyxl.drawing.image import Image
 import io
-import os
 
 from openpyxl.utils.dataframe import dataframe_to_rows
 
-# from src.gas_reserves.constants import seismic_exploration_work_kriterias, hydrocarbon_properties
 
 
-def copy_sheet(source_wb: xl.Workbook, source_sheet_name: wsxl.Worksheet, target_wb: xl.Workbook, target_sheet_name: wsxl.Worksheet):
+def copy_sheet(source_wb: xl.Workbook, source_sheet_name: str, target_wb: xl.Workbook, target_sheet_name: str):
     source_sheet = source_wb[source_sheet_name]
     target_sheet = target_wb.create_sheet(title=target_sheet_name)
 
@@ -23,7 +21,6 @@ def copy_sheet(source_wb: xl.Workbook, source_sheet_name: wsxl.Worksheet, target
                 new_cell.font = xl.styles.Font(**cell.font.__dict__)
                 new_cell.border = xl.styles.Border(**cell.border.__dict__)
                 new_cell.fill = xl.styles.PatternFill(**cell.fill.__dict__)
-                # new_cell.number_format = xl.styles.NumberFormat(**cell.number_format.__dict__)
                 new_cell.protection = xl.styles.Protection(**cell.protection.__dict__)
                 new_cell.alignment = xl.styles.Alignment(**cell.alignment.__dict__)
 
@@ -132,7 +129,7 @@ def insert_to_sheet(field_name: str, data: dict, sheet: wsxl.Worksheet):
     sheet['J193'].value = c1_reserves.get('value')
     sheet['K193'].value = c1_reserves.get('weight')
 
-    hydrocarbon_properties = risks_kriterias.get('hydrocarbon_properties', dict())
+    hydrocarbon_properties = risks_kriterias.get('HYDROCARBON_PROPERTIES', dict())
     sheet['H194'].value = hydrocarbon_properties.get('kriteria')
     sheet['J194'].value = hydrocarbon_properties.get('value')
     sheet['K194'].value = hydrocarbon_properties.get('weight')

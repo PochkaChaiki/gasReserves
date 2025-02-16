@@ -2,18 +2,19 @@ from dash import callback, Output, Input, State, ctx, no_update, dcc
 
 from src.gas_reserves.process_input import *
 from src.gas_reserves.stats import *
-from src.gas_reserves.constants import *
-from src.gas_reserves.plot import *
+from src.constants import VARNAMES
+from src.plot import *
 from src.gas_reserves.calculations.reserves_calculations import *
 from src.gas_reserves.calculations.prod_indicators import *
 
-from src.layouts import *
 from src.layouts.components import make_indics_table, update_table_columns
 from src.utils import *
 
 
+
+
 # noinspection PyTupleAssignmentBalance
-def prepare_inputs(p_area: list[dict],
+def _prepare_inputs(p_area: list[dict],
                    p_effective_thickness: list[dict],
                    p_porosity_coef: list[dict],
                    p_gas_saturation_coef: list[dict],
@@ -21,13 +22,13 @@ def prepare_inputs(p_area: list[dict],
                    add_params: list[dict]) -> tuple[pd.DataFrame, pd.DataFrame]:
     
 
-    area_value, area = *parse_params(dist_dict[p_area[0]['distribution']],
+    area_value, area = *parse_params(DIST_DICT[p_area[0]['distribution']],
                                      p_area[0]),
-    et_value, effective_thickness = *parse_params(dist_dict[p_effective_thickness[0]['distribution']],
+    et_value, effective_thickness = *parse_params(DIST_DICT[p_effective_thickness[0]['distribution']],
                                                   p_effective_thickness[0]),
-    pc_value, porosity_coef = *parse_params(dist_dict[p_porosity_coef[0]['distribution']],
+    pc_value, porosity_coef = *parse_params(DIST_DICT[p_porosity_coef[0]['distribution']],
                                             p_porosity_coef[0]),
-    gsc_value, gas_saturation_coef = *parse_params(dist_dict[p_gas_saturation_coef[0]['distribution']],
+    gsc_value, gas_saturation_coef = *parse_params(DIST_DICT[p_gas_saturation_coef[0]['distribution']],
                                                    p_gas_saturation_coef[0]),
 
     stat_params={
@@ -43,17 +44,17 @@ def prepare_inputs(p_area: list[dict],
         "effective_thickness": et_value,
         "porosity_coef": pc_value,
         "gas_saturation_coef": gsc_value,
-        "init_reservoir_pressure": params_df.loc[varnames['init_reservoir_pressure'], 'value'],
-        "relative_density": params_df.loc[varnames['relative_density'], 'value'],
-        "reservoir_temp": params_df.loc[varnames['reservoir_temp'], 'value'],
-        "num_of_vars": params_df.loc[varnames['num_of_vars'], 'value']
+        "init_reservoir_pressure": params_df.loc[VARNAMES['init_reservoir_pressure'], 'value'],
+        "relative_density": params_df.loc[VARNAMES['relative_density'], 'value'],
+        "reservoir_temp": params_df.loc[VARNAMES['reservoir_temp'], 'value'],
+        "num_of_vars": params_df.loc[VARNAMES['num_of_vars'], 'value']
     }
 
     for el in add_params:
         var = el.get('parameter', None)
         val = el.get('value', None)
         if var is not None and val is not None:
-            init_data[reversed_varnames[var]] = val
+            init_data[REVERSED_VARNAMES[var]] = val
 
     input_data = make_input_data(pd.DataFrame(init_data, index=["value"], dtype=np.float64))
     stat_data = generate_stats(stat_params, np.int64(init_data['num_of_vars']))
@@ -61,43 +62,44 @@ def prepare_inputs(p_area: list[dict],
     return input_data, stat_data
 
 
-def calculate(input_data: pd.DataFrame,
+def _calculate_reserves(input_data: pd.DataFrame,
               stat_data: pd.DataFrame
               ) -> tuple[pd.DataFrame, go.Figure, go.Figure, go.Figure]:
     reserves = calculate_reserves(stat_data, input_data)
     df_affection = calculate_sensitivity(stat_data, input_data, reserves)
-    df_affection.rename(index=varnames, inplace=True)
+    df_affection.rename(index=VARNAMES, inplace=True)
     tornado_fig = plot_tornado(df_affection)
-    ecdf_fig = plot_ecdf_indicators(reserves, varnames['geo_gas_reserves'])
-    pdf_fig = plot_pdf_indicators(reserves, varnames['geo_gas_reserves'])
+    ecdf_fig = plot_ecdf_indicators(reserves, VARNAMES['geo_gas_reserves'])
+    pdf_fig = plot_pdf_indicators(reserves, VARNAMES['geo_gas_reserves'])
 
     stat_data['geo_gas_reserves'] = reserves
     result_df = pd.DataFrame(
         columns=['P90', 'P50', 'P10'], 
         index=[
-            varnames['geo_gas_reserves'], 
-            varnames['area'], 
-            varnames['effective_thickness'], 
-            varnames['porosity_coef'], 
-            varnames['gas_saturation_coef']
+            VARNAMES['geo_gas_reserves'], 
+            VARNAMES['area'], 
+            VARNAMES['effective_thickness'], 
+            VARNAMES['porosity_coef'], 
+            VARNAMES['gas_saturation_coef']
         ]
     )
-    for var in result_df.index:
-        result_df.loc[var, 'P90'] = st.scoreatpercentile(stat_data[reversed_varnames[var]], 10)
-        result_df.loc[var, 'P50'] = st.scoreatpercentile(stat_data[reversed_varnames[var]], 50)
-        result_df.loc[var, 'P10'] = st.scoreatpercentile(stat_data[reversed_varnames[var]], 90)
+    for var in ('geo_gas_reserves', 'area', 'effective_thickness',
+                'porosity_coef', 'gas_saturation_coef'):
+        result_df.loc[VARNAMES[var], 'P90'] = st.scoreatpercentile(stat_data[var], 10)
+        result_df.loc[VARNAMES[var], 'P50'] = st.scoreatpercentile(stat_data[var], 50)
+        result_df.loc[VARNAMES[var], 'P10'] = st.scoreatpercentile(stat_data[var], 90)
     
     return result_df, tornado_fig, ecdf_fig, pdf_fig
 
 
-def save_data_to_profiles_tab(storage_data: dict,
+def _save_data_to_profiles_tab(storage_data: dict,
                               field_name: str,
                               result_df: pd.DataFrame,
                               input_data: pd.DataFrame,
                               ) -> dict:
 
     pass_df = result_df.copy()
-    pass_df = pass_df.drop(varnames['area'])
+    pass_df = pass_df.drop(VARNAMES['area'])
     pass_data = [
         {'parameter': var,
          'P90': result_df.loc[var, 'P90'],
@@ -127,11 +129,11 @@ def save_data_to_profiles_tab(storage_data: dict,
         if len(data) == 0 or data == [{}]:
             data = []
             for var in keys[keys_to_add]:
-                data.append({'parameter': varnamesIndicators[var], 'value': input_data.loc['value', var]})
+                data.append({'parameter': VARNAMES_INDICATORS[var], 'value': input_data.loc['value', var]})
         else:
             for row in data:
-                if reversed_varnamesIndicators[row['parameter']] in set(keys[keys_to_add]):
-                    row['value'] = input_data.loc['value', reversed_varnamesIndicators[row['parameter']]]
+                if REVERSED_VARNAMES_INDICATORS[row['parameter']] in set(keys[keys_to_add]):
+                    row['value'] = input_data.loc['value', REVERSED_VARNAMES_INDICATORS[row['parameter']]]
         
         save_data = save_to_storage(storage_data=storage_data, 
                                     field_name=field_name, 
@@ -179,7 +181,7 @@ def calculate_gas_reserves(n_clicks: int,
         return [no_update for _ in range(6)]
 
 # Processing input values to pass them to gas_reserves lib later ------------------------------------------------------------------------------------
-    input_data, stat_data = prepare_inputs(p_area=p_area,
+    input_data, stat_data = _prepare_inputs(p_area=p_area,
                                            p_effective_thickness=p_effective_thickness,
                                            p_porosity_coef=p_porosity_coef,
                                            p_gas_saturation_coef=p_gas_saturation_coef,
@@ -187,7 +189,7 @@ def calculate_gas_reserves(n_clicks: int,
                                            add_params=add_params)
 
 # Making calculations -------------------------------------------------------------------------------------------------------------------------------
-    result_df, tornado_fig, ecdf_fig, pdf_fig = calculate(input_data=input_data,
+    result_df, tornado_fig, ecdf_fig, pdf_fig = _calculate_reserves(input_data=input_data,
                                                           stat_data=stat_data)
 
 
@@ -204,7 +206,7 @@ def calculate_gas_reserves(n_clicks: int,
                            'geo_gas_reserves', 'dry_gas_init_reserves']
 
     output_data_calcs = [
-        {'parameter': varnames[var], 'value': input_data.loc['value', var]}
+        {'parameter': VARNAMES[var], 'value': input_data.loc['value', var]}
         for var in output_data_columns
     ]
 
@@ -223,7 +225,7 @@ def calculate_gas_reserves(n_clicks: int,
                                         pdf_plot=pdf_fig)
 
 # Adding calculated earlier in reserves' calculation tab values to inputs of production indicators tab ----------------------------------------------
-    save_data = save_data_to_profiles_tab(storage_data=save_data,
+    save_data = _save_data_to_profiles_tab(storage_data=save_data,
                                           field_name=current_field,
                                           result_df=result_df,
                                           input_data=input_data)
