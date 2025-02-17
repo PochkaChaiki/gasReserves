@@ -1,10 +1,11 @@
 from dash import html
+import dash_bootstrap_components as dbc
+import dash_ag_grid as dag
 
 from src.constants import *
 from src.gas_reserves.constants import *
 from src.layouts.components import *
-import dash_bootstrap_components as dbc
-import dash_ag_grid as dag
+
 
 def make_kriterias_table(values: dict,
                          kriteria_name: str,
@@ -13,7 +14,7 @@ def make_kriterias_table(values: dict,
                          kriteria_cell_editable: bool = True,
                          select_cell_editor: bool = False,
                          cell_editor_params: list = None,
-                         ):
+                         aligned_grids: list = None):
     data = values.get(f'kriteria_{kriteria_name}_table', None)
     if data is None:
         data = [{'parameter': VARNAMES_RISKS[kriteria_name],
@@ -63,6 +64,8 @@ def make_kriterias_table(values: dict,
     grid_options = {
         "stopEditingWhenCellsLoseFocus": True,
     }
+    if aligned_grids:
+        grid_options['alignedGrids'] = aligned_grids
 
     table_style = {
         'height': '95px'
@@ -105,7 +108,13 @@ def render_risks_and_uncertainties(data):
                                      kriteria_name='seismic_exploration_work',
                                      cell_data_type='string',
                                      select_cell_editor=True,
-                                     cell_editor_params=list(SEISMIC_EXPLR_WORK_KRITERIAS.keys())),
+                                     cell_editor_params=list(SEISMIC_EXPLR_WORK_KRITERIAS.keys()),
+                                     aligned_grids=[
+                                         'kriteria-grid_density-table',
+                                         'kriteria-core_research-table',
+                                         'kriteria-c1_reserves-table',
+                                         'kriteria-hydrocarbon_properties-table',
+                                     ]),
 
                 make_kriterias_table(values=data,
                                      kriteria_name='grid_density',
@@ -124,7 +133,7 @@ def render_risks_and_uncertainties(data):
                                      hide_header=True),
 
                 make_kriterias_table(values=data,
-                                     kriteria_name='HYDROCARBON_PROPERTIES',
+                                     kriteria_name='hydrocarbon_properties',
                                      cell_data_type='string',
                                      hide_header=True,
                                      select_cell_editor=True,

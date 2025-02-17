@@ -43,9 +43,20 @@ def calculate_production_indicators(n_clicks: int,
     if n_clicks is None or n_clicks == 0 or ctx.triggered_id != 'prod_calcs':
         return [[no_update for _ in range(3)], no_update, no_update, no_update, no_update]
 
+    parameter_table_calcs = get_value(storage_data,
+                            current_field,
+                            'tab-reserves-calcs',
+                            'parameter_table_calcs',
+                            default=[])
+
+    num_of_vars = get_values_from_records(parameter_table_calcs,
+                                          {},
+                                          ['num_of_vars'],
+                                          VARNAMES)
+    print(num_of_vars)
     _, permeability_params = *parse_params(DIST_DICT[p_permeability[0]['distribution']], p_permeability[0]),
     stat_params = {"permeability": permeability_params}
-    stat_perm = generate_stats(stat_params, 3000)
+    stat_perm = generate_stats(stat_params, int(num_of_vars.get('num_of_vars', 3000)) or 3000)
     
     permeability_Pinds = st.scoreatpercentile(stat_perm['permeability'], [10, 50, 90])
 

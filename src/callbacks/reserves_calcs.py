@@ -30,7 +30,7 @@ def _prepare_inputs(p_area: list[dict],
                                             p_porosity_coef[0]),
     gsc_value, gas_saturation_coef = *parse_params(DIST_DICT[p_gas_saturation_coef[0]['distribution']],
                                                    p_gas_saturation_coef[0]),
-    print(area)
+
     stat_params={
         "area": area,
         "effective_thickness": effective_thickness,

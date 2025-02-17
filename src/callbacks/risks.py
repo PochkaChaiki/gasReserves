@@ -18,7 +18,7 @@ NO_DICT_UPDATE = dict(
     Output('kriteria-grid_density-table', 'rowData'),
     Output('kriteria-core_research-table', 'rowData'),
     Output('kriteria-c1_reserves-table', 'rowData'),
-    Output('kriteria-HYDROCARBON_PROPERTIES-table', 'rowData'),
+    Output('kriteria-hydrocarbon_properties-table', 'rowData'),
     Output('persistence_storage', 'data', allow_duplicate=True),
 
     Input('risks_btn', 'n_clicks'),
@@ -26,7 +26,7 @@ NO_DICT_UPDATE = dict(
     State('kriteria-grid_density-table', 'rowData'),
     State('kriteria-core_research-table', 'rowData'),
     State('kriteria-c1_reserves-table', 'rowData'),
-    State('kriteria-HYDROCARBON_PROPERTIES-table', 'rowData'),
+    State('kriteria-hydrocarbon_properties-table', 'rowData'),
     State('parameter-table-risks', 'rowData'),
 
     State('current_field', 'children'),

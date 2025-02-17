@@ -5,8 +5,21 @@ import dash_bootstrap_components as dbc
 def make_front_page():
     return dbc.Container([
         dbc.Row(
-            dbc.Col([html.H1('Вероятностная оценка перспективности разработки месторождения газа.', className='text-center'),
-                     html.Img(src='/assets/main_logo.png')]),
+            [
+                html.H1('Вероятностная оценка перспективности разработки месторождения газа.', className='text-center'),
+                html.Img(src='/assets/main_logo.png'),
+                html.Div([
+                    html.Img(src='/assets/gubkin_logo.png',
+                             width='200px',
+                             height='200px',
+                             ),
+                    html.Img(src='/assets/gazprom_logo.png',
+                             width='150px',
+                             height='90px',
+                             style={'position': 'relative', 'top': '30px'}
+                             ),
+                ], style={'display': 'flex', 'flex-direction': 'row-reverse', 'position': 'absolute', 'right': '0px', 'bottom': '0px'})
+            ],
             align='center', class_name='my-auto align-middle'
         )
     ], style={'display': 'flex', 'flex-grow': '1', 'align-contents': 'center'})
