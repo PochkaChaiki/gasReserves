@@ -129,7 +129,7 @@ def insert_to_sheet(field_name: str, data: dict, sheet: wsxl.Worksheet):
     sheet['J193'].value = c1_reserves.get('value')
     sheet['K193'].value = c1_reserves.get('weight')
 
-    hydrocarbon_properties = risks_kriterias.get('HYDROCARBON_PROPERTIES', dict())
+    hydrocarbon_properties = risks_kriterias.get('hydrocarbon_properties', dict())
     sheet['H194'].value = hydrocarbon_properties.get('kriteria')
     sheet['J194'].value = hydrocarbon_properties.get('value')
     sheet['K194'].value = hydrocarbon_properties.get('weight')

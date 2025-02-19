@@ -77,38 +77,11 @@ def update_table_columns(cell, rowData):
 
 
 def distribution_input(name, id, placeholder, initial_data=None):
-    initial_columns = []
+
     if initial_data is None or initial_data == []:
-        initial_data = [
-            {'parameter': name, 'distribution': placeholder}
-        ]
-        initial_columns = [
-            {'headerName': 'Параметр', 'field': 'parameter', 'editable': False,
-             'cellStyle': {'background-color': DISABLE_CELL_COLOR}},
-            {'headerName': 'Распределение', 'field': 'distribution', 'editable': True,
-             'cellEditor': 'agSelectCellEditor',
-             'cellEditorParams': {
-                 'values': ['Нормальное', 'Равномерное', 'Треугольное', 'Усечённое нормальное']
-             },
-            },
-            {'headerName': 'Мат. ожидание', 'field': 'mean', 'editable': True,
-             'hide': True, 'cellDataType': 'number',
-            'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
-            {'headerName': 'Ст. отклонение', 'field': 'std_dev', 'editable': True,
-             'hide': True, 'cellDataType': 'number',
-            'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
-            {'headerName': 'Мин. значение', 'field': 'min_value', 'editable': True,
-             'hide': True, 'cellDataType': 'number',
-            'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
-            {'headerName': 'Макс. значение', 'field': 'max_value', 'editable': True,
-             'hide': True, 'cellDataType': 'number',
-            'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
-            {'headerName': 'Мода', 'field': 'mode', 'editable': True, 'hide': True,
-             'cellDataType': 'number',
-            'valueFormatter': {"function": "d3.format('.3f')(params.value)"}},
-        ]
-    else:
-        initial_columns = update_table_columns([{'colId': 'distribution'}], initial_data)
+        initial_data = [{'parameter': name, 'distribution': placeholder}]
+
+    initial_columns = update_table_columns([{'colId': 'distribution'}], initial_data)
 
     return dag.AgGrid(
         id='parameter-table-'+id,
@@ -123,7 +96,7 @@ def distribution_input(name, id, placeholder, initial_data=None):
     )
     
 
-def make_indics_table(name: str | None, data: list[dict], id: str, editable: bool = False):
+def make_indics_table(name: str | None, data: list[dict], id: str, editable: bool = False, digits: int = 3):
     if data is None or len(data) == 0:
         data = [
             {'parameter': name, 'P90': None, 'P50': None, 'P10': None}
@@ -132,17 +105,17 @@ def make_indics_table(name: str | None, data: list[dict], id: str, editable: boo
         {'headerName': 'Параметр', 'field': 'parameter', 'cellStyle': {'background-color': DISABLE_CELL_COLOR}},
         {'headerName': 'P90', 'field': 'P90', 'cellDataType': 'number', 
             'editable': editable,
-            'valueFormatter': {"function": f"{LOCALE}.format(',.2f')(params.value)"},
+            'valueFormatter': {"function": f"{LOCALE}.format(',.{digits}f')(params.value)"},
             'cellStyle': {'background-color': DISABLE_CELL_COLOR if not editable else '#FFFFFF'},
         },
         {'headerName': 'P50', 'field': 'P50', 'cellDataType': 'number', 
             'editable': editable,
-            'valueFormatter': {"function": f"{LOCALE}.format(',.2f')(params.value)"},
+            'valueFormatter': {"function": f"{LOCALE}.format(',.{digits}f')(params.value)"},
             'cellStyle': {'background-color': DISABLE_CELL_COLOR if not editable else '#FFFFFF'},
         },
         {'headerName': 'P10', 'field': 'P10', 'cellDataType': 'number', 
             'editable': editable,
-            'valueFormatter': {"function": f"{LOCALE}.format(',.2f')(params.value)"},
+            'valueFormatter': {"function": f"{LOCALE}.format(',.{digits}f')(params.value)"},
             'cellStyle': {'background-color': DISABLE_CELL_COLOR if not editable else '#FFFFFF'},
         },
     ]

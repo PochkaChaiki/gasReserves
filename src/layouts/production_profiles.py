@@ -12,7 +12,7 @@ def make_filtr_resistance_indics(frs_A: list, frs_B: list):
     return make_indics_table('Полученные коэффициенты сопротивления',
                              data,
                              'filtr_resistance',
-                             editable=False)
+                             editable=False, digits=7)
 
 def make_production_indicators_inputs(values: dict):
     keys_with_indics = ['effective_thickness', 'geo_gas_reserves']
@@ -74,12 +74,20 @@ def make_production_indicators_inputs(values: dict):
         html.Div(make_input_group(data, 'indics'), className='my-2'),
         dbc.Accordion([
             dbc.AccordionItem([
-                make_indics_table(None,
+                html.Div(make_indics_table(None,
                                   stat_indics_data,
                                   'stat_indics',
-                                  True),
-                make_input_group(data_to_collapse, 'indics_collapse'),
-                html.Div(id='filtr_resistance_indics'),
+                                  True), className='my-2'),
+                html.Div(make_input_group(data_to_collapse, 'indics_collapse'), className='my-2'),
+                html.A('Показать рассчитанные значения', n_clicks=None,
+                       className='m-2 link-secondary link-offset-2 link-underline-opacity-25 link-underline-opacity-100-hover',
+                       id='filtr_resistance_link'),
+                dbc.Collapse([
+                    make_filtr_resistance_indics(values.get('filtr_resistance_A', [None, None, None]),
+                                                 values.get('filtr_resistance_B', [None, None, None]))
+                ],
+                    id='filtr_resistance_indics', is_open=False, class_name='m-2')
+
             ], title='Дополнительные параметры')
         ],
             start_collapsed=True,

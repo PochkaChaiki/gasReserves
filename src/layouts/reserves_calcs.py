@@ -35,7 +35,7 @@ def make_reserves_input_group(values: dict):
 
         html.Div(make_input_group(data, 'calcs'), className='my-2'),
 
-        dbc.Button("Расчитать", id="calculate_reserves_button", n_clicks=0, class_name='my-2')
+        dbc.Button("Произвести расчёт", id="calculate_reserves_button", n_clicks=0, class_name='my-2')
     ])
 
 def make_reserves_main_outputs(values: dict):
@@ -82,7 +82,7 @@ def make_output(values: dict):
 
     return dbc.Col([
         dbc.Row(output_table),
-        dbc.Row([dbc.Col(ecdf_diagram), dbc.Col(pdf_diagram)]),
+        dbc.Row([dbc.Col(ecdf_diagram), dbc.Col(pdf_diagram)], class_name='flex-nowrap'),
         dbc.Row(tornado_diagram),
     ])
 

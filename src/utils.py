@@ -26,8 +26,8 @@ persistence_storage = {
             'prod_calcs_table': list[dict] ,
             'pressures_on_stages_plot': go.Figure,
             'prod_kig_plot': go.Figure,
-            'filtr_resistance_A': float,
-            'filtr_resistance_B': float,
+            'filtr_resistance_A': list(float),
+            'filtr_resistance_B': list(float),
         },
         'tab-risks-and-uncertainties': {
             
@@ -118,8 +118,8 @@ def save_tab_production_indicators(storage_data: dict | None,
                                    prod_calcs_table: list[dict] | None,
                                    pressures_on_stages_plot: go.Figure | None,
                                    prod_kig_plot: go.Figure | None,
-                                   filtr_resistance_A: float | None,
-                                   filtr_resistance_B: float | None) -> dict:
+                                   filtr_resistance_A: list[float] | None,
+                                   filtr_resistance_B: list[float] | None) -> dict:
     tab = 'tab-production-indicators'
     storage_data = save_to_storage(storage_data, field_name, tab,
                                    'p_permeability',

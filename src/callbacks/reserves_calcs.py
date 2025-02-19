@@ -242,7 +242,8 @@ def calculate_gas_reserves(n_clicks: int,
 @callback(
     Output('parameter-table-area', 'columnDefs'),
     Input('parameter-table-area', 'cellValueChanged'),
-    State('parameter-table-area', 'rowData')
+    State('parameter-table-area', 'rowData'),
+    prevent_initial_call = True
 )
 def update_table_area(cell, rowData):
     return update_table_columns(cell, rowData)
@@ -251,7 +252,8 @@ def update_table_area(cell, rowData):
 @callback(
     Output('parameter-table-effective_thickness', 'columnDefs'),
     Input('parameter-table-effective_thickness', 'cellValueChanged'),
-    State('parameter-table-effective_thickness', 'rowData')
+    State('parameter-table-effective_thickness', 'rowData'),
+    prevent_initial_call = True
 )
 def update_table_effective_thickness(cell, rowData):
     return update_table_columns(cell, rowData)
@@ -260,7 +262,8 @@ def update_table_effective_thickness(cell, rowData):
 @callback(
     Output('parameter-table-porosity_coef', 'columnDefs'),
     Input('parameter-table-porosity_coef', 'cellValueChanged'),
-    State('parameter-table-porosity_coef', 'rowData')
+    State('parameter-table-porosity_coef', 'rowData'),
+    prevent_initial_call = True
 )
 def update_table_porosity_coef(cell, rowData):
     return update_table_columns(cell, rowData)
@@ -269,7 +272,8 @@ def update_table_porosity_coef(cell, rowData):
 @callback(
     Output('parameter-table-gas_saturation_coef', 'columnDefs'),
     Input('parameter-table-gas_saturation_coef', 'cellValueChanged'),
-    State('parameter-table-gas_saturation_coef', 'rowData')
+    State('parameter-table-gas_saturation_coef', 'rowData'),
+    prevent_initial_call = True
 )
 def update_table_gas_saturation_coef(cell, rowData):
     return update_table_columns(cell, rowData)
@@ -278,7 +282,8 @@ def update_table_gas_saturation_coef(cell, rowData):
 @callback(
     Output('parameter-table-permeability', 'columnDefs'),
     Input('parameter-table-permeability', 'cellValueChanged'),
-    State('parameter-table-permeability', 'rowData')
+    State('parameter-table-permeability', 'rowData'),
+    prevent_initial_call = True
 )
 def update_table_permeability(cell, rowData):
     return update_table_columns(cell, rowData)

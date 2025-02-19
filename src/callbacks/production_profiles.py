@@ -1,4 +1,4 @@
-from dash import callback, Output, Input, State, ctx, no_update, dcc
+from dash import callback, Output, Input, State, ctx, no_update, dcc, clientside_callback
 
 from src.gas_reserves.calculations.prod_indicators import *
 from src.plot import *
@@ -53,7 +53,7 @@ def calculate_production_indicators(n_clicks: int,
                                           {},
                                           ['num_of_vars'],
                                           VARNAMES)
-    print(num_of_vars)
+
     _, permeability_params = *parse_params(DIST_DICT[p_permeability[0]['distribution']], p_permeability[0]),
     stat_params = {"permeability": permeability_params}
     stat_perm = generate_stats(stat_params, int(num_of_vars.get('num_of_vars', 3000)) or 3000)
@@ -90,14 +90,18 @@ def calculate_production_indicators(n_clicks: int,
         result['avg_production'] = result['annual_production'] / result['n_wells']
 
         results_list.append(result.to_dict('records'))
+
         pressures_df = result[['current_pressure', 'wellhead_pressure', 'ukpg_pressure', 'downhole_pressure']]
         pressures_graphs.append(plot_pressure_on_production_stages(pressures_df, name))
+
         prod_kig_fig = plot_summary_chart(prod_kig_fig, result[['annual_production', 'kig', 'n_wells']], name)
+
         filtr_resistance_A_list.append(input_data['filtr_resistance_A']['value'])
         filtr_resistance_B_list.append(input_data['filtr_resistance_B']['value'])
-        if name == 'P50':
-            save_filtr_resistance_A = input_data['filtr_resistance_A']['value']
-            save_filtr_resistance_B = input_data['filtr_resistance_B']['value']
+
+        # if name == 'P50':
+        #     save_filtr_resistance_A = input_data['filtr_resistance_A']['value']
+        #     save_filtr_resistance_B = input_data['filtr_resistance_B']['value']
     
 
     pressures_fig = plot_united_pressures(pressures_graphs)
@@ -111,8 +115,8 @@ def calculate_production_indicators(n_clicks: int,
                                                prod_calcs_table=results_list,
                                                pressures_on_stages_plot=pressures_fig,
                                                prod_kig_plot=prod_kig_fig,
-                                               filtr_resistance_A=save_filtr_resistance_A,
-                                               filtr_resistance_B=save_filtr_resistance_B)
+                                               filtr_resistance_A=filtr_resistance_A_list,
+                                               filtr_resistance_B=filtr_resistance_B_list)
     
     return [results_list, 
             dcc.Graph(figure=pressures_fig), 
@@ -120,6 +124,22 @@ def calculate_production_indicators(n_clicks: int,
             make_filtr_resistance_indics(filtr_resistance_A_list, filtr_resistance_B_list),
             save_data]
 
+
+clientside_callback(
+    """
+    function(n_clicks, is_open) {
+        if (n_clicks !== null) {
+            return !is_open;
+        }
+        return is_open;
+    }
+    """,
+    Output('filtr_resistance_indics', 'is_open'),
+
+    Input('filtr_resistance_link', 'n_clicks'),
+    State('filtr_resistance_indics', 'is_open'),
+    prevent_initial_call=True
+)
 
 
 

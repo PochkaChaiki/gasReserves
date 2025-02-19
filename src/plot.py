@@ -156,7 +156,6 @@ def plot_pdf_indicators(vars: pd.DataFrame, title: str) -> go.Figure:
 
     fig = ff.create_distplot([vars], [title], show_hist=False, show_rug=False, colors=CHART_COLORS)
 
-    # indicators: list = st.scoreatpercentile(vars, [10, 50, 90])
     indicators = np.percentile(vars, [10, 50, 90])
 
     kde = st.gaussian_kde(vars)
@@ -232,7 +231,6 @@ def plot_pressure_on_production_stages(pressure_vals: pd.DataFrame, name: str) -
 def plot_united_pressures(charts: list[go.Figure]) -> go.Figure:
     fig = make_subplots(rows=3,
                         cols=1,
-                        shared_xaxes=True,
                         vertical_spacing=0.1,
                         subplot_titles=('Вариант P10', 'Вариант P50', 'Вариант P90' ))
     for chart, i in zip(charts, range(3)):
@@ -243,6 +241,8 @@ def plot_united_pressures(charts: list[go.Figure]) -> go.Figure:
     for i in range(1, 4):
         fig.update_xaxes(title_text='Годы', col=1, row=i, rangemode='tozero')
         fig.update_yaxes(title_text='Давление, МПа', col=1, row=i)
+
+    fig.update_xaxes(matches='x')
 
     fig.update_layout(
         height=1000,
@@ -302,11 +302,11 @@ def make_bubble_charts(values: pd.DataFrame,
 
     fig = go.Figure()
     max_size = values.max(axis=1).loc[VARNAMES_ANALYSIS['accumulated_production']]
-    coef = 100 / max_size
+    coef = 70 / max_size
     for field, field_id in zip(values.columns, range(len(values.columns))):
         fig.add_trace(
             go.Scatter(
-                x=[values.loc[VARNAMES_ANALYSIS['area'], field]],
+                x=[values.loc[VARNAMES['geo_gas_reserves'], field]],
                 y=[values.loc[VARNAMES_ANALYSIS[y], field]],
                 mode='markers',
                 name=field,
@@ -318,7 +318,7 @@ def make_bubble_charts(values: pd.DataFrame,
     fig.update_layout(
         xaxis=dict(
             tickformat=".0f",  # Full Format
-            title=dict(text=VARNAMES_ANALYSIS['area'])
+            title=dict(text=VARNAMES['geo_gas_reserves'])
         ),
         yaxis=dict(
             title=VARNAMES_ANALYSIS[y]

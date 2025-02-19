@@ -67,11 +67,11 @@ def collect_prod_profile_init_data(storage_data: dict, field_name:str) -> dict:
     filtr_resistance_A = get_value(storage_data=storage_data,
                                    field_name=field_name,
                                    tab='tab-production-indicators',
-                                   prop='filtr_resistance_A', default=None)
+                                   prop='filtr_resistance_A', default=[None, None, None])
     filtr_resistance_B = get_value(storage_data=storage_data,
                                    field_name=field_name,
                                    tab='tab-production-indicators',
-                                   prop='filtr_resistance_B', default=None)
+                                   prop='filtr_resistance_B', default=[None, None, None])
     
     # ! Mock for now ! ----------------------------------------------------------!!!!!!
     hydraulic_resistance = 0.019
@@ -88,8 +88,8 @@ def collect_prod_profile_init_data(storage_data: dict, field_name:str) -> dict:
                                                      VARNAMES_INDICATORS)
 
         
-    prod_profile_init_data['filtr_resistance_A'] = filtr_resistance_A
-    prod_profile_init_data['filtr_resistance_B'] = filtr_resistance_B
+    prod_profile_init_data['filtr_resistance_A'] = filtr_resistance_A[1]
+    prod_profile_init_data['filtr_resistance_B'] = filtr_resistance_B[1]
     prod_profile_init_data['hydraulic_resistance'] = hydraulic_resistance
     return prod_profile_init_data
 

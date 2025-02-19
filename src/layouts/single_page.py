@@ -6,23 +6,54 @@ def make_front_page():
     return dbc.Container([
         dbc.Row(
             [
-                html.H1('Вероятностная оценка перспективности разработки месторождения газа.', className='text-center'),
-                html.Img(src='/assets/main_logo.png'),
                 html.Div([
-                    html.Img(src='/assets/gubkin_logo.png',
-                             width='200px',
-                             height='200px',
+                    html.Div([
+                        html.H1('ВЕРОЯТНОСТНАЯ ОЦЕНКА ПЕРСПЕКТИВНОСТИ РАЗРАБОТКИ МЕСТОРОЖДЕНИЯ ГАЗА',
+                                className='text-center', style={
+                                'color': 'white',
+                                'font-family': 'Verdana',
+                                'font-size': '4.4vh',
+                                'text-shadow': '1px 1px 10px black',
+                            }),
+                    ], style={
+                        'padding': '12px',
+                        'background-color': 'rgba(0, 38, 84, 0.5)',
+                        'border-radius': '25px',
+                        'width': '75%',
+                        'max-width': '1344px',
+                    }),
+                ], style={
+                    'display': 'flex',
+                    'justify-content': 'center',
+                    'position': 'absolute',
+                    'left': '0px', 'bottom': '15%',
+                }),
+
+                html.Img(src='/assets/background.jpg',
+                         style={
+                             'padding': '0px',
+                             'object-fit': 'cover',
+                             'position': 'absolute',
+                             'top': '0px', 'left': '0px',
+                             'min-height': '100vh', 'max-height': '100vh',
+                             'min-width': '100vw', 'max-width': '100vw',
+                             'z-index': '-2'
+                         }),
+                html.Div([
+                    html.Img(src='/assets/logos.png',
+                             width='638px',
+                             height='140px',
                              ),
-                    html.Img(src='/assets/gazprom_logo.png',
-                             width='150px',
-                             height='90px',
-                             style={'position': 'relative', 'top': '30px'}
-                             ),
-                ], style={'display': 'flex', 'flex-direction': 'row-reverse', 'position': 'absolute', 'right': '0px', 'bottom': '0px'})
+                ], style={
+                    'display': 'flex',
+                    'position': 'absolute',
+                    'justify-content': 'center',
+                    'left': '0px', 'top': '0px',
+                })
             ],
-            align='center', class_name='my-auto align-middle'
+            align='center', class_name='my-auto'
         )
-    ], style={'display': 'flex', 'flex-grow': '1', 'align-contents': 'center'})
+    ], style={'display': 'flex', 'flex-grow': '1', 'align-contents': 'center', 'z-index': '-1'})
 
 def make_main_contents():
     return html.Div([

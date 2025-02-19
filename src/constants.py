@@ -137,7 +137,7 @@ VARNAMES_RISKS = {
     'grid_density': 'Плотность сетки разведочного бурения',
     'core_research': 'Керновые исследования',
     'c1_reserves': 'Доля запасов категории С1',
-    'HYDROCARBON_PROPERTIES': 'Физико-химические свойства углеводородов',
+    'hydrocarbon_properties': 'Физико-химические свойства углеводородов',
     'exploration_wells_amount': 'Количество разведочных скважин с проведением ГИС',
     'distance_from_infra': 'Удаленность от существующей инфраструктуры, км',
     'study_coef': 'Коэффициент изученности, д.е.',
@@ -153,5 +153,6 @@ VARNAMES_ANALYSIS = {
     'annual_production': 'Годовые отборы на период постоянной добычи, млн. м3',
     'distance_from_infra': VARNAMES_RISKS['distance_from_infra'],
     'accumulated_production': 'Накопленная добыча газа, млн. м3',
+    'geo_gas_reserves': VARNAMES['geo_gas_reserves'],
 }
 

@@ -1,16 +1,16 @@
 import pandas as pd
 
 from src.utils import get_value
-from src.constants import VARNAMES_ANALYSIS, VARNAMES_RISKS, VARNAMES_INDICATORS
+from src.constants import VARNAMES_ANALYSIS, VARNAMES_RISKS, VARNAMES_INDICATORS, VARNAMES
 
 
 def analyze_fields(storage_data: dict) -> pd.DataFrame:
-    df_values = pd.DataFrame(index=[VARNAMES_ANALYSIS['area'],
-                                    VARNAMES_ANALYSIS['study_coef'],
+    df_values = pd.DataFrame(index=[VARNAMES_ANALYSIS['study_coef'],
                                     VARNAMES_ANALYSIS['uncertainty_coef'],
                                     VARNAMES_ANALYSIS['annual_production'],
                                     VARNAMES_ANALYSIS['distance_from_infra'],
-                                    VARNAMES_ANALYSIS['accumulated_production']
+                                    VARNAMES_ANALYSIS['accumulated_production'],
+                                    VARNAMES_ANALYSIS['geo_gas_reserves']
                                     ],
                              columns=list(storage_data.keys()))
     for field in storage_data:
@@ -22,10 +22,9 @@ def analyze_fields(storage_data: dict) -> pd.DataFrame:
 
         for row in indics_calcs:
             if row['parameter'] == VARNAMES_ANALYSIS['area']:
-                df_values.loc[VARNAMES_ANALYSIS['area'], field] = round(row['P50'], 3)
                 df_values.loc[VARNAMES_ANALYSIS['uncertainty_coef'], field] = round(row['P90'] / row['P10'], 3)
-                break
-
+            if row['parameter'] == VARNAMES['geo_gas_reserves']:
+                df_values.loc[VARNAMES['geo_gas_reserves'], field] = round(row['P50'], 3)
         study_coef = get_value(storage_data,
                                field_name=field,
                                tab='tab-risks-and-uncertainties',
@@ -33,17 +32,6 @@ def analyze_fields(storage_data: dict) -> pd.DataFrame:
                                default=None)
         df_values.loc[VARNAMES_ANALYSIS['study_coef'], field] = round(study_coef, 3)
 
-        parameter_table_output_calcs = get_value(storage_data,
-                                                  field_name=field,
-                                                  tab='tab-reserves-calcs',
-                                                  prop='parameter_table_output_calcs',
-                                                  default=[])
-
-        geo_gas_reserves = 0
-        for row in parameter_table_output_calcs:
-            if row['parameter'] == VARNAMES_INDICATORS['geo_gas_reserves']:
-                geo_gas_reserves = round(row['value'], 3)
-                break
 
         prod_rate = 0
         parameter_table_indics = get_value(storage_data,
@@ -56,7 +44,8 @@ def analyze_fields(storage_data: dict) -> pd.DataFrame:
                 prod_rate = row['value']
                 break
 
-        df_values.loc[VARNAMES_ANALYSIS['annual_production'], field] = round(prod_rate * geo_gas_reserves, 3)
+        df_values.loc[VARNAMES_ANALYSIS['annual_production'], field] = round(
+            prod_rate * df_values.loc[VARNAMES_ANALYSIS['geo_gas_reserves'], field], 3)
 
         prod_calcs_table = get_value(storage_data,
                                      field_name=field,
@@ -82,6 +71,7 @@ def analyze_fields(storage_data: dict) -> pd.DataFrame:
                 break
 
         df_values.loc[VARNAMES_ANALYSIS['distance_from_infra'], field] = distance_from_infra
+
 
     return df_values.copy()
 

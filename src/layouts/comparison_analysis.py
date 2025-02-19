@@ -43,7 +43,7 @@ def make_comparison_analysis_page(values: pd.DataFrame = None):
                 dbc.Col(dcc.Graph(
                     figure=make_bubble_charts(values, 'uncertainty_coef'),
                     id='uncertainty_coef')),
-            ]),
+            ], class_name='flex-nowrap'),
             dbc.Row([
                 dbc.Col(dcc.Graph(
                     figure=make_bubble_charts(values, 'annual_production'),
@@ -51,6 +51,6 @@ def make_comparison_analysis_page(values: pd.DataFrame = None):
                 dbc.Col(dcc.Graph(
                     figure=make_bubble_charts(values, 'distance_from_infra'),
                     id='distance_from_infra')),
-            ])
+            ], class_name='flex-nowrap')
         ], id='charts', fluid=True)
     ])
