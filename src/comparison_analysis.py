@@ -30,7 +30,7 @@ def analyze_fields(storage_data: dict) -> pd.DataFrame:
                                tab='tab-risks-and-uncertainties',
                                prop='study_coef',
                                default=None)
-        df_values.loc[VARNAMES_ANALYSIS['study_coef'], field] = round(study_coef, 3)
+        df_values.loc[VARNAMES_ANALYSIS['study_coef'], field] = round(study_coef, 3) if study_coef is not None else study_coef
 
 
         prod_rate = 0

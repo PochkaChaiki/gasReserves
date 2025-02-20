@@ -1,8 +1,9 @@
 from dash import callback, Output, Input, State, ALL, no_update, ctx
 
 from src.gas_reserves.calculations.risks_and_uncertainties import prepare_values, prepare_weights, calculate_study_coef
-from src.constants import VARNAMES_RISKS, VARNAMES
+from src.constants import VARNAMES_RISKS, VARNAMES, INCORRECT_PARAMS
 from src.utils import get_value, save_tab_risks_and_uncertainties
+
 
 NO_DICT_UPDATE = dict(
     seismic_exploration_work = None,
@@ -12,6 +13,8 @@ NO_DICT_UPDATE = dict(
     hydrocarbon_properties = None,
 )
 
+NO_STUDY_COEF = [{'parameter': VARNAMES_RISKS['study_coef'], 'value': None}]
+
 @callback(
     Output('parameter-table-study_coef', 'rowData'),
     Output('kriteria-seismic_exploration_work-table', 'rowData'),
@@ -20,6 +23,7 @@ NO_DICT_UPDATE = dict(
     Output('kriteria-c1_reserves-table', 'rowData'),
     Output('kriteria-hydrocarbon_properties-table', 'rowData'),
     Output('persistence_storage', 'data', allow_duplicate=True),
+    Output('notification_store', 'data', allow_duplicate=True),
 
     Input('risks_btn', 'n_clicks'),
     State('kriteria-seismic_exploration_work-table', 'rowData'),
@@ -33,7 +37,7 @@ NO_DICT_UPDATE = dict(
     State('persistence_storage', 'data'),
     prevent_initial_call = True,
 )
-def update_table_data(value,
+def update_table_data(n_clicks,
                       seismic_exploration_work,
                       grid_density,
                       core_research,
@@ -43,17 +47,21 @@ def update_table_data(value,
                       current_field,
                       storage_data
                       ):
-
-    if value is None:
-        return tuple(no_update for _ in range(7))
+    if n_clicks is None:
+        return tuple(no_update for _ in range(8))
     indics_calcs = get_value(storage_data=storage_data,
-                                 field_name=current_field,
-                                 tab='tab-reserves-calcs',
-                                 prop='indics_calcs', default=None)
+                             field_name=current_field,
+                             tab='tab-reserves-calcs',
+                             prop='indics_calcs', default=None)
     if indics_calcs is None:
-        return (value,seismic_exploration_work, grid_density,
+        return (NO_STUDY_COEF,seismic_exploration_work, grid_density,
                 core_research, c1_reserves, hydrocarbon_properties,
-                no_update)
+                no_update, dict(
+            is_open=True,
+            header='Ошибка вычисления',
+            children='Расчёт коэффициента изученности невозможен, из-за отсутствия необходимых данных. Пожалуйста, выполните расчёт на вкладке "Подсчёт запасов".',
+            icon='danger',
+        ))
 
     area = 0
     effective_thickness = 0
@@ -64,9 +72,16 @@ def update_table_data(value,
             effective_thickness = row['P50']
 
     if area == 0 and effective_thickness == 0:
-        return (value, seismic_exploration_work, grid_density,
+        return (NO_STUDY_COEF, seismic_exploration_work, grid_density,
                 core_research, c1_reserves, hydrocarbon_properties,
-                no_update)
+                no_update, dict(
+            is_open=True,
+            header='Ошибка вычисления',
+            children='Расчёт коэффициента изученности невозможен, '
+                     'из-за отсутствия необходимых данных. '
+                     'Пожалуйста, выполните расчёт на вкладке "Подсчёт запасов".',
+            icon='danger',
+        ))
 
     kriterias = dict(
         seismic_exploration_work = seismic_exploration_work[0]['kriteria'],
@@ -98,7 +113,18 @@ def update_table_data(value,
 
     prepared_weights = prepare_weights(weights)
 
-    study_coef = calculate_study_coef(values, prepared_weights)
+    ok, study_coef = calculate_study_coef(values, prepared_weights)
+
+    if not ok:
+        return (NO_STUDY_COEF, seismic_exploration_work, grid_density,
+                core_research, c1_reserves, hydrocarbon_properties,
+                no_update, dict(
+            is_open=True,
+            header='Некорректные параметры',
+            children='Некорректные входные значения были ввведены. '
+                     'Пожалуйста, проверьте правильность параметров и повторите попытку',
+            icon='warning',
+        ))
 
     seismic_exploration_work[0]['value'] = values['seismic_exploration_work']
     seismic_exploration_work[0]['weight'] = prepared_weights['seismic_exploration_work']
@@ -130,4 +156,9 @@ def update_table_data(value,
 
     return ([{'parameter': VARNAMES_RISKS['study_coef'], 'value': study_coef}], seismic_exploration_work, grid_density,
             core_research, c1_reserves, hydrocarbon_properties,
-            save_data)
+            save_data, dict(
+                is_open=True,
+                children='Расчёт коэффициента выполнен успешно',
+                header='Вычислено',
+                icon='success',
+            ))

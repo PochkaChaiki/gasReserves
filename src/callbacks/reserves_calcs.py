@@ -152,6 +152,7 @@ def _save_data_to_profiles_tab(storage_data: dict,
         Output('pdf-diagram', 'children'),
         Output('parameter-table-output_calcs', 'rowData', allow_duplicate=True),
         Output('persistence_storage', 'data', allow_duplicate=True),
+        Output('notification_store', 'data', allow_duplicate=True),
     ],
     
     inputs=[
@@ -178,20 +179,31 @@ def calculate_gas_reserves(n_clicks: int,
                            current_field: str):
     
     if n_clicks is None or n_clicks == 0 or ctx.triggered_id != 'calculate_reserves_button':
-        return [no_update for _ in range(6)]
+        return [no_update for _ in range(7)]
 
 # Processing input values to pass them to gas_reserves lib later ------------------------------------------------------------------------------------
-    input_data, stat_data = _prepare_inputs(p_area=p_area,
-                                           p_effective_thickness=p_effective_thickness,
-                                           p_porosity_coef=p_porosity_coef,
-                                           p_gas_saturation_coef=p_gas_saturation_coef,
-                                           params=params,
-                                           add_params=add_params)
+    try:
+        input_data, stat_data = _prepare_inputs(p_area=p_area,
+                                                p_effective_thickness=p_effective_thickness,
+                                                p_porosity_coef=p_porosity_coef,
+                                                p_gas_saturation_coef=p_gas_saturation_coef,
+                                                params=params,
+                                                add_params=add_params)
+    except:
+        return [no_update for _ in range(6)]+[INCORRECT_PARAMS]
+
 
 # Making calculations -------------------------------------------------------------------------------------------------------------------------------
-    result_df, tornado_fig, ecdf_fig, pdf_fig = _calculate_reserves(input_data=input_data,
-                                                          stat_data=stat_data)
-
+    try:
+        result_df, tornado_fig, ecdf_fig, pdf_fig = _calculate_reserves(input_data=input_data,
+                                                                        stat_data=stat_data)
+    except Exception as e:
+        return [no_update for _ in range(6)] + [dict(
+            is_open=True,
+            header='Ошибка при вычислении',
+            children='Произошла непредвиденная ошибка при вычислениях. Проверьте, пожалуйста, входные параметры.',
+            icon='danger',
+        )]
 
     res_table = [
         {'parameter': var,
@@ -236,7 +248,13 @@ def calculate_gas_reserves(n_clicks: int,
             dcc.Graph(figure=pdf_fig), 
             output_data_calcs,
             save_data,
-        ]
+            dict(
+                is_open=True,
+                children='Расчёт запасов выполнен успешно',
+                header='Вычислено',
+                icon='success',
+            )
+           ]
 
 
 @callback(

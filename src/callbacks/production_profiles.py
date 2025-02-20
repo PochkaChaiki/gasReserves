@@ -9,6 +9,7 @@ from src.layouts.production_profiles import make_filtr_resistance_indics
 from src.utils import *
 
 
+
 @callback(
     output=[
         [
@@ -20,6 +21,7 @@ from src.utils import *
         Output('prod-kig', 'children'),
         Output('filtr_resistance_indics', 'children'),
         Output('persistence_storage', 'data', allow_duplicate=True),
+        Output('notification_store', 'data', allow_duplicate=True),
     ],
     
     inputs=[
@@ -41,7 +43,7 @@ def calculate_production_indicators(n_clicks: int,
                                     storage_data: dict,
                                     current_field: str):
     if n_clicks is None or n_clicks == 0 or ctx.triggered_id != 'prod_calcs':
-        return [[no_update for _ in range(3)], no_update, no_update, no_update, no_update]
+        return [[no_update for _ in range(3)], no_update, no_update, no_update, no_update, no_update]
 
     parameter_table_calcs = get_value(storage_data,
                             current_field,
@@ -54,28 +56,33 @@ def calculate_production_indicators(n_clicks: int,
                                           ['num_of_vars'],
                                           VARNAMES)
 
-    _, permeability_params = *parse_params(DIST_DICT[p_permeability[0]['distribution']], p_permeability[0]),
-    stat_params = {"permeability": permeability_params}
-    stat_perm = generate_stats(stat_params, int(num_of_vars.get('num_of_vars', 3000)) or 3000)
-    
-    permeability_Pinds = st.scoreatpercentile(stat_perm['permeability'], [10, 50, 90])
+    try:
+        _, permeability_params = *parse_params(DIST_DICT[p_permeability[0]['distribution']], p_permeability[0]),
+        stat_params = {"permeability": permeability_params}
+        stat_perm = generate_stats(stat_params, int(num_of_vars.get('num_of_vars', 3000) or 3000))
 
-    init_data = {}
-    for el in p_indics + p_indics_collapse:
-        if el['value'] is not None:
-            init_data[REVERSED_VARNAMES_INDICATORS[el['parameter']]] = el['value']
+        permeability_Pinds = st.scoreatpercentile(stat_perm['permeability'], [10, 50, 90])
+
+        init_data = {}
+        for el in p_indics + p_indics_collapse:
+            if el['value'] is not None:
+                init_data[REVERSED_VARNAMES_INDICATORS[el['parameter']]] = el['value']
 
 
-    stat_indics_data = {}
-    for row in p_stat_indics:
-        stat_indics_data[row['parameter']] = {'P90': row['P90'], 'P50': row['P50'], 'P10': row['P10']}
+        stat_indics_data = {}
+        for row in p_stat_indics:
+            stat_indics_data[row['parameter']] = {'P90': row['P90'], 'P50': row['P50'], 'P10': row['P10']}
+
+    except Exception as e:
+        return [[no_update for _ in range(3)], no_update, no_update, no_update, no_update, INCORRECT_PARAMS]
+
 
     prod_kig_fig = None
     pressures_graphs = []
     results_list = []
-    save_filtr_resistance_A, save_filtr_resistance_B = None, None
     filtr_resistance_A_list = []
     filtr_resistance_B_list = []
+    list_of_failures = []
     for perm, name in zip(permeability_Pinds, ['P10', 'P50', 'P90']):
         init_data['permeability'] = perm
         init_data['effective_thickness'] = stat_indics_data[VARNAMES_INDICATORS['effective_thickness']][name]
@@ -85,8 +92,10 @@ def calculate_production_indicators(n_clicks: int,
 
         input_data = make_init_data_for_prod_indics(pd.DataFrame(init_data, index=["value"]))
 
-        result = calculate_indicators(input_data.to_dict('records')[0])
-        result['year'] = [i for i in range(1, len(result.index)+1)]
+        ok, result = calculate_indicators(input_data.to_dict('records')[0])
+        if not ok:
+            list_of_failures.append(name)
+        result['year'] = [i for i in range(0, len(result.index))]
         result['avg_production'] = result['annual_production'] / result['n_wells']
 
         results_list.append(result.to_dict('records'))
@@ -99,10 +108,6 @@ def calculate_production_indicators(n_clicks: int,
         filtr_resistance_A_list.append(input_data['filtr_resistance_A']['value'])
         filtr_resistance_B_list.append(input_data['filtr_resistance_B']['value'])
 
-        # if name == 'P50':
-        #     save_filtr_resistance_A = input_data['filtr_resistance_A']['value']
-        #     save_filtr_resistance_B = input_data['filtr_resistance_B']['value']
-    
 
     pressures_fig = plot_united_pressures(pressures_graphs)
 
@@ -117,12 +122,28 @@ def calculate_production_indicators(n_clicks: int,
                                                prod_kig_plot=prod_kig_fig,
                                                filtr_resistance_A=filtr_resistance_A_list,
                                                filtr_resistance_B=filtr_resistance_B_list)
-    
+    notification = dict(
+        is_open=True,
+        children='Расчёт по показателям выполнен успешно',
+        header='Вычислено',
+        icon='success',
+    )
+    if len(list_of_failures) != 0:
+        notification = dict(
+            is_open=True,
+            children='Вычисления по показателям разработки '
+                     + ', '.join(list_of_failures)
+                     + 'были посчитаны не полностью в связи с ошибкой, возникшей из-за некорректных параметров',
+            header='Ошибка при вычислении',
+            icon='warning',
+        )
+
+
     return [results_list, 
             dcc.Graph(figure=pressures_fig), 
             dcc.Graph(figure=prod_kig_fig),
             make_filtr_resistance_indics(filtr_resistance_A_list, filtr_resistance_B_list),
-            save_data]
+            save_data, notification]
 
 
 clientside_callback(

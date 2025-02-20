@@ -71,6 +71,9 @@ def make_main_contents():
 Layout = html.Div(
     [
         dcc.Store(id='persistence_storage', storage_type='session'),
+        dcc.Store(id='notification_store', storage_type='memory'),
+        dcc.Store(id='excel_store_not_to_use', storage_type='memory'),
+        html.Div(id='notifications'),
         dbc.Container([
             html.Div([
                 dbc.Button(['Меню ', html.I(className="bi bi-list")], id='toggle_menu', n_clicks=0),
@@ -82,7 +85,7 @@ Layout = html.Div(
             html.Div([
                 make_front_page(),
             ], id='main-contents', className='p-3', style={'display': 'flex', 'flex-grow': '1', 'flex-direction': 'column'}),
-        ], class_name='py-3', fluid=True, style={'min-height': '100vh', 'display': 'flex', 'flex-direction': 'column'})
+        ], class_name='py-3', fluid=True, style={'min-height': '100vh', 'display': 'flex', 'flex-direction': 'column', 'z-index': '1'})
 
     ])
 

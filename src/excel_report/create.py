@@ -8,7 +8,9 @@ import io
 
 from openpyxl.utils.dataframe import dataframe_to_rows
 
+from src.constants import TEMP_PATH, VARNAMES_ANALYSIS
 
+import pdb
 
 def copy_sheet(source_wb: xl.Workbook, source_sheet_name: str, target_wb: xl.Workbook, target_sheet_name: str):
     source_sheet = source_wb[source_sheet_name]
@@ -170,7 +172,7 @@ def insert_to_sheet(field_name: str, data: dict, sheet: wsxl.Worksheet):
         img = PILImage.open(io.BytesIO(img_data))
 
         # Сохраняем изображение во временный файл
-        temp_img_path = f"./~temp/temp_{field_name}_{img_name}.png"
+        temp_img_path = TEMP_PATH+f"/temp_{field_name}_{img_name}.png"
         img.save(temp_img_path)
 
         # Вставляем изображение в Excel
@@ -188,7 +190,20 @@ def insert_comparison(data: dict, sheet: wsxl.Worksheet):
             or data.get('comparison_images') is None
             or data.get('comparison_values', pd.DataFrame()).empty):
         return
-    rows = dataframe_to_rows(data['comparison_values'], header=True, index=False)
+
+    # pdb.set_trace()
+    comparison_values = data['comparison_values']
+    indexes = [
+        VARNAMES_ANALYSIS['geo_gas_reserves'],
+        VARNAMES_ANALYSIS['study_coef'],
+        VARNAMES_ANALYSIS['uncertainty_coef'],
+        VARNAMES_ANALYSIS['annual_production'],
+        VARNAMES_ANALYSIS['distance_from_infra'],
+        VARNAMES_ANALYSIS['accumulated_production'],
+    ]
+    comparison_values = comparison_values.reindex(indexes)
+
+    rows = dataframe_to_rows(comparison_values, header=True, index=False)
 
     for row_id, row in enumerate(rows, 1):
         for col_id, value in enumerate(row, 1):
@@ -210,7 +225,7 @@ def insert_comparison(data: dict, sheet: wsxl.Worksheet):
     images = data.get('comparison_images', dict())
     for img_name, img_data in images.items():
         img = PILImage.open(io.BytesIO(img_data))
-        temp_img_path = f"./~temp/temp_{img_name}.png"
+        temp_img_path = TEMP_PATH+f"/temp_{img_name}.png"
         img.save(temp_img_path)
 
         img_excel = Image(temp_img_path)

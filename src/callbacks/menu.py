@@ -1,8 +1,10 @@
 import base64
 import json
+import os
 
 from dash import callback, Output, Input, State, ALL, ctx, no_update, clientside_callback
 
+from src.constants import EXCEL_TEMPLATE_PATH, OUTPUT_EXCEL_PATH
 from src.excel_report.prepare_data import make_data_to_excel
 from src.excel_report.create import create_report
 from src.layouts.menu import *
@@ -161,17 +163,43 @@ def open_field(n_clicks, fields_list):
 @callback(
     Output('download_excel', 'data'),
 
+    Input('excel_store_not_to_use', 'modified_timestamp'),
+    State('persistence_storage', 'data'),
+    prevent_initial_call = True,
+)
+def send_excel_report(timestamp, storage_data):
+    excel_data = make_data_to_excel(storage_data=storage_data)
+
+    create_report(excel_data=excel_data,
+                  template_path=EXCEL_TEMPLATE_PATH,
+                  output_path=OUTPUT_EXCEL_PATH)
+
+    return dcc.send_file(OUTPUT_EXCEL_PATH)
+
+
+@callback(
+
+    Output('notification_store', 'data', allow_duplicate=True),
+    Output('excel_store_not_to_use', 'modified_timestamp'),
+
     Input('download_btn', 'n_clicks'),
     State('persistence_storage', 'data'),
     prevent_initial_call = True,
 )
-def send_excel_report(n_clicks, storage_data):
-    excel_data = make_data_to_excel(storage_data=storage_data)
-    create_report(excel_data=excel_data,
-                  template_path='./Шаблон отчёта.xlsx',
-                  output_path='./~temp/Отчёт.xlsx')
+def check_excel_template(n_clicks, storage_data):
+    if not os.path.exists(EXCEL_TEMPLATE_PATH):
+        return dict(is_open=True,
+                    children='Не найден шаблон эксель отчёта. Проверьте наличие всех файлов.',
+                    header='Ошибка подготовки отчёта',
+                    icon='danger'), 1
+    # print("func started")
+    # send_excel_report(1, storage_data)
+    return no_update, 1
 
-    return dcc.send_file('./~temp/Отчёт.xlsx')
+
+
+
+
 
 
 @callback(

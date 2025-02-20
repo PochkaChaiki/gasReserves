@@ -82,7 +82,7 @@ def make_output(values: dict):
 
     return dbc.Col([
         dbc.Row(output_table),
-        dbc.Row([dbc.Col(ecdf_diagram), dbc.Col(pdf_diagram)], class_name='flex-nowrap'),
+        dbc.Row([dbc.Col(ecdf_diagram), dbc.Col(pdf_diagram)], class_name='flex-nowrap table-responsive'),
         dbc.Row(tornado_diagram),
     ])
 

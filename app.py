@@ -17,6 +17,7 @@ app = Dash(# external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP],
 app.layout = Layout
 
 if __name__ == '__main__':
-    if not os.path.exists('./~temp'):
-        os.mkdir('./~temp')
+    if not os.path.exists(TEMP_PATH):
+        os.mkdir(TEMP_PATH)
+
     app.run(debug=True)

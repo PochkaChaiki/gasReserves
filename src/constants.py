@@ -156,3 +156,14 @@ VARNAMES_ANALYSIS = {
     'geo_gas_reserves': VARNAMES['geo_gas_reserves'],
 }
 
+TEMP_PATH = './~temp'
+EXCEL_TEMPLATE_PATH = './static/Шаблон отчёта.xlsx'
+OUTPUT_EXCEL_PATH = TEMP_PATH+'/Отчёт.xlsx'
+
+
+INCORRECT_PARAMS = dict(
+            is_open=True,
+            children='Некорректные параметры были предоставлены для расчётов',
+            header='Некорректные параметры',
+            icon='danger',
+        )

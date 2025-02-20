@@ -2,11 +2,11 @@ from src.gas_reserves.constants import SEISMIC_EXPLR_WORK_KRITERIAS, HYDROCARBON
 
 SIDE_OF_SQUARE = 4000.0
 
-def calculate_study_coef(values: dict, weights: dict) -> float:
+def calculate_study_coef(values: dict, weights: dict) -> tuple[bool, float]:
     study_coef = 0
     for param in values:
         study_coef += weights[param] * values[param]
-    return study_coef
+    return (study_coef <= 1), study_coef
 
 
 
