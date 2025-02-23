@@ -57,7 +57,6 @@ def make_kriterias_table(values: dict,
             'editable': True,
             'cellDataType': 'number',
             'valueFormatter': {"function": "d3.format('.3f')(params.value)"},
-            'cellStyle': {'background-color': DISABLE_CELL_COLOR},
         },
     ]
 

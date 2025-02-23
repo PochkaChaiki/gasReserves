@@ -106,7 +106,7 @@ def plot_ecdf_indicators(vars: pd.DataFrame, title: str) -> go.Figure:
     )
     fig.add_annotation(x=indicators[0],
                        y=0.1,
-                       text=f'P10 = {indicators[0]:.0f} млн. м3',
+                       text=f'P90 = {indicators[0]:.0f} млн. м3',
                        showarrow=True,
                        arrowhead=2,
                        font=dict(size=18),
@@ -126,7 +126,7 @@ def plot_ecdf_indicators(vars: pd.DataFrame, title: str) -> go.Figure:
     
     fig.add_annotation(x=indicators[2],
                        y=0.9,
-                       text=f'P90 = {indicators[2]:.0f} млн. м3',
+                       text=f'P10 = {indicators[2]:.0f} млн. м3',
                        showarrow=True,
                        arrowhead=2,
                        font=dict(size=18),
@@ -172,7 +172,7 @@ def plot_pdf_indicators(vars: pd.DataFrame, title: str) -> go.Figure:
     
     fig.add_annotation(x=indicators[0],
                        y=ys[0],
-                       text=f'P10 = {indicators[0]:.0f} млн. м3',
+                       text=f'P90 = {indicators[0]:.0f} млн. м3',
                        showarrow=True,
                        arrowhead=2,
                        font=dict(size=18),
@@ -190,7 +190,7 @@ def plot_pdf_indicators(vars: pd.DataFrame, title: str) -> go.Figure:
                        bgcolor='#ffffff')
     fig.add_annotation(x=indicators[2],
                        y=ys[2],
-                       text=f'P90 = {indicators[2]:.0f} млн. м3',
+                       text=f'P10 = {indicators[2]:.0f} млн. м3',
                        showarrow=True,
                        arrowhead=2,
                        font=dict(size=18),

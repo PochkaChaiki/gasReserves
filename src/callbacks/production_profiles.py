@@ -93,8 +93,11 @@ def calculate_production_indicators(n_clicks: int,
         input_data = make_init_data_for_prod_indics(pd.DataFrame(init_data, index=["value"]))
 
         ok, result = calculate_indicators(input_data.to_dict('records')[0])
-        if not ok:
-            list_of_failures.append(name)
+        if ok == RESULT.EVALUATION_ERROR:
+            list_of_failures.append(dict(name=name, reason='были введены некорректные параметры'))
+        elif ok == RESULT.PASSED_LIMIT:
+            list_of_failures.append(dict(name=name, reason='вычисления превысили установленный максимум лет (100 лет)'))
+
         result['year'] = [i for i in range(0, len(result.index))]
         result['avg_production'] = result['annual_production'] / result['n_wells']
 
@@ -131,10 +134,9 @@ def calculate_production_indicators(n_clicks: int,
     if len(list_of_failures) != 0:
         notification = dict(
             is_open=True,
-            children='Вычисления по показателям разработки '
-                     + ', '.join(list_of_failures)
-                     + 'были посчитаны не полностью в связи с ошибкой, возникшей из-за некорректных параметров',
-            header='Ошибка при вычислении',
+            children='Вычисления по показателям разработки были посчитаны не полностью: \n'
+                     + ';\n '.join([f"Показатель - {failure['name']}, Причина: {failure['reason']}\n" for failure in list_of_failures]),
+            header='Неполные вычисления',
             icon='warning',
         )
 

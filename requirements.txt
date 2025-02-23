@@ -8,3 +8,7 @@ openpyxl==3.1.5
 kaleido==0.2.1
 pillow==11.1.0
 dash-ag-grid==31.3.0
+dash_ag_grid~=31.3.0
+src~=0.1.0
+pytest~=8.3.4
+requests~=2.32.3

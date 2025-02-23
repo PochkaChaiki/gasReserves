@@ -180,7 +180,7 @@ def send_excel_report(timestamp, storage_data):
 @callback(
 
     Output('notification_store', 'data', allow_duplicate=True),
-    Output('excel_store_not_to_use', 'modified_timestamp'),
+    Output('excel_store_not_to_use', 'data'),
 
     Input('download_btn', 'n_clicks'),
     State('persistence_storage', 'data'),
@@ -191,9 +191,8 @@ def check_excel_template(n_clicks, storage_data):
         return dict(is_open=True,
                     children='Не найден шаблон эксель отчёта. Проверьте наличие всех файлов.',
                     header='Ошибка подготовки отчёта',
-                    icon='danger'), 1
-    # print("func started")
-    # send_excel_report(1, storage_data)
+                    icon='danger'), no_update
+
     return no_update, 1
 
 

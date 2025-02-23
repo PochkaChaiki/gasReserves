@@ -1,3 +1,5 @@
+from enum import Enum
+
 
 ZERO_C_TO_K = 273
 NORM_TEMP_C = 20
@@ -18,4 +20,7 @@ HYDROCARBON_PROPERTIES = {
     'Отсутствуют': 0,
 }
 
-
+class RESULT(Enum):
+    EVALUATION_ERROR = 0
+    SUCCESS = 1
+    PASSED_LIMIT = 2

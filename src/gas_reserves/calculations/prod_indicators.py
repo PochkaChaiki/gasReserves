@@ -3,6 +3,9 @@ import numpy as np
 import scipy.optimize as so
 from src.gas_reserves.constants import *
 
+MAX_ITERATIONS = 100
+
+
 
 def count_daily_production(x: float, data: dict[str, float]) -> float:
     return ((-data['filtr_resistance_A']
@@ -124,7 +127,7 @@ def __count_wellhead_and_downhole_pressures(wellhead_p: float,
     return wellhead_p, downhole_p, data
 
 
-def calculate_indicators(data: dict[str, float]) -> tuple[bool, pd.DataFrame]:
+def calculate_indicators(data: dict[str, float]) -> tuple[RESULT, pd.DataFrame]:
     __list_kig = []
     __list_annual_production = []
     __list_current_pressure = []
@@ -147,7 +150,6 @@ def calculate_indicators(data: dict[str, float]) -> tuple[bool, pd.DataFrame]:
                                                   downhole_pressure,
                                                   overcompress_coef)
     n_wells = 0
-
     while kig < 0.5:
         if current_daily_production * n_wells * data['operations_ratio'] * 365 / 1000 < data['annual_production']:
             n_wells += np.trunc(12 / data['time_to_build'] * data['machines_num'])
@@ -166,7 +168,7 @@ def calculate_indicators(data: dict[str, float]) -> tuple[bool, pd.DataFrame]:
         current_pressure, overcompress_coef, _ = root[0], root[1], root[2]
 
         if res[2] != 1:
-            return False, pd.DataFrame(dict(
+            return RESULT.EVALUATION_ERROR, pd.DataFrame(dict(
                 kig = __list_kig,
                 annual_production = __list_annual_production,
                 current_pressure = __list_current_pressure,
@@ -218,6 +220,17 @@ def calculate_indicators(data: dict[str, float]) -> tuple[bool, pd.DataFrame]:
         __list_cs_power.append(power)
         __list_downhole_pressure.append(downhole_pressure)
 
+        if len(__list_kig) > MAX_ITERATIONS:
+            return RESULT.PASSED_LIMIT, pd.DataFrame(dict(
+                kig=__list_kig,
+                annual_production=__list_annual_production,
+                current_pressure=__list_current_pressure,
+                wellhead_pressure=__list_wellhead_pressure,
+                downhole_pressure=__list_downhole_pressure,
+                n_wells=__list_n_wells,
+                ukpg_pressure=__list_ukpg_pressure,
+                cs_power=__list_cs_power))
+
 
 
     while current_pressure > data['abandon_pressure']:
@@ -240,7 +253,7 @@ def calculate_indicators(data: dict[str, float]) -> tuple[bool, pd.DataFrame]:
         current_pressure, overcompress_coef, _ = root[0], root[1], root[2]
         
         if res[2] != 1:
-            return False, pd.DataFrame(dict(
+            return RESULT.EVALUATION_ERROR, pd.DataFrame(dict(
                 kig = __list_kig,
                 annual_production = __list_annual_production,
                 current_pressure = __list_current_pressure,
@@ -290,8 +303,19 @@ def calculate_indicators(data: dict[str, float]) -> tuple[bool, pd.DataFrame]:
         __list_downhole_pressure.append(downhole_pressure)
         __list_ukpg_pressure.append(ukpg_pressure)
         __list_cs_power.append(power)
+
+        if len(__list_kig) > MAX_ITERATIONS:
+            return RESULT.PASSED_LIMIT, pd.DataFrame(dict(
+                kig=__list_kig,
+                annual_production=__list_annual_production,
+                current_pressure=__list_current_pressure,
+                wellhead_pressure=__list_wellhead_pressure,
+                downhole_pressure=__list_downhole_pressure,
+                n_wells=__list_n_wells,
+                ukpg_pressure=__list_ukpg_pressure,
+                cs_power=__list_cs_power))
     
-    return True, pd.DataFrame(dict(
+    return RESULT.SUCCESS, pd.DataFrame(dict(
         kig = __list_kig,
         annual_production = __list_annual_production,
         current_pressure = __list_current_pressure,
