@@ -301,8 +301,10 @@ def make_bubble_charts(values: pd.DataFrame,
                        y: str) -> go.Figure:
 
     fig = go.Figure()
-    max_size = values.max(axis=1).loc[VARNAMES_ANALYSIS['accumulated_production']]
-    coef = 70 / max_size
+    max_acc_prod = values.max(axis=1).loc[VARNAMES_ANALYSIS['accumulated_production']]
+    coef = 1 / max_acc_prod
+    max_bubble_size = 70
+    min_bubble_size = 10
     for field, field_id in zip(values.columns, range(len(values.columns))):
         fig.add_trace(
             go.Scatter(
@@ -310,7 +312,7 @@ def make_bubble_charts(values: pd.DataFrame,
                 y=[values.loc[VARNAMES_ANALYSIS[y], field]],
                 mode='markers',
                 name=field,
-                marker_size=values.loc[VARNAMES_ANALYSIS['accumulated_production'], field] * coef,
+                marker_size=values.loc[VARNAMES_ANALYSIS['accumulated_production'], field] * coef * max_bubble_size + min_bubble_size,
                 marker_color=CHART_COLORS[field_id % len(CHART_COLORS)],
             )
         )

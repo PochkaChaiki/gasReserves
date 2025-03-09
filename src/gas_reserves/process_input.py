@@ -53,7 +53,7 @@ def make_input_data(init_data: pd.DataFrame) -> pd.DataFrame:
     if 'temp_correction' in init_data.columns:
         mid_data['temp_correction'] = init_data['temp_correction']
     else:
-        mid_data['temp_correction'] = (ZERO_C_TO_K * 2 + NORM_TEMP_C) / (ZERO_C_TO_K + init_data['reservoir_temp'])
+        mid_data['temp_correction'] = (ZERO_C_TO_K + NORM_TEMP_C) / init_data['reservoir_temp']
 
     if 'fin_reservoir_pressure' in init_data.columns:
         mid_data['fin_reservoir_pressure'] = init_data['fin_reservoir_pressure']

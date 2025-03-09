@@ -3,8 +3,9 @@ import numpy as np
 import scipy.optimize as so
 from src.gas_reserves.constants import *
 
-MAX_ITERATIONS = 100
 
+MAX_ITERATIONS = 100
+MIN_ALLOWED_DAILY_WELL_PRODUCTION = 1 # тыс. м3/сут
 
 
 def count_daily_production(x: float, data: dict[str, float]) -> float:
@@ -73,24 +74,33 @@ def __count_bcs_power(data: dict[str, float],
 
 def __count_ukpg_pressure(data: dict[str, float],
                           wellhead_p: float,
-                          downhole_p: float,
                           curr_d_prod: float,
-                          n_wells: int) -> float:
-    value_inside_sqrt_ukpg_pressure = (wellhead_p ** 2 - data['lambda_trail'] * data['relative_density']
+                          n_wells: int,
+                          ukpg_p: float = 0,
+                          ) -> float:
+    def func(x: float) -> float:
+        return (wellhead_p ** 2 - x**2
+                - data['lambda_trail'] * data['relative_density']
                                        * count_overcomp_coef(
-                2 / 3 * (downhole_p + wellhead_p ** 2 / (downhole_p + wellhead_p)),
-                data,
-                data['avg_well_temp'])
-                                       * data['avg_trail_temp'] * data['trail_length'] * (
-                                               curr_d_prod * n_wells) ** 2
-                                       / data['trail_diameter'] ** 5 / COEF_K ** 2)
+                                           2 / 3 * (wellhead_p + x ** 2 / (wellhead_p + x)),
+                                           data,
+                                           data['avg_well_temp'])
+                                       * data['avg_trail_temp']
+                                       * data['trail_length']
+                                       * (curr_d_prod * n_wells) ** 2
+                                       / data['trail_diameter'] ** 5
+                                       / COEF_K ** 2)
+    res = so.fsolve(func, x0=[ukpg_p], xtol=1e-3, full_output=True)
+    if res[2] != 1:
+        return 0.1
 
-    if value_inside_sqrt_ukpg_pressure >= 0.1 ** 2:
-        ukpg_pressure = np.sqrt(value_inside_sqrt_ukpg_pressure)
+    root = res[0]
+    ukpg_pressure = root[0]
+
+    if ukpg_pressure >= 0.1:
+        return ukpg_pressure
     else:
-        ukpg_pressure = 0.1
-
-    return ukpg_pressure
+        return 0.1
 
 
 
@@ -128,14 +138,7 @@ def __count_wellhead_and_downhole_pressures(wellhead_p: float,
 
 
 def calculate_indicators(data: dict[str, float]) -> tuple[RESULT, pd.DataFrame]:
-    __list_kig = []
-    __list_annual_production = []
-    __list_current_pressure = []
-    __list_n_wells = []
-    __list_wellhead_pressure = []
-    __list_ukpg_pressure = []
-    __list_cs_power = []
-    __list_downhole_pressure = []
+
 
     current_pressure = data['init_reservoir_pressure']
     current_annual_production = 0
@@ -150,9 +153,21 @@ def calculate_indicators(data: dict[str, float]) -> tuple[RESULT, pd.DataFrame]:
                                                   downhole_pressure,
                                                   overcompress_coef)
     n_wells = 0
+    ukpg_pressure = __count_ukpg_pressure(data, wellhead_pressure, current_daily_production, n_wells, wellhead_pressure)
+
+    n_wells = np.trunc(12 / data['time_to_build'] * data['machines_num'])
+
+    machines_were_busy = True
+    __list_kig = [kig]
+    __list_annual_production = [current_annual_production]
+    __list_current_pressure = [current_pressure]
+    __list_n_wells = [n_wells]
+    __list_wellhead_pressure = [wellhead_pressure]
+    __list_downhole_pressure = [downhole_pressure]
+    __list_ukpg_pressure = [ukpg_pressure]
+    __list_cs_power = [0]
+
     while kig < 0.5:
-        if current_daily_production * n_wells * data['operations_ratio'] * 365 / 1000 < data['annual_production']:
-            n_wells += np.trunc(12 / data['time_to_build'] * data['machines_num'])
     
         def func(x):
             return [data['init_reservoir_pressure'] / data['init_overcompress_coef']
@@ -162,7 +177,10 @@ def calculate_indicators(data: dict[str, float]) -> tuple[RESULT, pd.DataFrame]:
                         * count_daily_production(x[0], data) / 1000 - x[2]
                     ]
 
-        res = so.fsolve(func, [current_pressure, overcompress_coef, sum_current_annual_production], xtol=1e-3, full_output=True)
+        res = so.fsolve(func,
+                        [current_pressure, overcompress_coef, sum_current_annual_production],
+                        xtol=1e-3,
+                        full_output=True)
         
         root = res[0]
         current_pressure, overcompress_coef, _ = root[0], root[1], root[2]
@@ -184,12 +202,15 @@ def calculate_indicators(data: dict[str, float]) -> tuple[RESULT, pd.DataFrame]:
 
         if current_annual_production >= data['annual_production']:
             current_annual_production = data['annual_production']
-        elif len(__list_n_wells) and __list_n_wells[-1] == n_wells:
+            machines_were_busy = False
+        elif machines_were_busy:
+            n_wells += np.trunc(12 / data['time_to_build'] * data['machines_num'])
+            machines_were_busy = True
+        else:
             n_wells += np.trunc(12 / data['time_to_build'] * data['machines_num'])
             __list_n_wells[-1] = n_wells
-            current_annual_production = 365 * current_daily_production * n_wells * data['operations_ratio'] / 1000
-            if current_annual_production > data['annual_production']:
-                current_annual_production = data['annual_production']
+            machines_were_busy = True
+            continue
 
 
         wellhead_pressure, downhole_pressure, data = __count_wellhead_and_downhole_pressures(wellhead_pressure,
@@ -201,9 +222,9 @@ def calculate_indicators(data: dict[str, float]) -> tuple[RESULT, pd.DataFrame]:
 
         ukpg_pressure = __count_ukpg_pressure(data,
                                               wellhead_pressure,
-                                              downhole_pressure,
                                               current_daily_production,
-                                              n_wells)
+                                              n_wells,
+                                              ukpg_pressure)
 
         power = __count_bcs_power(data, ukpg_pressure, current_daily_production, n_wells)
 
@@ -220,8 +241,7 @@ def calculate_indicators(data: dict[str, float]) -> tuple[RESULT, pd.DataFrame]:
         __list_cs_power.append(power)
         __list_downhole_pressure.append(downhole_pressure)
 
-        if len(__list_kig) > MAX_ITERATIONS:
-            return RESULT.PASSED_LIMIT, pd.DataFrame(dict(
+        df_return = pd.DataFrame(dict(
                 kig=__list_kig,
                 annual_production=__list_annual_production,
                 current_pressure=__list_current_pressure,
@@ -230,6 +250,12 @@ def calculate_indicators(data: dict[str, float]) -> tuple[RESULT, pd.DataFrame]:
                 n_wells=__list_n_wells,
                 ukpg_pressure=__list_ukpg_pressure,
                 cs_power=__list_cs_power))
+
+        if len(__list_kig) > MAX_ITERATIONS:
+            return RESULT.PASSED_LIMIT, df_return
+
+        if current_daily_production <= MIN_ALLOWED_DAILY_WELL_PRODUCTION:
+            return RESULT.SUCCESS, df_return
 
 
 
@@ -285,9 +311,9 @@ def calculate_indicators(data: dict[str, float]) -> tuple[RESULT, pd.DataFrame]:
 
         ukpg_pressure = __count_ukpg_pressure(data,
                                               wellhead_pressure,
-                                              downhole_pressure,
                                               current_daily_production,
-                                              n_wells)
+                                              n_wells,
+                                              ukpg_pressure)
 
         power = __count_bcs_power(data, ukpg_pressure, current_daily_production, n_wells)
 
@@ -304,8 +330,7 @@ def calculate_indicators(data: dict[str, float]) -> tuple[RESULT, pd.DataFrame]:
         __list_ukpg_pressure.append(ukpg_pressure)
         __list_cs_power.append(power)
 
-        if len(__list_kig) > MAX_ITERATIONS:
-            return RESULT.PASSED_LIMIT, pd.DataFrame(dict(
+        df_return = pd.DataFrame(dict(
                 kig=__list_kig,
                 annual_production=__list_annual_production,
                 current_pressure=__list_current_pressure,
@@ -314,6 +339,12 @@ def calculate_indicators(data: dict[str, float]) -> tuple[RESULT, pd.DataFrame]:
                 n_wells=__list_n_wells,
                 ukpg_pressure=__list_ukpg_pressure,
                 cs_power=__list_cs_power))
+
+        if len(__list_kig) > MAX_ITERATIONS:
+            return RESULT.PASSED_LIMIT, df_return
+
+        if current_daily_production <= MIN_ALLOWED_DAILY_WELL_PRODUCTION:
+            return RESULT.SUCCESS, df_return
     
     return RESULT.SUCCESS, pd.DataFrame(dict(
         kig = __list_kig,

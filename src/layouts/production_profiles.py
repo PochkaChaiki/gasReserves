@@ -103,6 +103,8 @@ def make_prod_calcs_table(values: dict = None):
     if data is None:
         data = [
             [{
+                'year': '',
+                'avg_production': '',
                 'kig': '',
                 'annual_production': '',
                 'current_pressure': '',

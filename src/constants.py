@@ -49,7 +49,7 @@ REVERSED_VARNAMES = { val: key for key, val in VARNAMES.items()}
 
 DISPLAY_VARNAMES_INDICATORS = {
     'year': 'Год',
-    'avg_production': 'Средний дебит скважины, млн. м3',
+    'avg_production': 'Средний дебит скважины, тыс. м3/сут',
     'annual_production': 'Годовые отборы, млн. м3',
     'kig': 'Коэффициент извлечения газа, д.е.',
     'current_pressure': 'Пластовое давление, МПа',
@@ -62,7 +62,7 @@ DISPLAY_VARNAMES_INDICATORS = {
 
 SHORTNAMES_VARNAMES_INDICATORS = {
     'year': 'Год',
-    'avg_production': 'Qскв, млн. м3',
+    'avg_production': 'Qскв, тыс. м3/сут',
     'annual_production': 'Qгод, млн. м3',
     'kig': 'КИГ, д.е.',
     'current_pressure': 'Pпл, МПа',

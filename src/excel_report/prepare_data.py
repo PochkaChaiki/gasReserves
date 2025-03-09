@@ -97,10 +97,10 @@ def collect_prod_profile_init_data(storage_data: dict, field_name:str) -> dict:
 
 def collect_profiles_report(storage_data: dict, field_name: str) -> dict:
     profiles_report = {'P10': {}, 'P50': {}, 'P90': {}}
-    parameter_table_stat_indics = get_value(storage_data=storage_data,
+    indics_calcs = get_value(storage_data=storage_data,
                                             field_name=field_name,
-                                            tab='tab-production-indicators',
-                                            prop='parameter_table_stat_indics',
+                                            tab='tab-reserves-calcs',
+                                            prop='indics_calcs',
                                             default=[])
 
     parameter_table_indics = get_value(storage_data=storage_data,
@@ -114,13 +114,13 @@ def collect_profiles_report(storage_data: dict, field_name: str) -> dict:
                                              prop='parameter_table_output_calcs',
                                              default=[])
 
-    stat_indics_params = ['effective_thickness', 'geo_gas_reserves',
+    indics_calcs_params = ['area', 'effective_thickness', 'geo_gas_reserves',
                           'porosity_coef', 'gas_saturation_coef']
     for key in profiles_report.keys():
-        profiles_report[key] = get_values_from_records(parameter_table_stat_indics,
+        profiles_report[key] = get_values_from_records(indics_calcs,
                                                        profiles_report[key],
-                                                       stat_indics_params,
-                                                       VARNAMES_INDICATORS,
+                                                       indics_calcs_params,
+                                                       VARNAMES,
                                                        col=key)
 
 
@@ -172,37 +172,42 @@ def collect_profiles_report(storage_data: dict, field_name: str) -> dict:
 
 
 
-def collect_images(storage_data: dict, field_name: str)->dict:
+def collect_images(storage_data: dict, field_name: str)->tuple[dict, bool]:
     images = {}
+    ok = True
 
-    pdf_plot: go.Figure = go.Figure(
-        get_value(storage_data=storage_data,
-                  field_name=field_name,
-                  tab='tab-reserves-calcs',
-                  prop='pdf_plot',
-                  default=None)
-    )
+    try:
+        pdf_plot: go.Figure = go.Figure(
+            get_value(storage_data=storage_data,
+                      field_name=field_name,
+                      tab='tab-reserves-calcs',
+                      prop='pdf_plot',
+                      default=None)
+        )
 
-    images['hist'] = pdf_plot.to_image('png')
+        images['hist'] = pdf_plot.to_image('png')
 
-    tornado_diagram: go.Figure = go.Figure(
-        get_value(storage_data=storage_data,
-                  field_name=field_name,
-                  tab='tab-reserves-calcs',
-                  prop='tornado_diagram',
-                  default=None)
-    )
-    images['tornado'] = tornado_diagram.to_image('png')
+        tornado_diagram: go.Figure = go.Figure(
+            get_value(storage_data=storage_data,
+                      field_name=field_name,
+                      tab='tab-reserves-calcs',
+                      prop='tornado_diagram',
+                      default=None)
+        )
+        images['tornado'] = tornado_diagram.to_image('png')
 
-    prod_kig_plot: go.Figure = go.Figure(
-        get_value(storage_data=storage_data,
-                  field_name=field_name,
-                  tab='tab-production-indicators',
-                  prop='prod_kig_plot',
-                  default=None)
-    )
-    images['profile'] = prod_kig_plot.to_image('png')
-    return images
+        prod_kig_plot: go.Figure = go.Figure(
+            get_value(storage_data=storage_data,
+                      field_name=field_name,
+                      tab='tab-production-indicators',
+                      prop='prod_kig_plot',
+                      default=None)
+        )
+        images['profile'] = prod_kig_plot.to_image('png')
+    except:
+        ok = False
+
+    return images, ok
 
 def collect_risks(storage_data: dict, field_name: str)->tuple[dict, dict, float]:
     tab='tab-risks-and-uncertainties'
@@ -263,18 +268,24 @@ def collect_risks(storage_data: dict, field_name: str)->tuple[dict, dict, float]
     return risk_params, risks_kriterias, study_coef
 
 
-def collect_comparison_analysis(storage_data: dict)->tuple[pd.DataFrame, dict]:
+def collect_comparison_analysis(storage_data: dict)->tuple[pd.DataFrame, dict, bool]:
+    ok = True
     df_values = analyze_fields(storage_data)
+    charts = dict()
+    try:
+        charts = dict(
+            study_coef_chart = make_bubble_charts(df_values, 'study_coef').to_image('png'),
+            uncertainty_coef_chart = make_bubble_charts(df_values, 'uncertainty_coef').to_image('png'),
+            annual_production_chart = make_bubble_charts(df_values, 'annual_production').to_image('png'),
+            distance_from_infra_chart = make_bubble_charts(df_values, 'distance_from_infra').to_image('png'),
+        )
+    except:
+        ok = False
+    return df_values.copy(), charts, ok
 
-    return df_values.copy(), dict(
-        study_coef_chart = make_bubble_charts(df_values, 'study_coef').to_image('png'),
-        uncertainty_coef_chart = make_bubble_charts(df_values, 'uncertainty_coef').to_image('png'),
-        annual_production_chart = make_bubble_charts(df_values, 'annual_production').to_image('png'),
-        distance_from_infra_chart = make_bubble_charts(df_values, 'distance_from_infra').to_image('png'),
-    )
 
-
-def make_data_to_excel(storage_data: dict) -> dict:
+def make_data_to_excel(storage_data: dict) -> tuple[dict, bool]:
+    ok = True
     excel_data = {}
     data = {}
     
@@ -288,7 +299,8 @@ def make_data_to_excel(storage_data: dict) -> dict:
 
         profiles_report = collect_profiles_report(storage_data, field_name)
 
-        images = collect_images(storage_data, field_name)
+
+        images, ok = collect_images(storage_data, field_name)
 
         risk_params, risks_kriterias, study_coef = collect_risks(storage_data, field_name)
 
@@ -305,9 +317,10 @@ def make_data_to_excel(storage_data: dict) -> dict:
         data[field_name] = field
     excel_data['fields'] = data
 
-    comparison_values, comparison_images = collect_comparison_analysis(storage_data)
+
+    comparison_values, comparison_images, ok2 = collect_comparison_analysis(storage_data)
     excel_data['comparison'] = dict(
         comparison_values = comparison_values,
         comparison_images = comparison_images,
     )
-    return excel_data
+    return excel_data, (ok and ok2)

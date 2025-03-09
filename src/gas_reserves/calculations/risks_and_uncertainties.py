@@ -36,12 +36,11 @@ def prepare_weights(params: dict) -> dict:
     w_sum = 0
     for param in params.keys():
         w_sum += params[param]
+    if w_sum == 0:
+        return {param: 1/5 for param in params.keys()}
 
     if w_sum != 1:
         for param in params.keys():
             params[param] = params[param] / w_sum
-
-    if w_sum == 0:
-        params = {param: 1/5 for param in params.keys()}
 
     return params

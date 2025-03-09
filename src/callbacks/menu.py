@@ -162,19 +162,26 @@ def open_field(n_clicks, fields_list):
 
 @callback(
     Output('download_excel', 'data'),
+    Output('notification_store', 'data', allow_duplicate=True),
 
     Input('excel_store_not_to_use', 'modified_timestamp'),
     State('persistence_storage', 'data'),
     prevent_initial_call = True,
 )
 def send_excel_report(timestamp, storage_data):
-    excel_data = make_data_to_excel(storage_data=storage_data)
+    excel_data, ok = make_data_to_excel(storage_data=storage_data)
 
     create_report(excel_data=excel_data,
                   template_path=EXCEL_TEMPLATE_PATH,
                   output_path=OUTPUT_EXCEL_PATH)
 
-    return dcc.send_file(OUTPUT_EXCEL_PATH)
+    if not ok:
+        return dcc.send_file(OUTPUT_EXCEL_PATH), dict(is_open=True,
+             children='Ошибка экпорта изображений. Пожалуйста, проверьте, чтобы '
+                      'путь к приложению содержал только латинские буквы и символы.',
+             header='Ошибка подготовки отчёта',
+             icon='danger')
+    return dcc.send_file(OUTPUT_EXCEL_PATH), no_update
 
 
 @callback(
@@ -193,7 +200,7 @@ def check_excel_template(n_clicks, storage_data):
                     header='Ошибка подготовки отчёта',
                     icon='danger'), no_update
 
-    return no_update, 1
+    return no_update, n_clicks
 
 
 

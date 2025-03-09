@@ -1,5 +1,3 @@
-import os.path
-
 from dash import Dash
 import dash_bootstrap_components as dbc
 
@@ -13,8 +11,10 @@ from src.layouts.single_page import *
 
 import webbrowser
 import requests as r
+import os
 
 APP_TITLE = 'Оценка перспективности'
+DEBUG = True
 
 app: Dash
 
@@ -45,4 +45,4 @@ if __name__ == '__main__':
         os.mkdir(TEMP_PATH)
 
     webbrowser.open('http://localhost:8050', new=2)
-    app.run(debug=False)
+    app.run(debug=DEBUG)

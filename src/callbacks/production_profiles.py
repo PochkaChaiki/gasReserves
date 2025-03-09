@@ -99,7 +99,7 @@ def calculate_production_indicators(n_clicks: int,
             list_of_failures.append(dict(name=name, reason='вычисления превысили установленный максимум лет (100 лет)'))
 
         result['year'] = [i for i in range(0, len(result.index))]
-        result['avg_production'] = result['annual_production'] / result['n_wells']
+        result['avg_production'] = result['annual_production'] / result['n_wells'] / 365 * 1000
 
         results_list.append(result.to_dict('records'))
 

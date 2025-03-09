@@ -2,6 +2,7 @@ from dash import callback, Output, Input, State, ALL, no_update, ctx
 
 from src.gas_reserves.calculations.risks_and_uncertainties import prepare_values, prepare_weights, calculate_study_coef
 from src.constants import VARNAMES_RISKS, VARNAMES, INCORRECT_PARAMS
+from src.gas_reserves.constants import SEISMIC_EXPLR_WORK_KRITERIAS
 from src.utils import get_value, save_tab_risks_and_uncertainties
 
 
@@ -86,17 +87,17 @@ def update_table_data(n_clicks,
         ))
 
     kriterias = dict(
-        seismic_exploration_work = seismic_exploration_work[0]['kriteria'],
-        grid_density = grid_density[0]['kriteria'],
-        core_research = core_research[0]['kriteria'],
-        c1_reserves = c1_reserves[0]['kriteria'],
-        hydrocarbon_properties = hydrocarbon_properties[0]['kriteria'],
+        seismic_exploration_work = seismic_exploration_work[0]['kriteria'] or 'Отсутствует',
+        grid_density = grid_density[0]['kriteria'] or 0,
+        core_research = core_research[0]['kriteria'] or 0,
+        c1_reserves = c1_reserves[0]['kriteria'] or 0,
+        hydrocarbon_properties = hydrocarbon_properties[0]['kriteria'] or 'Отсутствуют',
     )
 
     exploration_wells_amount = 0
     for row in risks_parameters_table:
         if row['parameter'] == VARNAMES_RISKS['exploration_wells_amount']:
-            exploration_wells_amount = row['value']
+            exploration_wells_amount = row['value'] if row['value'] else 0
 
 
 
@@ -131,7 +132,7 @@ def update_table_data(n_clicks,
     seismic_exploration_work[0]['value'] = values['seismic_exploration_work']
     seismic_exploration_work[0]['weight'] = prepared_weights['seismic_exploration_work']
 
-    grid_density[0]['kriteria'] = f'{round(area / exploration_wells_amount / 10, 3)} га/скважин'
+    grid_density[0]['kriteria'] = f'{round(area / exploration_wells_amount / 10, 3) if exploration_wells_amount else 0} га/скважин'
     grid_density[0]['value'] = values['grid_density']
     grid_density[0]['weight'] = prepared_weights['grid_density']
 
