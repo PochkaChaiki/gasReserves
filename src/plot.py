@@ -154,12 +154,15 @@ def plot_ecdf_indicators(vars: pd.DataFrame, title: str) -> go.Figure:
 
 def plot_pdf_indicators(vars: pd.DataFrame, title: str) -> go.Figure:
 
-    fig = ff.create_distplot([vars], [title], show_hist=False, show_rug=False, colors=CHART_COLORS)
+    if np.allclose(vars, vars[0]):
+        vars += np.random.normal(loc=0, scale=1e-8, size=len(vars))
+    fig = ff.create_distplot([vars], [title], bin_size=0.01, show_hist=False, show_rug=False, colors=CHART_COLORS)
 
     indicators = np.percentile(vars, [10, 50, 90])
-
+    ys: list
     kde = st.gaussian_kde(vars)
     ys = kde.pdf(indicators)
+
     fig.add_trace(
         go.Scatter(
             x=indicators, 

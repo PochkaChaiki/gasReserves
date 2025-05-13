@@ -10,7 +10,7 @@ from src.gas_reserves.calculations.prod_indicators import *
 from src.layouts.components import make_indics_table, update_table_columns
 from src.utils import *
 
-
+import pdb
 
 
 # noinspection PyTupleAssignmentBalance
@@ -195,9 +195,11 @@ def calculate_gas_reserves(n_clicks: int,
 
 # Making calculations -------------------------------------------------------------------------------------------------------------------------------
     try:
+        # pdb.set_trace()
         result_df, tornado_fig, ecdf_fig, pdf_fig = _calculate_reserves(input_data=input_data,
                                                                         stat_data=stat_data)
     except Exception as e:
+        print(e)
         return [no_update for _ in range(6)] + [dict(
             is_open=True,
             header='Ошибка при вычислении',

@@ -8,7 +8,7 @@ def make_front_page():
             [
                 html.Div([
                     html.Div([
-                        html.H1('ВЕРОЯТНОСТНАЯ ОЦЕНКА ПЕРСПЕКТИВНОСТИ РАЗРАБОТКИ МЕСТОРОЖДЕНИЯ ГАЗА',
+                        html.H1('ВЕРОЯТНОСТНАЯ ОЦЕНКА ПЕРСПЕКТИВНОСТИ РАЗРАБОТКИ МЕСТОРОЖДЕНИЙ УГЛЕВОДОРОДОВ',
                                 className='text-center', style={
                                 'color': 'white',
                                 'font-family': 'Verdana',
