@@ -73,12 +73,15 @@ Layout = html.Div(
         dcc.Store(id='persistence_storage', storage_type='session'),
         dcc.Store(id='notification_store', storage_type='memory'),
         dcc.Store(id='excel_store_not_to_use', storage_type='memory'),
+        dcc.Store(id='for_fields_comparison', storage_type='memory'),
+        dcc.Store(id='for_fields_comparison_checkboxes', storage_type='session'),
         html.Div(id='notifications'),
         dbc.Container([
             html.Div([
                 dbc.Button(['Меню ', html.I(className="bi bi-list")], id='toggle_menu', n_clicks=0),
                 html.Span([
                     make_menu(),
+                    html.Span(id='current_tab', style={'display': 'none'}),
                     html.Span(id='current_field', style={'float': 'right'}, className='pe-3 my-2'),
                 ]),
             ], className='px-3'),

@@ -1,4 +1,7 @@
+from plotly.graph_objs import Figure
+
 from src.comparison_analysis import analyze_fields
+from src.fields_comparison import compare_fields, take_selected_fields, plot_summary_charts_for_compare
 from src.plot import make_bubble_charts
 from src.utils import *
 from src.constants import *
@@ -268,7 +271,7 @@ def collect_risks(storage_data: dict, field_name: str)->tuple[dict, dict, float]
     return risk_params, risks_kriterias, study_coef
 
 
-def collect_comparison_analysis(storage_data: dict)->tuple[pd.DataFrame, dict, bool]:
+def collect_comparison_analysis(storage_data: dict) -> tuple[pd.DataFrame, dict, bool]:
     ok = True
     df_values = analyze_fields(storage_data)
     charts = dict()
@@ -282,6 +285,23 @@ def collect_comparison_analysis(storage_data: dict)->tuple[pd.DataFrame, dict, b
     except:
         ok = False
     return df_values.copy(), charts, ok
+
+def collect_field_comparison(storage_data: dict, selected_fields: list[str]) -> tuple[pd.DataFrame, dict[str, pd.DataFrame], bytes | None]:
+    fields = compare_fields(storage_data)
+    res_table = take_selected_fields(fields, selected_fields)
+
+    ret_fields = dict()
+    for field in selected_fields:
+        ret_fields[field] = pd.DataFrame(fields[field])
+
+    chart: bytes | None = None
+    try:
+        chart: bytes = plot_summary_charts_for_compare(storage_data, selected_fields).to_image('png')
+    except:
+        chart = None
+
+    return res_table, ret_fields, chart
+
 
 
 def make_data_to_excel(storage_data: dict) -> tuple[dict, bool]:
@@ -304,6 +324,12 @@ def make_data_to_excel(storage_data: dict) -> tuple[dict, bool]:
 
         risk_params, risks_kriterias, study_coef = collect_risks(storage_data, field_name)
 
+        calcs_table = get_value(storage_data=storage_data,
+                                field_name=field_name,
+                                tab='tab-production-indicators',
+                                prop='prod_calcs_table',
+                                default=[])
+
         field = {
             'stat_params': stat_params,
             'init_data': init_data,
@@ -313,6 +339,7 @@ def make_data_to_excel(storage_data: dict) -> tuple[dict, bool]:
             'risk_params': risk_params,
             'risks_kriterias': risks_kriterias,
             'study_coef': study_coef,
+            'calcs_table': calcs_table,
         }
         data[field_name] = field
     excel_data['fields'] = data
@@ -323,4 +350,6 @@ def make_data_to_excel(storage_data: dict) -> tuple[dict, bool]:
         comparison_values = comparison_values,
         comparison_images = comparison_images,
     )
+
+
     return excel_data, (ok and ok2)

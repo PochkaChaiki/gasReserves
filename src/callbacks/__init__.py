@@ -5,3 +5,4 @@ from . import single_page
 from . import risks
 from . import comparison_analysis
 from . import notification
+from . import fields_comparison

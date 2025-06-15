@@ -13,3 +13,5 @@ tpest.py
 /.idea
 *.json
 /assets
+/fast
+*.tar

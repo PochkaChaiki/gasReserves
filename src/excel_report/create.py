@@ -7,6 +7,7 @@ from openpyxl.drawing.image import Image
 import io
 
 from openpyxl.utils.dataframe import dataframe_to_rows
+from plotly.graph_objs import Figure
 
 from src.constants import TEMP_PATH, VARNAMES_ANALYSIS
 
@@ -166,7 +167,26 @@ def insert_to_sheet(field_name: str, data: dict, sheet: wsxl.Worksheet):
         sheet[f'{col}222'].value = vars.get('kig')
         sheet[f'{col}223'].value = vars.get('num_of_wells')
         sheet[f'{col}224'].value = vars.get('years')
-    
+
+    calcs_table: list[dict] = data.get('calcs_table', [])
+    row_num = 228
+    for records, name in zip(calcs_table, ["P10", "P50", "P90"]):
+        sheet[f'A{row_num}'].value = name
+        row_num += 1
+        for ind, col_name in enumerate(records[0].keys(), start=1):
+            sheet.cell(row=row_num, column=ind).value = col_name
+            sheet.cell(row=row_num, column=ind).font = Font(name='Times New Roman', size=14)
+            sheet.cell(row=row_num, column=ind).alignment = Alignment(horizontal='center', vertical='center')
+        row_num += 1
+
+        for rec in records:
+            for ind, col in enumerate(rec.keys(), start=1):
+                sheet.cell(row=row_num, column=ind).value = rec.get(col)
+                sheet.cell(row=row_num, column=ind).font = Font(name='Times New Roman', size=14)
+                sheet.cell(row=row_num, column=ind).alignment = Alignment(horizontal='center', vertical='center')
+            row_num += 1
+        row_num += 1
+
     images = data.get('images', dict())
     for img_name, img_data in images.items():
         # Открываем изображение с помощью Pillow
@@ -240,6 +260,86 @@ def insert_comparison(data: dict, sheet: wsxl.Worksheet):
         if img_name == 'distance_from_infra_chart':
             sheet.add_image(img_excel, 'A87')
 
+def _insert_dataframe(data: pd.DataFrame,
+                      sheet: wsxl.Worksheet,
+                      row_start: int = 1,
+                      col_start: int = 1,
+                      header: bool = True,
+                      index: bool = True,
+                      ) -> tuple[int, int]:
+    rows = dataframe_to_rows(data, header=header, index=index)
+    row_correction = 0
+    for row_id, row in enumerate(rows, 0):
+        if index and row_id == 1:
+            row_correction = -1
+            continue
+        row_id += row_start + row_correction
+        for col_id, value in enumerate(row, col_start):
+            sheet.cell(row=row_id, column=col_id, value=value).border = Border(
+                right=Side(border_style='thin', color='FF000000'),
+                left=Side(border_style='thin', color='FF000000'),
+                top=Side(border_style='thin', color='FF000000'),
+                bottom=Side(border_style='thin', color='FF000000'),
+            )
+            sheet[f'{chr(ord('A') + col_id - 1)}{row_id}'].font = Font(name='Times New Roman', size=14)
+            sheet[f'{chr(ord('A') + col_id - 1)}{row_id}'].alignment = Alignment(horizontal='center',
+                                                                             vertical='center')
+    return len(data)+1, len(data.columns)+1
+
+
+def insert_fields_comparison(data: dict, sheet: wsxl.Worksheet):
+    if (data.get('summ_table') is None
+            or data.get('selected_fields_tables') is None
+            or data.get('chart') is None
+            or data.get('summ_table', pd.DataFrame()).empty):
+        return
+
+    # pdb.set_trace()
+    summ_table = data['summ_table']
+    selected_fields_tables = data['selected_fields_tables']
+    indexes = [
+        VARNAMES_ANALYSIS['geo_gas_reserves'],
+        VARNAMES_ANALYSIS['study_coef'],
+        VARNAMES_ANALYSIS['uncertainty_coef'],
+        VARNAMES_ANALYSIS['annual_production'],
+        VARNAMES_ANALYSIS['accumulated_production'],
+    ]
+    summ_table = summ_table.reindex(indexes)
+
+    row_index = 1
+    col_index = 1
+
+    sheet[f'A1'].value = "Итоговая таблица"
+    sheet[f'A1'].font = Font(name='Times New Roman', size=14)
+    sheet[f'A1'].alignment = Alignment(horizontal='center', vertical='center')
+
+    row_index = 3
+    col_index = 1
+
+    ins_rows, ins_cols = _insert_dataframe(summ_table, sheet, row_start=row_index, col_start=col_index)
+    row_index += ins_rows
+    col_index += ins_cols
+
+    for field in selected_fields_tables:
+        df: pd.DataFrame = selected_fields_tables[field].reindex(indexes)
+        sheet[f'A{row_index+1}'].value = field
+        sheet[f'A{row_index+1}'].font = Font(name='Times New Roman', size=14)
+        sheet[f'A{row_index+1}'].alignment = Alignment(horizontal='center', vertical='center')
+        row_index += 3
+        ins_rows, ins_cols = _insert_dataframe(df, sheet, row_start=row_index)
+        row_index += ins_rows
+
+    chart = data.get('chart', bytes())
+    img = PILImage.open(io.BytesIO(chart))
+    temp_img_path = TEMP_PATH + f"/temp_chart_fields_comparison.png"
+    img.save(temp_img_path)
+
+    img_excel = Image(temp_img_path)
+
+    sheet.add_image(img_excel, f'{chr(ord('A')+col_index+1)}1')
+
+
+
 
 def create_report(excel_data: dict, template_path: str, output_path: str):
     data = excel_data['fields']
@@ -258,6 +358,9 @@ def create_report(excel_data: dict, template_path: str, output_path: str):
 
     copy_sheet(template_wb, 'ComparisonAnalysis', output_wb, 'Сравнительный Анализ')
     insert_comparison(excel_data['comparison'], output_wb['Сравнительный Анализ'])
+
+    output_wb.create_sheet('Сравнение месторождений')
+    insert_fields_comparison(excel_data['fields_comparison'], output_wb['Сравнение месторождений'])
 
     output_wb.save(output_path)
 

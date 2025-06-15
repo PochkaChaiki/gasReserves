@@ -5,3 +5,4 @@ from . import menu
 from . import components
 from . import comparison_analysis
 from . import notification
+from . import fields_comparison

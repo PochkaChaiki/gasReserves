@@ -194,7 +194,7 @@ def make_prod_calcs_table(values: dict = None):
                     columnDefs = columns,
                     rowData = data[i],
                     defaultColDef = {
-                        "editable": False,
+                        "editable": True,
                         "sortable": False,
                         "filter": False
                     },
