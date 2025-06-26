@@ -28,13 +28,25 @@ from src.layouts.comparison_analysis import make_analysis_table
 #         }
 #     )
 
-def make_fields_comparison_page(options: list[str], selected: list[str], values: pd.DataFrame = None, fig: Figure = None) -> html.Div:
-    return html.Div([
+def make_list_group_item(group_name: str, options: list[str], values: list[str], table: pd.DataFrame):
+    hashed_id = str(hash(group_name))
+
+    return dbc.ListGroupItem([
+        dbc.InputGroup(
+            [
+                dbc.Button(html.I(className='bi bi-trash'),
+                           id={'type': 'delete_list_group_item', 'index': f'delete_{hashed_id}'},
+                           color='danger',
+                           ),
+                dbc.InputGroupText(group_name),
+            ]
+        ),
+
         dbc.Stack([
             dcc.Checklist(
                 options=options,
-                value=selected,
-                id='fields_checklist',
+                value=values,
+                id={'type': 'checkbox_fields', 'index': hashed_id},
                 inline=True,
                 labelStyle={"display": "flex", "flex-flow": "row nowrap", "gap": "0.5rem"},
                 style={
@@ -44,11 +56,35 @@ def make_fields_comparison_page(options: list[str], selected: list[str], values:
                     "justify-content": "center",
                 }
             ),
-            html.Div([
-                make_analysis_table(values.copy()),
-            ], id='analysis_table'),
+            html.Div(
+                make_analysis_table(table),
+                id={'type': 'table_of_group', 'index': hashed_id}
+            ),
+            ],
+            gap=3
+        )
+
+    ], id=hashed_id)
+
+def make_fields_comparison_page(options: list[str], groups: dict | None, values: dict[str, pd.DataFrame], fig: Figure = Figure()):
+    return html.Div([
+        dbc.Stack([
+            dbc.InputGroup(
+                [
+                    dbc.Button("Добавить группу", id="add_group"),
+                    dbc.Input(id="group_name", placeholder="Название группы"),
+                ]
+            ),
+            dbc.ListGroup([
+
+                make_list_group_item(group, options, groups[group], values[group])
+                for group in groups ], id="fields_checklists"),
+            # html.Div([
+            #     make_analysis_table(values.copy()),
+            # ], id='analysis_table'),
             html.Div(
                 dcc.Graph(figure=fig, id="graph_fields")
             )
-        ])
+        ],
+        gap=3)
     ])

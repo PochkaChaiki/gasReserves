@@ -286,21 +286,27 @@ def collect_comparison_analysis(storage_data: dict) -> tuple[pd.DataFrame, dict,
         ok = False
     return df_values.copy(), charts, ok
 
-def collect_field_comparison(storage_data: dict, selected_fields: list[str]) -> tuple[pd.DataFrame, dict[str, pd.DataFrame], bytes | None]:
+def collect_field_comparison(storage_data: dict, groups_data: dict[str, list[str]]) \
+        -> tuple[dict[str, tuple[pd.DataFrame, list[str]]], dict[str, pd.DataFrame], bytes | None]:
     fields = compare_fields(storage_data)
-    res_table = take_selected_fields(fields, selected_fields)
+
+    res_tables = dict()
+
+    for group, selected_fields in groups_data.items():
+        table = take_selected_fields(fields, selected_fields)
+        res_tables[group] = (table, selected_fields)
 
     ret_fields = dict()
-    for field in selected_fields:
+    for field in storage_data.keys():
         ret_fields[field] = pd.DataFrame(fields[field])
 
     chart: bytes | None = None
     try:
-        chart: bytes = plot_summary_charts_for_compare(storage_data, selected_fields).to_image('png')
+        chart = plot_summary_charts_for_compare(storage_data, groups_data).to_image('png')
     except:
         chart = None
 
-    return res_table, ret_fields, chart
+    return res_tables, ret_fields, chart
 
 
 
@@ -324,11 +330,19 @@ def make_data_to_excel(storage_data: dict) -> tuple[dict, bool]:
 
         risk_params, risks_kriterias, study_coef = collect_risks(storage_data, field_name)
 
-        calcs_table = get_value(storage_data=storage_data,
-                                field_name=field_name,
-                                tab='tab-production-indicators',
-                                prop='prod_calcs_table',
-                                default=[])
+        prod_calcs_table = get_value(storage_data=storage_data,
+                                     field_name=field_name,
+                                     tab='tab-production-indicators',
+                                     prop='prod_calcs_table',
+                                     default=[])
+
+        calcs_table = []
+
+        for table in prod_calcs_table:
+            df = pd.DataFrame.from_records(table)
+            df = df.rename(columns=DISPLAY_VARNAMES_INDICATORS)
+            calcs_table.append(df)
+
 
         field = {
             'stat_params': stat_params,

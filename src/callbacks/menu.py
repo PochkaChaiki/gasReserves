@@ -80,6 +80,8 @@ def update_fields(n_clicks, storage_data):
     Output('persistence_storage', 'data', allow_duplicate=True),
     Output('update_fields_btn', 'n_clicks'),
     Output('load_save', 'contents'),
+    Output("for_fields_comparison_checkboxes", "data", allow_duplicate=True),
+    Output("current_field", "children", allow_duplicate=True),
 
     Input('load_save', 'contents'),
     State('update_fields_btn', 'n_clicks'),
@@ -91,8 +93,8 @@ def load_save(contents, update_fields_btn):
         decoded = base64.b64decode(content_string)
         storage_data = json.loads(decoded)
         update_fields_btn = 1
-        return storage_data, update_fields_btn, None
-    return no_update, no_update, None
+        return storage_data, update_fields_btn, None, None, ""
+    return no_update, no_update, None, no_update, no_update
 
 
 
@@ -114,14 +116,17 @@ def send_storage_data(n_clicks, storage_data):
     Output('menu_nav', 'children', allow_duplicate=True),
     Output('persistence_storage', 'data', allow_duplicate=True),
     Output('current_field', 'children', allow_duplicate=True),
+    Output('for_fields_comparison_checkboxes', 'data', allow_duplicate=True),
 
     Input({'type': 'delete_item', 'index': ALL}, 'n_clicks'),
     State('menu_nav', 'children'),
     State('persistence_storage', 'data'),
     State('current_field', 'children'),
+    State('for_fields_comparison_checkboxes', 'data'),
+
     prevent_initial_call=True
 )
-def delete_field(n_clicks:list[int], fields_list: list[dict], storage_data: dict, current_field: str):
+def delete_field(n_clicks:list[int], fields_list: list[dict], storage_data: dict, current_field: str, groups_data: dict[str, list]):
     if ctx.triggered[0]['value']:
         field_id = ctx.triggered_id['index'][len('delete_'):]
         field_to_delete = dict()
@@ -136,8 +141,14 @@ def delete_field(n_clicks:list[int], fields_list: list[dict], storage_data: dict
             current_field = ''
 
         fields_list.remove(field_to_delete)
+        try:
+            for group in groups_data:
+                groups_data[group].remove(field_to_delete_name)
+        except ValueError:
+            pass
+
         
-    return fields_list, storage_data, current_field
+    return fields_list, storage_data, '', groups_data
 
 
 
@@ -169,28 +180,38 @@ def open_field(n_clicks, fields_list):
     State('for_fields_comparison_checkboxes', 'data'),
     prevent_initial_call = True,
 )
-def send_excel_report(timestamp, storage_data: dict, chkbxs: list[str]):
-    excel_data, ok = make_data_to_excel(storage_data=storage_data)
+def send_excel_report(timestamp, storage_data: dict, chkbxs: dict[str, list[str]]):
 
-    if chkbxs is None or len(chkbxs) == 0:
-        chkbxs = list(storage_data.keys())
-    df_summ_table, df_selected_fields, chart = collect_field_comparison(storage_data, chkbxs)
-    excel_data['fields_comparison'] = dict(
-        summ_table = df_summ_table,
-        selected_fields_tables = df_selected_fields,
-        chart = chart,
-    )
+    try:
+        excel_data, ok = make_data_to_excel(storage_data=storage_data)
 
-    create_report(excel_data=excel_data,
-                  template_path=EXCEL_TEMPLATE_PATH,
-                  output_path=OUTPUT_EXCEL_PATH)
+        if chkbxs is None:
+            chkbxs = dict()
 
-    if not ok:
-        return dcc.send_file(OUTPUT_EXCEL_PATH), dict(is_open=True,
-             children='Ошибка экпорта изображений. Пожалуйста, проверьте, чтобы '
-                      'путь к приложению содержал только латинские буквы и символы.',
-             header='Ошибка подготовки отчёта',
-             icon='danger')
+        summ_tables, df_selected_fields, chart = collect_field_comparison(storage_data, chkbxs)
+        excel_data['fields_comparison'] = dict(
+            summ_tables = summ_tables,
+            selected_fields_tables = df_selected_fields,
+            chart = chart,
+        )
+
+        create_report(excel_data=excel_data,
+                      template_path=EXCEL_TEMPLATE_PATH,
+                      output_path=OUTPUT_EXCEL_PATH)
+
+        if not ok:
+            return dcc.send_file(OUTPUT_EXCEL_PATH), dict(is_open=True,
+                 children='Ошибка экпорта изображений. Пожалуйста, проверьте, чтобы '
+                          'путь к приложению содержал только латинские буквы и символы.',
+                 header='Ошибка подготовки отчёта',
+                 icon='danger')
+    except:
+        return no_update, dict(is_open=True,
+                 children='Непредвиденная ошибка при создании отчёта.'
+                          'Пожалуйста, убедитесь, что все поля ввода заполнены и повторите попытку.'
+                          'Если ошибка повторяется, сохраните проект и сообщите об ошибке разработчику.',
+                 header='Ошибка подготовки отчёта',
+                 icon='danger')
     return dcc.send_file(OUTPUT_EXCEL_PATH), no_update
 
 

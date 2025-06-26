@@ -231,7 +231,7 @@ def params_to_string(params: dict) -> str:
     if distribution == 'triang':
         return f'a = {params['min_value']}, b = {params['max_value']}, c = {params['mode']}'
     if distribution == 'truncnorm':
-        return f'M = {params['mean']}, std = {params['std_dev']}' + \
+        return f'M = {params['mean']}, std = {params['std_dev']}, ' + \
             f'a = {params['min_value']}, b = {params['max_value']}'
     return ''
 

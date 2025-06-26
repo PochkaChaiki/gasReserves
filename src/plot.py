@@ -207,6 +207,9 @@ def plot_pdf_indicators(vars: pd.DataFrame, title: str) -> go.Figure:
             tickformat=".0f",  # Full Format
             title=dict(text=title)
         ),
+        yaxis=dict(
+            tickformat="000",
+        ),
         legend=dict(
             visible=False
         ),
@@ -225,7 +228,13 @@ def plot_pressure_on_production_stages(pressure_vals: pd.DataFrame, name: str) -
                                  line=dict(color=CHART_COLORS[color_id]),
                                  marker=dict(color=CHART_COLORS[color_id]), ))
     fig.update_layout(
-        title=dict(text=name)
+        title=dict(text=name),
+        xaxis=dict(
+            tickformat="000",
+        ),
+        yaxis=dict(
+            tickformat="000",
+        )
     )
     fig.update_xaxes(rangemode='tozero')
     return fig
@@ -253,12 +262,23 @@ def plot_united_pressures(charts: list[go.Figure]) -> go.Figure:
             tracegroupgap=222,
             itemsizing='trace',
             groupclick='toggleitem',
+        ),
+        xaxis=dict(
+            tickformat="000",
+        ),
+        yaxis = dict(
+            tickformat="000",
         )
     )
     return fig
 
 
-def plot_summary_chart(fig: go.Figure, df_prod_kig: pd.DataFrame, prod_indic: str) -> go.Figure:
+def plot_summary_chart(fig: go.Figure | None,
+                       df_prod_kig: pd.DataFrame,
+                       name: str,
+                       chart_colors_num: int | None = None,
+                       lines_full_name: bool = False,
+                       ) -> go.Figure:
     if fig is None:
         fig = make_subplots(specs=[[{"secondary_y": True}]])
     fig.add_trace(
@@ -266,12 +286,12 @@ def plot_summary_chart(fig: go.Figure, df_prod_kig: pd.DataFrame, prod_indic: st
             x=df_prod_kig.index.values.tolist(), 
             y=df_prod_kig["annual_production"], 
             mode="lines+markers", 
-            name="Qt_"+prod_indic,
+            name=("Qt_" if not lines_full_name else "Годовые отборы: ") + name ,
             customdata=df_prod_kig,
             hovertemplate=
                 '<br>Годовой отбор: %{y}<br>'+
                 'Количество скважин: %{customdata[2]}',
-            line=dict(color=PROD_INDICS_COLORS[prod_indic])
+            line=dict(color=PROD_INDICS_COLORS[name] if chart_colors_num is None else CHART_COLORS[chart_colors_num % len(CHART_COLORS)])
         ), secondary_y = False)
     
     fig.add_trace(
@@ -279,11 +299,11 @@ def plot_summary_chart(fig: go.Figure, df_prod_kig: pd.DataFrame, prod_indic: st
             x=df_prod_kig.index.values.tolist(), 
             y=df_prod_kig["kig"], 
             mode="lines+markers", 
-            name="КИГ_"+prod_indic,
+            name=("КИГ_" if not lines_full_name else "Коэффициент извлечения газа: ") + name,
             customdata=df_prod_kig,
             hovertemplate=
                 '<br>КИГ: %{y:.2f}<br>',
-            line=dict(color=PROD_INDICS_COLORS[prod_indic])
+            line=dict(color=PROD_INDICS_COLORS[name] if chart_colors_num is None else CHART_COLORS[chart_colors_num % len(CHART_COLORS)])
         ), secondary_y = True)
 
     fig.update_layout(
@@ -292,8 +312,12 @@ def plot_summary_chart(fig: go.Figure, df_prod_kig: pd.DataFrame, prod_indic: st
             title=dict(
                 text='Год'
             ),
-            rangemode='tozero'
+            rangemode='tozero',
+            tickformat="000",
         ),
+        yaxis=dict(
+            tickformat="000"
+        )
     )
     fig.update_yaxes(title_text=DISPLAY_VARNAMES_INDICATORS['annual_production'], secondary_y=False)
     fig.update_yaxes(title_text=DISPLAY_VARNAMES_INDICATORS['kig'], secondary_y=True)
@@ -326,7 +350,8 @@ def make_bubble_charts(values: pd.DataFrame,
             title=dict(text=VARNAMES['geo_gas_reserves'])
         ),
         yaxis=dict(
-            title=VARNAMES_ANALYSIS[y]
+            title=VARNAMES_ANALYSIS[y],
+            tickformat="000",
         )
     )
 

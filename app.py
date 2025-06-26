@@ -14,7 +14,7 @@ import requests as r
 import os
 
 APP_TITLE = 'Оценка перспективности'
-DEBUG = False
+DEBUG = True
 
 app: Dash
 

@@ -97,6 +97,9 @@ def take_selected_fields(values: dict, selected_fields: list[str]) -> pd.DataFra
                              index=inds,
                              columns=cols)
 
+    if len(values.keys()) == 0:
+        return df_values
+
     for field in selected_fields:
         df_field = pd.DataFrame.from_dict(values[field])  # YOU DID NOT CHECK IF FIELD IS PRESENT AT THIS MOMENT!
         for index in cols:
@@ -124,56 +127,40 @@ def take_selected_fields(values: dict, selected_fields: list[str]) -> pd.DataFra
     return df_values
 
 
-def plot_summary_charts_for_compare(storage_data: dict, selected_fields: list[str]) -> Figure:
-    if len(selected_fields) == 0:
+def plot_summary_charts_for_compare(storage_data: dict, groups: dict[str, list[str]]) -> Figure:
+    if len(groups.keys()) == 0:
         return Figure()
 
     cols = ['annual_production', 'kig', 'n_wells']
-    p10, p50, p90 = None, None, None
 
-    for ind, field in enumerate(selected_fields):
-        calcs_list = get_value(storage_data,
-                               field_name=field,
-                               tab='tab-production-indicators',
-                               prop='prod_calcs_table',
-                               default = [])
+    prod_kig_fig = None
 
-        if len(calcs_list) == 0:
-            continue
+    for i, (group_name, selected_fields) in enumerate(groups.items()):
+        p90 = None
+        for ind, field in enumerate(selected_fields):
+            calcs_list = get_value(storage_data,
+                                   field_name=field,
+                                   tab='tab-production-indicators',
+                                   prop='prod_calcs_table',
+                                   default = [])
 
-        temp_p10 = pd.DataFrame.from_records(calcs_list[0])
-        temp_p50 = pd.DataFrame.from_records(calcs_list[1])
-        temp_p90 = pd.DataFrame.from_records(calcs_list[2])
+            if len(calcs_list) == 0:
+                continue
 
-        if p10 is None:
-            p10 = temp_p10[cols]
-        else:
-            p10 = p10.add(temp_p10[['annual_production', 'n_wells']], fill_value=0)
-            p10['kig'] = p10['kig'].add(temp_p10['kig'].reindex(p10.index, fill_value=1), fill_value=ind)
+            temp_p90 = pd.DataFrame.from_records(calcs_list[2])
 
-        if p50 is None:
-            p50 = temp_p50[cols]
-        else:
-            p50 = p50.add(temp_p50[['annual_production', 'n_wells']], fill_value=0)
-            p50['kig'] = p50['kig'].add(temp_p50['kig'].reindex(p50.index, fill_value=1), fill_value=ind)
+            if p90 is None:
+                p90 = temp_p90[cols]
+            else:
+                p90 = p90.add(temp_p90[['annual_production', 'n_wells']], fill_value=0)
+                p90['kig'] = p90['kig'].add(temp_p90['kig'].reindex(p90.index, fill_value=1), fill_value=ind)
 
         if p90 is None:
-            p90 = temp_p90[cols]
-        else:
-            p90 = p90.add(temp_p90[['annual_production', 'n_wells']], fill_value=0)
-            p90['kig'] = p90['kig'].add(temp_p90['kig'].reindex(p90.index, fill_value=1), fill_value=ind)
+            continue
 
-    if p10 is None or p50 is None or p90 is None:
-        return Figure()
+        p90['kig'] = p90['kig'] / len(selected_fields)
 
-    p10['kig'] = p10['kig'] / len(selected_fields)
-    p50['kig'] = p50['kig'] / len(selected_fields)
-    p90['kig'] = p90['kig'] / len(selected_fields)
+        prod_kig_fig = plot_summary_chart(prod_kig_fig, p90, group_name, chart_colors_num=i, lines_full_name=True)
 
-
-    prod_kig_fig = plot_summary_chart(None, p10, 'P10')
-    prod_kig_fig = plot_summary_chart(prod_kig_fig, p50, 'P50')
-    prod_kig_fig = plot_summary_chart(prod_kig_fig, p90, 'P90')
-
-    return prod_kig_fig
+    return prod_kig_fig if prod_kig_fig else Figure()
 

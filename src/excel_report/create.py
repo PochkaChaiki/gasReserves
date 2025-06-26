@@ -7,11 +7,16 @@ from openpyxl.drawing.image import Image
 import io
 
 from openpyxl.utils.dataframe import dataframe_to_rows
+from openpyxl.cell.text import InlineFont
+from openpyxl.cell.rich_text import TextBlock, CellRichText
 from plotly.graph_objs import Figure
 
 from src.constants import TEMP_PATH, VARNAMES_ANALYSIS
 
 import pdb
+
+EXCEL_CELL_LENGTH_COEF = 1.5
+
 
 def copy_sheet(source_wb: xl.Workbook, source_sheet_name: str, target_wb: xl.Workbook, target_sheet_name: str):
     source_sheet = source_wb[source_sheet_name]
@@ -168,24 +173,18 @@ def insert_to_sheet(field_name: str, data: dict, sheet: wsxl.Worksheet):
         sheet[f'{col}223'].value = vars.get('num_of_wells')
         sheet[f'{col}224'].value = vars.get('years')
 
-    calcs_table: list[dict] = data.get('calcs_table', [])
+    calcs_table: list[pd.DataFrame] = data.get('calcs_table', [])
     row_num = 228
-    for records, name in zip(calcs_table, ["P10", "P50", "P90"]):
-        sheet[f'A{row_num}'].value = name
+    for df_table, name in zip(calcs_table, ["P10", "P50", "P90"]):
+        sheet[f'A{row_num}'] = CellRichText(
+            TextBlock(InlineFont(rFont="Times New Roman", b=False, sz=20), 'Расчёт показателей разработки - '),
+            TextBlock(InlineFont(rFont="Times New Roman", b=True, sz=20), f'вариант {name}'),
+        )
+        sheet[f'A{row_num}'].alignment = Alignment(horizontal='center', vertical='center')
+        sheet.merge_cells(start_row=row_num, start_column=1, end_row=row_num, end_column=len(df_table.columns))
         row_num += 1
-        for ind, col_name in enumerate(records[0].keys(), start=1):
-            sheet.cell(row=row_num, column=ind).value = col_name
-            sheet.cell(row=row_num, column=ind).font = Font(name='Times New Roman', size=14)
-            sheet.cell(row=row_num, column=ind).alignment = Alignment(horizontal='center', vertical='center')
-        row_num += 1
-
-        for rec in records:
-            for ind, col in enumerate(rec.keys(), start=1):
-                sheet.cell(row=row_num, column=ind).value = rec.get(col)
-                sheet.cell(row=row_num, column=ind).font = Font(name='Times New Roman', size=14)
-                sheet.cell(row=row_num, column=ind).alignment = Alignment(horizontal='center', vertical='center')
-            row_num += 1
-        row_num += 1
+        ins_row, _ = _insert_dataframe(df_table, sheet, row_num, index=False)
+        row_num += ins_row + 2
 
     images = data.get('images', dict())
     for img_name, img_data in images.items():
@@ -241,7 +240,7 @@ def insert_comparison(data: dict, sheet: wsxl.Worksheet):
 
     for column_cells in sheet.columns:
         length = max(len(str(cell.value)) for cell in column_cells)
-        sheet.column_dimensions[column_cells[0].column_letter].width = length
+        sheet.column_dimensions[column_cells[0].column_letter].width = length*EXCEL_CELL_LENGTH_COEF
 
     images = data.get('comparison_images', dict())
     for img_name, img_data in images.items():
@@ -282,21 +281,19 @@ def _insert_dataframe(data: pd.DataFrame,
                 bottom=Side(border_style='thin', color='FF000000'),
             )
             sheet[f'{chr(ord('A') + col_id - 1)}{row_id}'].font = Font(name='Times New Roman', size=14)
-            sheet[f'{chr(ord('A') + col_id - 1)}{row_id}'].alignment = Alignment(horizontal='center',
-                                                                             vertical='center')
+            sheet[f'{chr(ord('A') + col_id - 1)}{row_id}'].alignment = Alignment(horizontal='center', vertical='center')
     return len(data)+1, len(data.columns)+1
 
 
 def insert_fields_comparison(data: dict, sheet: wsxl.Worksheet):
-    if (data.get('summ_table') is None
+    if (data.get('summ_tables') is None
             or data.get('selected_fields_tables') is None
-            or data.get('chart') is None
-            or data.get('summ_table', pd.DataFrame()).empty):
+            or data.get('chart') is None):
         return
 
     # pdb.set_trace()
-    summ_table = data['summ_table']
-    selected_fields_tables = data['selected_fields_tables']
+    summ_tables: dict[str, tuple[pd.DataFrame, list[str]]] = data['summ_tables']
+    selected_fields_tables: dict[str, pd.DataFrame] = data['selected_fields_tables']
     indexes = [
         VARNAMES_ANALYSIS['geo_gas_reserves'],
         VARNAMES_ANALYSIS['study_coef'],
@@ -304,21 +301,25 @@ def insert_fields_comparison(data: dict, sheet: wsxl.Worksheet):
         VARNAMES_ANALYSIS['annual_production'],
         VARNAMES_ANALYSIS['accumulated_production'],
     ]
-    summ_table = summ_table.reindex(indexes)
 
     row_index = 1
     col_index = 1
 
-    sheet[f'A1'].value = "Итоговая таблица"
-    sheet[f'A1'].font = Font(name='Times New Roman', size=14)
-    sheet[f'A1'].alignment = Alignment(horizontal='center', vertical='center')
+    for group, (df, selected) in summ_tables.items():
+        summ_table = df.reindex(indexes)
 
-    row_index = 3
-    col_index = 1
+        sheet.cell(row=row_index, column=col_index).value = f"Итоговая таблица {group} ({', '.join(field for field in selected)})"
+        sheet.cell(row=row_index, column=col_index).font = Font(name='Times New Roman', size=14)
+        sheet.cell(row=row_index, column=col_index).alignment = Alignment(horizontal='center', vertical='center')
+        sheet.merge_cells(start_row=row_index, start_column=col_index, end_row=row_index, end_column=len(summ_table.columns)+1)
+        row_index += 2
+        col_index = 1
 
-    ins_rows, ins_cols = _insert_dataframe(summ_table, sheet, row_start=row_index, col_start=col_index)
-    row_index += ins_rows
-    col_index += ins_cols
+        ins_rows, ins_cols = _insert_dataframe(summ_table, sheet, row_start=row_index, col_start=col_index)
+        row_index += ins_rows
+
+
+        row_index += 3
 
     for field in selected_fields_tables:
         df: pd.DataFrame = selected_fields_tables[field].reindex(indexes)
@@ -328,6 +329,11 @@ def insert_fields_comparison(data: dict, sheet: wsxl.Worksheet):
         row_index += 3
         ins_rows, ins_cols = _insert_dataframe(df, sheet, row_start=row_index)
         row_index += ins_rows
+        col_index = ins_cols + 2
+
+    length = max(len(ind) for ind in indexes)
+    sheet.column_dimensions['A'].width = length*EXCEL_CELL_LENGTH_COEF
+
 
     chart = data.get('chart', bytes())
     img = PILImage.open(io.BytesIO(chart))
